@@ -9,6 +9,7 @@ export function ThemeToaster() {
   return (
     <Toaster
       position="top-right"
+      offset={{ top: "80px", right: "24px" }}
       richColors
       theme={resolvedTheme === "dark" ? "dark" : "light"}
     />
