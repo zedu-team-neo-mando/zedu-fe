@@ -13,6 +13,7 @@ import { RegisterWebhookRequest } from "~/utils/webhook-request";
 import { Separator } from "~/components/ui/separator";
 import AppleSignin from "react-apple-signin-auth";
 import { Eye, EyeOff } from "lucide-react";
+import { getSafeRedirectUrl } from "~/utils/safe-redirect";
 
 // The backend auto-creates a workspace at signup, so `is_onboarded` being
 // true does not mean the user ever chose one. A missing type is never default.
@@ -46,7 +47,8 @@ function SignUp() {
       const res = await PostRequest("/auth/apple", { id_token });
       if (res?.status === 200 || res?.status === 201) {
         const user = res?.data?.data?.user;
-        const redirectUrl = searchParams.get("redirect") || "";
+        const rawRedirect = searchParams.get("redirect");
+        const coworkerId = searchParams.get("coworkerId");
         localStorage.setItem("token", res?.data?.data?.access_token);
         localStorage.setItem("useremail", user?.email);
         localStorage.setItem("user", JSON.stringify(user));
@@ -55,18 +57,16 @@ function SignUp() {
         if (orgSlug) {
           localStorage.setItem("orgSlug", orgSlug);
         }
-        if (redirectUrl) {
-          router.push(redirectUrl);
-        } else {
-          if (
-            user?.is_onboarded &&
-            !isAutoCreatedOrg(user?.organisation?.type)
-          ) {
-            router.push(`/${orgSlug}`);
-          } else {
-            router.push(`/${orgSlug}/welcome`);
-          }
-        }
+        const fallbackUrl =
+          user?.is_onboarded && !isAutoCreatedOrg(user?.organisation?.type)
+            ? `/${orgSlug}`
+            : `/${orgSlug}/welcome`;
+        const targetUrl = getSafeRedirectUrl(
+          rawRedirect,
+          fallbackUrl,
+          coworkerId
+        );
+        router.push(targetUrl);
         const message = `\nName: ${user?.username}\\nEmail: ${user?.email}`;
         RegisterWebhookRequest(
           user?.username,
@@ -178,7 +178,8 @@ function SignUp() {
         password,
       };
 
-      const redirectUrl = searchParams.get("redirect") || "";
+      const rawRedirect = searchParams.get("redirect");
+      const coworkerId = searchParams.get("coworkerId");
       const res = await PostRequest("/auth/register", payload);
 
       if (res?.status === 200 || res?.status === 201) {
@@ -191,22 +192,19 @@ function SignUp() {
           localStorage.setItem("orgSlug", orgSlug);
         }
 
-        if (redirectUrl) {
-          setTimeout(() => {
-            router.push(redirectUrl);
-          }, 100);
-        } else {
-          setTimeout(() => {
-            if (
-              res?.data?.data?.user?.is_onboarded &&
-              !isAutoCreatedOrg(res?.data?.data?.user?.organisation?.type)
-            ) {
-              router.push(`/${orgSlug}`);
-            } else {
-              router.push(`/${orgSlug}/welcome`);
-            }
-          }, 100);
-        }
+        const fallbackUrl =
+          res?.data?.data?.user?.is_onboarded &&
+          !isAutoCreatedOrg(res?.data?.data?.user?.organisation?.type)
+            ? `/${orgSlug}`
+            : `/${orgSlug}/welcome`;
+        const targetUrl = getSafeRedirectUrl(
+          rawRedirect,
+          fallbackUrl,
+          coworkerId
+        );
+        setTimeout(() => {
+          router.push(targetUrl);
+        }, 100);
 
         const user = res?.data?.data?.user;
 
@@ -241,7 +239,8 @@ function SignUp() {
 
         if (res?.status === 200 || res?.status === 201) {
           const user = res?.data?.data?.user;
-          const redirectUrl = searchParams.get("redirect") || "";
+          const rawRedirect = searchParams.get("redirect");
+          const coworkerId = searchParams.get("coworkerId");
 
           localStorage.setItem("token", res?.data?.data?.access_token);
           localStorage.setItem("useremail", user?.email);
@@ -252,18 +251,16 @@ function SignUp() {
             localStorage.setItem("orgSlug", orgSlug);
           }
 
-          if (redirectUrl) {
-            router.push(redirectUrl);
-          } else {
-            if (
-              user?.is_onboarded &&
-              !isAutoCreatedOrg(user?.organisation?.type)
-            ) {
-              router.push(`/${orgSlug}`);
-            } else {
-              router.push(`/${orgSlug}/welcome`);
-            }
-          }
+          const fallbackUrl =
+            user?.is_onboarded && !isAutoCreatedOrg(user?.organisation?.type)
+              ? `/${orgSlug}`
+              : `/${orgSlug}/welcome`;
+          const targetUrl = getSafeRedirectUrl(
+            rawRedirect,
+            fallbackUrl,
+            coworkerId
+          );
+          router.push(targetUrl);
 
           const message = `
           Name: ${user?.username}\\n
