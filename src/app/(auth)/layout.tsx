@@ -5,6 +5,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { DataContext, DataProvider } from "~/store/GlobalState";
 
 import { isAutoCreatedOrg } from "~/utils/organisation";
+import { endSessionIfNotRemembered } from "~/utils/auth-session";
 
 /**
  * Resolves the logged-in destination path, preserving template query param for un-onboarded users
@@ -83,6 +84,7 @@ export default function RootLayout({
   useEffect(() => {
     (async () => {
       const t = new URLSearchParams(window.location.search).get("template");
+      endSessionIfNotRemembered();
       if (t) {
         localStorage.setItem("selected_template", t);
       }

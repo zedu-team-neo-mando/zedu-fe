@@ -11,6 +11,7 @@ import {
 } from "~/lib/buzz/session";
 import AuthSessionSetup from "~/components/auth/auth-session-setup";
 import {
+  endSessionIfNotRemembered,
   handleSessionExpired,
   isUnauthorizedResponse,
 } from "~/utils/auth-session";
@@ -41,6 +42,9 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
       }
 
       const isRecorderRoute = pathname.includes("/buzz-record/");
+      if (!isRecorderRoute) {
+        endSessionIfNotRemembered();
+      }
       let orgId = localStorage.getItem("orgId");
       let token = localStorage.getItem("token");
 
