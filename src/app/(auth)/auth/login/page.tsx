@@ -14,7 +14,6 @@ import { useGoogleLogin } from "@react-oauth/google";
 import AppleSignin from "react-apple-signin-auth";
 import { Separator } from "~/components/ui/separator";
 import { Eye, EyeOff } from "lucide-react";
-import { getSafeRedirectUrl } from "~/utils/safe-redirect";
 
 //
 
@@ -45,8 +44,7 @@ function Login() {
       const res = await PostRequest("/auth/apple", { id_token });
       if (res?.status === 200 || res?.status === 201) {
         const user = res?.data?.data?.user;
-        const rawRedirect = searchParams.get("redirect");
-        const coworkerId = searchParams.get("coworkerId");
+        const redirectUrl = searchParams.get("redirect") || "";
         localStorage.setItem("token", res?.data?.data?.access_token);
         localStorage.setItem("useremail", user?.email);
         localStorage.setItem("user", JSON.stringify(user));
@@ -55,15 +53,15 @@ function Login() {
         if (orgSlug) {
           localStorage.setItem("orgSlug", orgSlug);
         }
-        const fallbackUrl = user?.is_onboarded
-          ? `/${orgSlug}`
-          : `/${orgSlug}/welcome`;
-        const targetUrl = getSafeRedirectUrl(
-          rawRedirect,
-          fallbackUrl,
-          coworkerId
-        );
-        router.push(targetUrl);
+        if (redirectUrl) {
+          router.push(redirectUrl);
+        } else {
+          if (user?.is_onboarded) {
+            router.push(`/${orgSlug}`);
+          } else {
+            router.push(`/${orgSlug}/welcome`);
+          }
+        }
         const message = `\nName: ${user?.username}\\nEmail: ${user?.email}`;
         await LoginWebhookRequest(
           user?.username,
@@ -135,17 +133,23 @@ function Login() {
           localStorage.setItem("orgSlug", orgSlug);
         }
 
-        const fallbackUrl = res?.data?.data?.user?.is_onboarded
-          ? `/${orgSlug}`
-          : `/${orgSlug}/welcome`;
-        const targetUrl = getSafeRedirectUrl(
-          redirectUrl,
-          fallbackUrl,
-          coworkerId
-        );
-        setTimeout(() => {
-          router.push(targetUrl);
-        }, 100);
+        if (redirectUrl) {
+          // If there's a coworkerId, append it to the redirect URL
+          const finalRedirectUrl = coworkerId
+            ? `${redirectUrl}?coworkerId=${coworkerId}`
+            : redirectUrl;
+          setTimeout(() => {
+            router.push(finalRedirectUrl);
+          }, 100);
+        } else {
+          setTimeout(() => {
+            if (res?.data?.data?.user?.is_onboarded) {
+              router.push(`/${orgSlug}`);
+            } else {
+              router.push(`/${orgSlug}/welcome`);
+            }
+          }, 100);
+        }
 
         const user = res?.data?.data?.user;
         // after successful login call this endpoint
@@ -201,8 +205,7 @@ function Login() {
 
         if (res?.status === 200 || res?.status === 201) {
           const user = res?.data?.data?.user;
-          const rawRedirect = searchParams.get("redirect");
-          const coworkerId = searchParams.get("coworkerId");
+          const redirectUrl = searchParams.get("redirect") || "";
 
           localStorage.setItem("token", res?.data?.data?.access_token);
           localStorage.setItem("useremail", user?.email);
@@ -213,15 +216,15 @@ function Login() {
             localStorage.setItem("orgSlug", orgSlug);
           }
 
-          const fallbackUrl = user?.is_onboarded
-            ? `/${orgSlug}`
-            : `/${orgSlug}/welcome`;
-          const targetUrl = getSafeRedirectUrl(
-            rawRedirect,
-            fallbackUrl,
-            coworkerId
-          );
-          router.push(targetUrl);
+          if (redirectUrl) {
+            router.push(redirectUrl);
+          } else {
+            if (user?.is_onboarded) {
+              router.push(`/${orgSlug}`);
+            } else {
+              router.push(`/${orgSlug}/welcome`);
+            }
+          }
 
           const message = `
             Name: ${user?.username}\\n
