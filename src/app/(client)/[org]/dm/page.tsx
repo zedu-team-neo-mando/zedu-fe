@@ -1,15 +1,6 @@
-import { MessageSquare } from "lucide-react";
-import Image from "next/image";
+import MessagesHome from "../_components/messages-home";
 
 const Dms = () => {
-  return (
-    <div className="h-[80vh] flex flex-col items-center justify-center">
-      <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-[#F2F4F7]">
-        <MessageSquare className="size-8 text-[#98A2B3]" strokeWidth={1.5} />
-      </div>
-
-      <h2 className="font-bold text-2xl text-blue-500">Recent Messages</h2>
-    </div>
-  );
+  return <MessagesHome />;
 };
 export default Dms;
