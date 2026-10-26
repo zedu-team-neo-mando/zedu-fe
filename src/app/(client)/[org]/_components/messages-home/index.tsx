@@ -46,7 +46,8 @@ const MessagesHome = () => {
       title: "Create a group",
       description: "Bring your cohort or project team together.",
       icon: Users,
-      onClick: startNewChat,
+      onClick: () =>
+        router.push(`/${state?.orgSlug}/home/people/new-chat?type=group`),
     },
     {
       title: "Send a Buzz",
