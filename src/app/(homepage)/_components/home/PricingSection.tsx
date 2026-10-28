@@ -16,7 +16,16 @@ export const PricingSection = ({
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
     "yearly"
   );
+  const [currency, setCurrency] = useState<"USD" | "NGN">("USD");
   const plans = pricingCardsByCycle[billingCycle];
+
+  const formatPrice = (amount: string, curr: "USD" | "NGN") => {
+    if (curr === "USD" || !amount.startsWith("$")) return amount;
+    const numeric = parseInt(amount.replace(/[^0-9]/g, ""), 10);
+    if (isNaN(numeric)) return amount;
+    const ngnValue = (numeric * 1500).toLocaleString();
+    return `₦${ngnValue}`;
+  };
 
   return (
     <section className="relative isolate flex w-full flex-col items-center gap-6 overflow-hidden px-4 py-12 text-center sm:gap-6 sm:px-8 sm:py-16  lg:gap-8 lg:px-12">
@@ -35,33 +44,30 @@ export const PricingSection = ({
           </p>
         ) : null}
 
-        {/* <div className="inline-flex items-center rounded-full bg-neutral-100 p-1">
+        <div className="mt-2 inline-flex items-center rounded-full bg-neutral-100 p-1">
           <button
             type="button"
-            onClick={() => setBillingCycle("monthly")}
-            aria-pressed={billingCycle === "monthly"}
-            className={`rounded-full px-4 py-1.5 text-sm transition-colors ${
-              billingCycle === "monthly"
-                ? "bg-white text-neutral-900"
+            onClick={() => setCurrency("USD")}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+              currency === "USD"
+                ? "bg-white text-neutral-900 shadow-sm"
                 : "text-neutral-600"
             }`}
           >
-            Monthly
+            USD ($)
           </button>
           <button
             type="button"
-            onClick={() => setBillingCycle("yearly")}
-            aria-pressed={billingCycle === "yearly"}
-            className={`rounded-full px-4 py-1.5 text-sm transition-colors ${
-              billingCycle === "yearly"
-                ? "bg-white text-neutral-900"
+            onClick={() => setCurrency("NGN")}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+              currency === "NGN"
+                ? "bg-white text-neutral-900 shadow-sm"
                 : "text-neutral-600"
             }`}
           >
-            <span>Yearly</span>
-            <span className="ml-1 text-xs text-primary-500">SAVE 16.6%</span>
+            NGN (₦)
           </button>
-        </div> */}
+        </div>
       </div>
 
       {/* cards */}
@@ -71,7 +77,7 @@ export const PricingSection = ({
             key={plan.key}
             title={plan.title}
             description={plan.description}
-            amount={plan.amount}
+            amount={formatPrice(plan.amount, currency)}
             periodLabel={plan.periodLabel}
             footnote={plan.footnote}
             features={plan.features}
