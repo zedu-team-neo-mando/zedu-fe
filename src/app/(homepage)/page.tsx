@@ -10,15 +10,16 @@ import { getHomeStructuredData } from "./_lib/homeStructuredData";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Zedu - Learning Platform for Bootcamps, Schools, and Cohorts",
+    absolute: "Zedu - The All-in-One Cohort Workspace for Modern Educators",
   },
   description:
-    "Zedu is an AI-powered education platform built for bootcamps and learning communities. Organize cohorts, run classes, manage communication, and scale modern learning in one workspace.",
+    "The All-in-One Cohort Workspace that Multiplies Student Completion Rates. Replace fragmented chat channels, meeting links, and storage folders with a unified, AI-assisted platform.",
   openGraph: {
-    title: "Zedu - Learning Platform for Bootcamps, Schools, and Cohorts",
+    title: "Zedu - Scale Your Cohorts Without Admin Overhead",
     description:
-      "Built for modern learning: structured channels, AI-powered support, flexible education pricing, and tools that help educators run better cohorts.",
-    url: "/",
+      "The All-in-One Cohort Workspace that Multiplies Student Completion Rates. Built for bootcamps, schools, and structured learning communities.",
+    url: "https://zedu.chat/",
+    images: ["/assets/og-preview-zedu.png"],
   },
   alternates: {
     canonical: "/",
