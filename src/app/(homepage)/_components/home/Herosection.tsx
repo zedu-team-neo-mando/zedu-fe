@@ -16,17 +16,15 @@ const HeroSection = () => {
         className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[30%] bg-gradient-to-t from-blue-50/30 to-white"
       />
       <h1 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-4xl md:text-5xl text-center">
-        Built for Bootcamps and{" "}
-        <span className="text-primary-500">Learning</span> Communities
+        The All-in-One Cohort Workspace that{" "}
+        <span className="text-primary-500">Multiplies</span> Student Completion Rates
       </h1>
       <p className="max-w-[95%] text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
-        Bring learners and educators together with organized conversations,
-        seamless cohort collaboration, and affordable communication tools built
-        for learning communities.
+        Replace fragmented chat channels, meeting links, and storage folders with a unified, AI-assisted workspace engineered specifically for structured learning.
       </p>
       <div className="flex w-full max-w-md flex-row items-center justify-center gap-2 sm:gap-3">
         <ArrowBtn
-          text="Try for free"
+          text="Launch Your First Cohort Free ->"
           linkToHome
           loggedInText="Go to Dashboard"
           className="justify-center"
