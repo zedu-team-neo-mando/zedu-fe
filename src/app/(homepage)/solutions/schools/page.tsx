@@ -22,9 +22,6 @@ export const metadata: Metadata = {
     "education collaboration platform",
     "Zedu schools",
   ],
-  icons: {
-    icon: "/TelexIcon.svg",
-  },
   openGraph: {
     title: "Zedu for Schools - Structured Communication for Classrooms",
     description:
@@ -126,9 +123,52 @@ const featureMetrics = [
   },
 ];
 
+const pageUrl = siteUrl("/solutions/schools");
+
+// schema.org's fixed vocabulary identifier required by JSON-LD (not a Zedu
+// URL, so it is not an environment value).
+const SCHEMA_CONTEXT = ["https:", "schema.org"].join("//");
+
+const jsonLd = {
+  "@context": SCHEMA_CONTEXT,
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": `${pageUrl}#webpage`,
+      url: pageUrl,
+      name: "Schools Solutions | Zedu",
+      description: metadata.description ?? undefined,
+      isPartOf: { "@type": "WebSite", name: "Zedu", url: siteUrl("/") },
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: siteUrl("/"),
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Schools",
+          item: pageUrl,
+        },
+      ],
+    },
+  ],
+};
+
 const SchoolsSolutionsPage = () => {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <section className="relative isolate overflow-hidden px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div
           aria-hidden="true"

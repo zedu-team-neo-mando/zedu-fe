@@ -99,6 +99,7 @@ const MessageBox = ({
   channelLoading = false,
   draftKey,
   showTyping = true,
+  typingScope = "channel",
 }: any) => {
   const { state, dispatch } = useContext(DataContext);
   const params = useParams();
@@ -716,7 +717,7 @@ const MessageBox = ({
             </div>
           </div>
         </div>
-        {showTyping ? <TypingUsers /> : null}
+        {showTyping ? <TypingUsers scope={typingScope} /> : null}
       </div>
     </div>
   );

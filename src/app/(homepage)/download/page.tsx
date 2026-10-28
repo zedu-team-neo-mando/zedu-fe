@@ -93,7 +93,7 @@ const DownLoadPage = () => {
           Join your classes, connect with others, and access everything right
           from your phone.
         </p>
-        <div className="flex w-full max-w-md flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
+        <div className="flex w-full max-w-xl flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
           {" "}
           <DownloadAppBtn
             text="Download on the"
@@ -174,7 +174,6 @@ const DownLoadPage = () => {
                 href={APP_STORE_URL}
                 dark
                 iconColor="#FFFFFF"
-                className="!px-4 !py-2 sm:!px-5"
               />
               <DownloadAppBtn
                 text="GET IT ON"
@@ -183,7 +182,6 @@ const DownLoadPage = () => {
                 href={PLAY_STORE_URL}
                 dark
                 iconColor="#FFFFFF"
-                className="!px-4 !py-2 sm:!px-5"
               />
             </div>
 

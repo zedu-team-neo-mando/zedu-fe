@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useContext } from "react";
-import { PostRequest } from "~/utils/new-request";
+import { GetRequest, PostRequest } from "~/utils/new-request";
 import { Clock, Hash } from "lucide-react";
 import { DataContext } from "~/store/GlobalState";
 import { openSearchMessageResult } from "~/lib/search/navigate";
@@ -49,10 +49,14 @@ export const SearchCards = ({ cardData, query = "" }: CardProps) => {
     }
   };
 
-  const handleMessageCardClick = (item: MessageSearchResult) => {
-    openSearchMessageResult({
+  const handleMessageCardClick = async (item: MessageSearchResult) => {
+    await openSearchMessageResult({
       result: item,
       orgSlug,
+      orgId,
+      dms: state.dms,
+      channels: state.channels,
+      getDmParticipants: GetRequest,
       router,
       dispatch,
     });
@@ -78,7 +82,7 @@ export const SearchCards = ({ cardData, query = "" }: CardProps) => {
             className="w-full bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-gray-300 transition-all cursor-pointer dark:bg-zinc-900 dark:border-zinc-700 dark:hover:border-zinc-500"
             onClick={async () => {
               if (isMessage) {
-                handleMessageCardClick(item);
+                await handleMessageCardClick(item);
               } else {
                 await handleUserCardClick(item);
               }

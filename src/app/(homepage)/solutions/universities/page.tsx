@@ -22,9 +22,6 @@ export const metadata: Metadata = {
     "department communication software",
     "Zedu universities",
   ],
-  icons: {
-    icon: "/TelexIcon.svg",
-  },
   openGraph: {
     title: "Zedu for Universities - Structured Communication at Scale",
     description:
@@ -297,9 +294,9 @@ const UniversitiesSolutionsPage = () => {
             Run Leaner. Move Faster. Teach Better.
           </h1>
           <p className="max-w-[95%] text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
-            Zedu bring  communication, collaboration, and course
-            management. into one structured workspace reducing complexity,
-            improving communication, and helping institutions move faster.
+            Zedu brings communication, collaboration, and course management into
+            one structured workspace, reducing complexity, improving
+            communication, and helping institutions move faster.
           </p>
         </div>
 

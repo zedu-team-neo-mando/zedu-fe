@@ -89,6 +89,7 @@ function ForgotPassword() {
                 </label>
                 <div className="w-full flex flex-col gap-[2px]">
                   <input
+                    id="email"
                     type="email"
                     value={email}
                     onChange={handleEmailChange}

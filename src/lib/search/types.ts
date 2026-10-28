@@ -13,6 +13,9 @@ export type MessageSearchResult = {
     message: string;
     timestamp: string;
   }>;
+  thread?: {
+    id?: string;
+  };
   channel: {
     channel_id: string;
     channel_name: string;

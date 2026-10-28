@@ -13,7 +13,8 @@ import { ThemeProvider } from "~/components/theme/theme-provider";
 export const metadata: Metadata = {
   title: "Zedu",
   icons: {
-    icon: "/TelexIcon.svg",
+    icon: "/zedu-icon.png",
+    apple: "/apple-touch-icon.png",
   },
 };
 

@@ -12,6 +12,7 @@ import CustomSelect from "~/components/ui/custom-select";
 import useFirstChannel from "../../home/channels/hooks/first-channel";
 import StepIndicator from "~/components/ui/step-indicator";
 import { RegisterWebhookRequest } from "~/utils/webhook-request";
+import { showError } from "~/components/toast/sonner";
 import {
   redirectAfterOrgSwitch,
   resolveChannelIdForOrgSwitch,
@@ -100,13 +101,18 @@ const CreateOrganization: React.FC = () => {
       token
     );
 
-    if (result?.status !== 200 && result?.status !== 201) {
+    const slug = result?.data?.data?.current_organisation_slug;
+    const switched = result?.status === 200 || result?.status === 201;
+
+    // Without the new slug the redirect would land on the previous org.
+    if (!switched || !slug) {
+      if (switched)
+        showError("Couldn't open your new organisation. Try again.");
       setButtonloding(false);
       return;
     }
 
     const organisation = result?.data?.data?.organisation;
-    const slug = result?.data?.data?.current_organisation_slug || org;
     localStorage.setItem("token", result?.data?.data?.access_token);
     localStorage.setItem("orgId", organisation?.id || target?.id);
     localStorage.setItem("orgSlug", slug);

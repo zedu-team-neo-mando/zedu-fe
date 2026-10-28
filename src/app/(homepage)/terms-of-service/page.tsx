@@ -3,18 +3,8 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import SectionWrapper from "./_components/SectionWrapper";
 
-// Set document title for client component
-const useDocumentTitle = (title: string) => {
-  useEffect(() => {
-    document.title = title;
-  }, [title]);
-};
-
 function TermsOfService() {
   const [activeSection, setActiveSection] = useState<string>("");
-
-  // Set document title
-  useDocumentTitle("Terms of Service - Zedu");
 
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 

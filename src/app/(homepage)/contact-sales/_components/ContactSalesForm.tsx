@@ -11,6 +11,10 @@ import { useToast } from "~/components/ui/use-toast";
 import { cn } from "~/lib/utils";
 import { contactSalesUrl } from "~/lib/env-urls";
 
+const phoneNumberPattern = /^\+?[0-9\s()-]+$/;
+
+const getPhoneDigits = (value: string) => value.replace(/\D/g, "");
+
 const contactSalesSchema = z.object({
   name: z
     .string()
@@ -27,9 +31,13 @@ const contactSalesSchema = z.object({
     .trim()
     .min(1, "Phone number is required")
     .refine(
-      (value) => /^\d{10,15}$/.test(value.replace(/\D/g, "")),
-      "Please enter a valid phone number"
-    ),
+      (value) => phoneNumberPattern.test(value),
+      "Phone number can only contain digits and standard phone formatting"
+    )
+    .refine((value) => {
+      const digits = getPhoneDigits(value);
+      return digits.length >= 10 && digits.length <= 15;
+    }, "Phone number must contain between 10 and 15 digits"),
   message: z
     .string()
     .trim()
@@ -110,7 +118,7 @@ export const ContactSalesForm = () => {
 
     setSending(true);
 
-    const normalizedPhone = formData.phone.replace(/\D/g, "");
+    const normalizedPhone = getPhoneDigits(formData.phone);
     const contactData = {
       name: formData.name.trim(),
       email: formData.email.trim(),
@@ -207,6 +215,9 @@ export const ContactSalesForm = () => {
           <Input
             id="phone"
             name="phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
             value={formData.phone}
             onChange={(event) => updateField("phone", event.target.value)}
             onBlur={() => validateField("phone")}

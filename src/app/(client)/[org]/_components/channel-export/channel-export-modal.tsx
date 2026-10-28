@@ -48,10 +48,13 @@ const downloadExportFile = (item: ChannelExport, channelName?: string) => {
     return;
   }
 
-  const filename = getExportFilename(item, channelName);
+  const fileUrl = new URL(item.file_url, window.location.origin);
   const link = document.createElement("a");
-  link.href = item.file_url;
-  link.download = filename;
+  link.href = fileUrl.toString();
+  // Cross-origin file URLs can redirect, so let the browser follow them.
+  if (fileUrl.origin === window.location.origin) {
+    link.download = getExportFilename(item, channelName);
+  }
   link.target = "_blank";
   link.rel = "noopener noreferrer";
   document.body.appendChild(link);
@@ -73,13 +76,16 @@ function StatusBadge({ status }: { status?: string | null }) {
     <span
       className={cn(
         "inline-flex items-center rounded-full px-2.5 py-[3px] text-[11px] font-semibold capitalize leading-none tracking-[0.01em]",
-        isExportCompleted(status) && "bg-[#ECFDF3] text-[#027A48]",
-        isExportFailed(status) && "bg-[#FEF3F2] text-[#B42318]",
-        isExportInProgress(status) && "bg-[#EEF4FF] text-[#3538CD]",
+        isExportCompleted(status) &&
+          "bg-[#ECFDF3] text-[#027A48] dark:bg-[#2B2D5A] dark:text-[#C3C5FF]",
+        isExportFailed(status) &&
+          "bg-[#FEF3F2] text-[#B42318] dark:bg-[#352323] dark:text-[#FDA29B]",
+        isExportInProgress(status) &&
+          "bg-[#EEF4FF] text-[#3538CD] dark:bg-[#2B2D5A] dark:text-[#C3C5FF]",
         !isExportCompleted(status) &&
           !isExportFailed(status) &&
           !isExportInProgress(status) &&
-          "bg-[#F2F4F7] text-[#344054]"
+          "bg-[#F2F4F7] text-[#344054] dark:bg-[#2B2D5A] dark:text-[#C3C5FF]"
       )}
     >
       {statusCopy(status)}
@@ -114,17 +120,17 @@ function ExportStatusCard({
 
   if (inProgress) {
     return (
-      <div className="rounded-[12px] border border-[#D6D6F5] bg-[#F8F8FF] p-5">
+      <div className="rounded-[12px] border border-[#D6D6F5] bg-[#F8F8FF] p-5 dark:border-[#3A3B44] dark:bg-[#2B2D5A]">
         <div className="flex items-start gap-3.5">
-          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-white text-[#5757CD] shadow-[0_1px_2px_rgba(16,24,40,0.06)]">
+          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-white text-[#5757CD] shadow-[0_1px_2px_rgba(16,24,40,0.06)] dark:border dark:border-[#3A3B5C] dark:bg-[#1A1B2E] dark:text-[#9A9CF8]">
             <BellRing className="h-5 w-5" />
-            <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-[#5757CD]" />
+            <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-[#5757CD] dark:border-[#292A31] dark:bg-[#6D6FF5]" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[15px] font-semibold leading-5 text-[#101828]">
+            <p className="text-[15px] font-semibold leading-5 text-[#101828] dark:text-[#F3F3F7]">
               We&apos;ll notify you when it&apos;s ready
             </p>
-            <p className="mt-1 text-[13px] leading-5 text-[#667085]">
+            <p className="mt-1 text-[13px] leading-5 text-[#667085] dark:text-[#B4B6C0]">
               Your export of #{channelName} is queued. This can take a few
               minutes depending on the size of the channel. You can close this
               and keep working — we&apos;ll let you know when the ZIP is ready
@@ -153,7 +159,7 @@ function ExportStatusCard({
 
   if (failed) {
     return (
-      <div className="rounded-[12px] border border-[#FECDCA] bg-[#FFFBFA] p-5">
+      <div className="rounded-[12px] border border-[#FECDCA] bg-[#FFFBFA] p-5 dark:border-[#553532] dark:bg-[#2A2223]">
         <div className="flex items-start gap-3.5">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-white text-[#B42318] shadow-[0_1px_2px_rgba(16,24,40,0.06)]">
             <AlertCircle className="h-5 w-5" />
@@ -162,7 +168,7 @@ function ExportStatusCard({
             <p className="text-[15px] font-semibold text-[#101828] leading-5">
               Export failed
             </p>
-            <p className="mt-1 text-[13px] leading-5 text-[#667085]">
+            <p className="mt-1 text-[13px] leading-5 text-[#667085] dark:text-[#B4B6C0]">
               {currentExport?.error_message ||
                 "We couldn't generate this export. You can try again."}
             </p>
@@ -187,16 +193,16 @@ function ExportStatusCard({
 
   if (completed && currentExport?.file_url) {
     return (
-      <div className="rounded-[12px] border border-[#A6F4C5] bg-[#F6FEF9] p-5">
+      <div className="rounded-[12px] border border-[#A6F4C5] bg-[#F6FEF9] p-5 dark:border-[#3A3B44] dark:bg-[#292A31]">
         <div className="flex items-start gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-white text-[#027A48] shadow-[0_1px_2px_rgba(16,24,40,0.06)]">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-white text-[#027A48] shadow-[0_1px_2px_rgba(16,24,40,0.06)] dark:border dark:border-[#3A3B5C] dark:bg-[#1A1B2E] dark:text-[#9A9CF8]">
             <CheckCircle2 className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[15px] font-semibold text-[#101828] leading-5">
               Your export is ready
             </p>
-            <p className="mt-1 text-[13px] leading-5 text-[#667085]">
+            <p className="mt-1 text-[13px] leading-5 text-[#667085] dark:text-[#B4B6C0]">
               Download the ZIP, or generate a new export with the latest
               messages.
             </p>
@@ -213,7 +219,7 @@ function ExportStatusCard({
             variant="outline"
             onClick={onStart}
             disabled={starting}
-            className="h-9 gap-2 rounded-lg border-[#D0D5DD] px-4 text-sm font-semibold text-[#344054] hover:bg-white"
+            className="channel-export-new-button h-9 gap-2 rounded-lg border-[#D0D5DD] bg-white px-4 text-sm font-semibold text-[#344054]"
           >
             New export
             {starting ? (
@@ -238,7 +244,7 @@ function ExportStatusCard({
   }
 
   return (
-    <div className="rounded-[12px] border border-[#E6EAEF] bg-[#F9FAFB] p-5">
+    <div className="rounded-[12px] border border-[#E6EAEF] bg-[#F9FAFB] p-5 dark:border-[#3A3B44] dark:bg-[#292A31]">
       <div className="flex items-start gap-3.5">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-white text-[#5757CD] shadow-[0_1px_2px_rgba(16,24,40,0.06)]">
           <Archive className="h-5 w-5" />
@@ -247,7 +253,7 @@ function ExportStatusCard({
           <p className="text-[15px] font-semibold text-[#101828] leading-5">
             Export #{channelName}
           </p>
-          <p className="mt-1 text-[13px] leading-5 text-[#667085]">
+          <p className="mt-1 text-[13px] leading-5 text-[#667085] dark:text-[#B4B6C0]">
             Download a ZIP of this channel&apos;s messages, files, and media.
             We&apos;ll notify you when the file is ready to download.
           </p>
@@ -282,13 +288,13 @@ function HistoryRow({
   const canDownload = isExportCompleted(item.status) && Boolean(item.file_url);
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-[#F9FAFB]">
+    <div className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-[#F9FAFB] dark:hover:bg-[#303139]">
       <div
         className={cn(
           "flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px]",
           isExportFailed(item.status)
-            ? "bg-[#FEF3F2] text-[#B42318]"
-            : "bg-[#EEF4FF] text-[#5757CD]"
+            ? "bg-[#FEF3F2] text-[#B42318] dark:bg-[#352323] dark:text-[#FDA29B]"
+            : "bg-[#EEF4FF] text-[#5757CD] dark:border-[#3A3B5C] dark:bg-[#1A1B2E] dark:text-[#9A9CF8]"
         )}
       >
         {isExportInProgress(item.status) ? (
@@ -302,12 +308,12 @@ function HistoryRow({
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <p className="truncate text-[13px] font-semibold text-[#101828]">
+          <p className="truncate text-[13px] font-semibold text-[#101828] dark:text-[#F3F3F7]">
             {moment(item.created_at).format("MMM D, YYYY")}
           </p>
           <StatusBadge status={item.status} />
         </div>
-        <p className="mt-0.5 truncate text-xs text-[#667085]">
+        <p className="mt-0.5 truncate text-xs text-[#667085] dark:text-[#B4B6C0]">
           {isExportFailed(item.status)
             ? item.error_message || "Could not generate this export"
             : isExportInProgress(item.status)
@@ -370,6 +376,10 @@ export default function ChannelExportModal({
 
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
+  const displayedExport =
+    currentExport ??
+    (isExportCompleted(history[0]?.status) ? history[0] : null);
+
   const handleDownload = (item: ChannelExport) => {
     setDownloadingId(item.id);
     downloadExportFile(item, channelName);
@@ -390,17 +400,17 @@ export default function ChannelExportModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         onClick={(e) => e.stopPropagation()}
-        className="gap-0 overflow-hidden rounded-[0.625rem] p-0 sm:max-w-[540px]"
+        className="gap-0 overflow-hidden rounded-[0.625rem] border-[#34353D] bg-white p-0 sm:max-w-[540px] dark:bg-[#1F2024]"
       >
-        <DialogClose className="absolute right-5 top-4 rounded-[0.3125rem] border border-input p-1 text-[#344054]">
-          <X className="size-5 text-[#344054]" />
+        <DialogClose className="absolute right-5 top-4 rounded-[0.3125rem] border border-input p-1 text-[#344054] dark:border-[#44454E] dark:text-[#F3F3F7]">
+          <X className="size-5" />
         </DialogClose>
 
-        <DialogHeader className="space-y-1 border-b border-[#E6EAEF] px-6 py-5 pr-14">
-          <DialogTitle className="text-lg font-bold leading-7 text-[#101828] lg:text-[1.25rem]">
+        <DialogHeader className="space-y-1 border-b border-[#E6EAEF] px-6 py-5 pr-14 dark:border-[#34353D]">
+          <DialogTitle className="text-lg font-bold leading-7 text-[#101828] dark:text-[#F3F3F7] lg:text-[1.25rem]">
             Export chat
           </DialogTitle>
-          <DialogDescription className="text-[13px] leading-5 text-[#667085]">
+          <DialogDescription className="text-[13px] leading-5 text-[#667085] dark:text-[#B4B6C0]">
             Create a downloadable archive of #{channelName}.
           </DialogDescription>
         </DialogHeader>
@@ -408,12 +418,12 @@ export default function ChannelExportModal({
         <div className="max-h-[min(72vh,640px)] overflow-y-auto px-6 py-5">
           {loading ? (
             <div className="flex items-center justify-center py-16">
-              <Loading color="#5757CD" height="32px" width="32px" />
+              <Loading color="#9A9CF8" height="32px" width="32px" />
             </div>
           ) : (
             <div className="space-y-6">
               <ExportStatusCard
-                currentExport={currentExport}
+                currentExport={displayedExport}
                 channelName={channelName}
                 starting={starting}
                 downloadingId={downloadingId}
@@ -424,7 +434,7 @@ export default function ChannelExportModal({
 
               <div>
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-[#101828]">
+                  <h3 className="text-sm font-semibold text-[#101828] dark:text-[#F3F3F7]">
                     Previous exports
                   </h3>
                   {pagination.total_items > 0 ? (
@@ -432,25 +442,25 @@ export default function ChannelExportModal({
                   ) : null}
                 </div>
 
-                <div className="overflow-hidden rounded-[12px] border border-[#E6EAEF] bg-white">
+                <div className="overflow-hidden rounded-[12px] border border-[#E6EAEF] bg-white dark:border-[#3A3B44] dark:bg-[#292A31]">
                   {historyLoading && history.length === 0 ? (
                     <div className="flex justify-center py-10">
                       <Loading color="#5757CD" height="24px" width="24px" />
                     </div>
                   ) : history.length === 0 ? (
                     <div className="flex flex-col items-center px-6 py-10 text-center">
-                      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#F2F4F7] text-[#667085]">
+                      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-[10px] bg-[#F2F4F7] text-[#667085] dark:bg-[#3A3B45] dark:text-[#B4B6C0]">
                         <FileArchive className="h-5 w-5" />
                       </div>
-                      <p className="text-sm font-medium text-[#344054]">
+                      <p className="text-sm font-medium text-[#344054] dark:text-[#F3F3F7]">
                         No exports yet
                       </p>
-                      <p className="mt-1 max-w-[280px] text-[13px] leading-5 text-[#667085]">
+                      <p className="mt-1 max-w-[280px] text-[13px] leading-5 text-[#667085] dark:text-[#B4B6C0]">
                         Previous downloads for this channel will show up here.
                       </p>
                     </div>
                   ) : (
-                    <div className="divide-y divide-[#E6EAEF]">
+                    <div className="divide-y divide-[#E6EAEF] dark:divide-[#3A3B45]">
                       {history.map((item) => (
                         <HistoryRow
                           key={item.id}
@@ -474,7 +484,7 @@ export default function ChannelExportModal({
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </button>
-                    <span className="min-w-[64px] text-center text-xs font-medium text-[#667085]">
+                    <span className="min-w-[64px] text-center text-xs font-medium text-[#667085] dark:text-[#B4B6C0]">
                       {pagination.current_page} / {pagination.total_pages}
                     </span>
                     <button

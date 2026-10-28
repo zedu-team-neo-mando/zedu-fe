@@ -168,7 +168,7 @@ const DmPage = () => {
       {/* Master Side Panels Container - Holds all right-aligned panels */}
       <div
         className={cn(
-          "fixed z-30 mt-[60px] right-0 top-0 h-full flex transition-all duration-300 ease-in-out",
+          "fixed z-30 right-0 top-[60px] bottom-0 flex transition-all duration-300 ease-in-out",
           !isSmUp && reply && "w-full"
         )}
         style={

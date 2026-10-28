@@ -206,7 +206,7 @@ const DmPage = () => {
       {/* Master Side Panels Container - Holds all right-aligned panels */}
       <div
         className={cn(
-          "fixed z-30 mt-[60px] right-0 top-0 h-full flex overflow-hidden transition-[width]",
+          "fixed z-30 right-0 top-[60px] bottom-0 flex overflow-hidden transition-[width]",
           CONVERSATION_SEARCH_PANEL_TRANSITION,
           !isSmUp && state?.reply && "w-full"
         )}

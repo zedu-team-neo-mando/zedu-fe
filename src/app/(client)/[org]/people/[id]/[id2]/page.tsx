@@ -79,7 +79,7 @@ const PeoplePage = () => {
       <div
         className={cn(
           "relative flex flex-col flex-1 transition-[margin] duration-300 ease-in-out",
-          showProfile && "sm:mr-[408px]",
+          state?.showProfile && "sm:mr-[408px]",
           reply && "sm:mr-[440px]"
         )}
       >
@@ -99,7 +99,7 @@ const PeoplePage = () => {
       </div>
       {state?.showProfile && (
         <div
-          className={`fixed mt-[60px] right-0 top-0 w-full sm:w-[408px] h-full bg-white border-l border-[#E6EAEF] shadow-[-3px_0px_27px_0px_#DFDFDF] transition-transform duration-300 ease-in-out ${state?.showProfile ? "translate-x-0" : "translate-x-full"}`}
+          className={`fixed right-0 top-[60px] bottom-0 w-full sm:w-[408px] bg-white border-l border-[#E6EAEF] shadow-[-3px_0px_27px_0px_#DFDFDF] transition-transform duration-300 ease-in-out ${state?.showProfile ? "translate-x-0" : "translate-x-full"}`}
         >
           <ProfileSidebar user={participant} />
         </div>

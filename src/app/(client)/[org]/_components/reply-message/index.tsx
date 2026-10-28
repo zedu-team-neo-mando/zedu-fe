@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { DataContext } from "~/store/GlobalState";
 import InfiniteScroll from "react-infinite-scroll-component";
 import ReplyMessages from "../ChannelMessage/reply-message";
@@ -12,23 +12,37 @@ import { ACTIONS } from "~/store/Actions";
 import { useParams, useSearchParams } from "next/navigation";
 import EditReplyMessageBox from "../message-box/edit-reply";
 import { BookmarkFilledIcon } from "@radix-ui/react-icons";
+import { groupMessagesByDate } from "~/utils/group-messages";
 import {
   applyMessageHighlightClasses,
   MESSAGE_HIGHLIGHT_DURATION_MS,
   removeMessageHighlightClasses,
 } from "~/utils/message-highlight";
+import { shouldFetchSearchReply } from "~/lib/search/navigate";
 
 const ReplyMessage = ({ fetchMoreData, hasMore }: any) => {
   const { state, dispatch } = useContext(DataContext);
   const { replies, user, thread, threadReply, isEditReply, bookmarks } = state;
+  const groupedReplies = groupMessagesByDate(replies);
   const params = useParams();
   const searchParams = useSearchParams();
   const channelId = (thread?.channels_id || params.id) as string;
   const [popupId, setPopupId] = useState<any>(null);
   const replyMessageId = searchParams.get("message_id");
+  const urlThreadId = searchParams.get("thread_id");
+  const requestedReplyPageRef = useRef<string | null>(null);
+  const fetchMoreDataRef = useRef(fetchMoreData);
 
   useEffect(() => {
-    if (!replyMessageId || !replies?.length) return;
+    fetchMoreDataRef.current = fetchMoreData;
+  }, [fetchMoreData]);
+
+  useEffect(() => {
+    if (!replyMessageId) {
+      requestedReplyPageRef.current = null;
+      return;
+    }
+    if (!replies?.length) return;
 
     const highlightReply = () => {
       const el = document.getElementById(`reply-${replyMessageId}`);
@@ -42,12 +56,39 @@ const ReplyMessage = ({ fetchMoreData, hasMore }: any) => {
       return true;
     };
 
-    if (highlightReply()) return;
+    if (highlightReply()) {
+      requestedReplyPageRef.current = null;
+      return;
+    }
 
-    requestAnimationFrame(() => {
-      highlightReply();
+    const animationFrame = requestAnimationFrame(() => {
+      if (highlightReply()) {
+        requestedReplyPageRef.current = null;
+        return;
+      }
+
+      const currentThreadReplies = replies.filter(
+        (reply: { thread_id?: string }) =>
+          !reply.thread_id || reply.thread_id === thread?.thread_id
+      );
+
+      // The link points at a reply in one thread. Opening another thread must
+      // not page through that thread looking for it.
+      if (thread?.thread_id !== urlThreadId) return;
+
+      if (
+        shouldFetchSearchReply(replyMessageId, currentThreadReplies, hasMore)
+      ) {
+        const requestKey = `${replyMessageId}:${currentThreadReplies.length}`;
+        if (requestedReplyPageRef.current !== requestKey) {
+          requestedReplyPageRef.current = requestKey;
+          fetchMoreDataRef.current();
+        }
+      }
     });
-  }, [replyMessageId, replies]);
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, [replyMessageId, urlThreadId, replies, hasMore, thread?.thread_id]);
 
   // edit message
   const handleEditMessage = async (content: any) => {
@@ -84,7 +125,7 @@ const ReplyMessage = ({ fetchMoreData, hasMore }: any) => {
     };
 
     loadSavedChats();
-  }, []);
+  }, [dispatch]);
 
   //
 
@@ -110,65 +151,82 @@ const ReplyMessage = ({ fetchMoreData, hasMore }: any) => {
         style={{
           display: "flex",
           flexDirection: "column-reverse",
-          overflowY: "hidden",
-          overflowX: "hidden",
+          overflow: "visible",
         }}
         scrollableTarget="scrollableDivs"
         inverse={true}
       >
-        {replies?.map((item: any, index: number) => {
-          const nextMessage = replies[index + 1];
-          const shouldShowAvatar =
-            !nextMessage || nextMessage.user_id !== item.user_id;
+        {Object.entries(groupedReplies)?.map(([dateLabel, dayReplies]: any) => (
+          <div key={dateLabel} className="flex flex-col-reverse">
+            {dayReplies?.map((item: any, index: number) => {
+              const nextMessage = dayReplies[index + 1];
+              const shouldShowAvatar =
+                !nextMessage || nextMessage.user_id !== item.user_id;
 
-          const isSaved = bookmarks?.some((b: any) => b.id === item.id);
+              const isSaved = bookmarks?.some((b: any) => b.id === item.id);
 
-          return (
-            <React.Fragment key={index}>
-              <>
-                {isEditReply && threadReply?.id === item?.id ? (
-                  <div
-                    className={`flex mb-5 gap-2 mt-2 z-10 bg-white px-2 py-3 bg-blue-50 w-full`}
-                  >
-                    <UserAvatar item={item} size="sm" className="mb-2" />
-
-                    <EditReplyMessageBox
-                      subscription={state?.replySubscription}
-                      sendMessage={handleEditMessage}
-                    />
-                  </div>
-                ) : (
+              return (
+                <React.Fragment key={item.id ?? index}>
                   <>
-                    <ReplyMessages
-                      item={item}
-                      shouldShowAvatar={shouldShowAvatar}
-                      setPopupId={setPopupId}
-                      popupId={popupId}
-                    />
+                    {isEditReply && threadReply?.id === item?.id ? (
+                      <div
+                        className={`flex mb-5 gap-2 mt-2 z-10 bg-white px-2 py-3 bg-blue-50 w-full`}
+                      >
+                        <UserAvatar item={item} size="sm" className="mb-2" />
 
-                    {item.is_pinned ? (
-                      <div className="flex items-center gap-2 bg-yellow-50 pl-10 text-[13px] font-semibold text-blue-100 pt-2">
-                        <Pin size={13} className="text-[#667085] mt-[3px]" />
-                        Pinned by{" "}
-                        {user?.email === item?.pinned_details?.email
-                          ? "you"
-                          : item?.pinned_details?.username}
-                      </div>
-                    ) : isSaved ? (
-                      <div className="flex items-center gap-2 bg-primary-50 pl-10 text-[13px] font-bold text-blue-100 pt-2">
-                        <BookmarkFilledIcon
-                          fontSize={13}
-                          className="text-[#667085]"
+                        <EditReplyMessageBox
+                          subscription={state?.replySubscription}
+                          sendMessage={handleEditMessage}
                         />
-                        Saved for Later
                       </div>
-                    ) : null}
+                    ) : (
+                      <>
+                        <ReplyMessages
+                          item={item}
+                          shouldShowAvatar={shouldShowAvatar}
+                          setPopupId={setPopupId}
+                          popupId={popupId}
+                        />
+
+                        {item.is_pinned ? (
+                          <div className="flex items-center gap-2 bg-yellow-50 pl-10 text-[13px] font-semibold text-blue-100 pt-2">
+                            <Pin
+                              size={13}
+                              className="text-[#667085] mt-[3px]"
+                            />
+                            Pinned by{" "}
+                            {user?.email === item?.pinned_details?.email
+                              ? "you"
+                              : item?.pinned_details?.username}
+                          </div>
+                        ) : isSaved ? (
+                          <div className="flex items-center gap-2 bg-primary-50 pl-10 text-[13px] font-bold text-blue-100 pt-2">
+                            <BookmarkFilledIcon
+                              fontSize={13}
+                              className="text-[#667085]"
+                            />
+                            Saved for Later
+                          </div>
+                        ) : null}
+                      </>
+                    )}
                   </>
-                )}
-              </>
-            </React.Fragment>
-          );
-        })}
+                </React.Fragment>
+              );
+            })}
+
+            <div className="sticky top-0 z-10 my-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-dotted border-[#E6EAEF]"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-white px-4 py-1 text-[13px] text-[#101828] border border-[#E6EAEF] rounded-[30px]">
+                  {dateLabel}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
 
         {thread && (
           <div className="px-3 mt-4 mb-2">

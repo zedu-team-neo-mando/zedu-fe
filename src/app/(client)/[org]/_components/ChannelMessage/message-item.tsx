@@ -128,9 +128,39 @@ const hasLinks = (text: string): boolean => {
   return urlRegex.test(text);
 };
 
+const memberUserId = (member: any): string =>
+  String(
+    member?.user_id ??
+      member?.id ??
+      member?.userid ??
+      member?.profile?.user_id ??
+      ""
+  ).trim();
+
+const memberUsername = (member: any): string =>
+  String(member?.username ?? member?.profile?.username ?? "")
+    .trim()
+    .toLowerCase();
+
+/** System notices store a display name. The mention API needs the user id. */
+const resolveSystemMentionUserId = (
+  label: string,
+  members: unknown
+): string => {
+  const needle = label.trim().toLowerCase();
+  if (!needle || !Array.isArray(members)) return "";
+
+  const match = members.find((member) => memberUsername(member) === needle);
+  const id = match ? memberUserId(match) : "";
+  if (!id || id.toLowerCase() === needle) return "";
+  return id;
+};
+
 const MessageItem: React.FC<MessageItemProps> = ({ item }) => {
   const { state } = useContext(DataContext);
   const currentUser = state?.user;
+  const systemMentionMembers =
+    state?.mentionOrgMembers || state?.orgMembers || [];
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [image, setImage] = useState<any>(null);
@@ -257,17 +287,35 @@ const MessageItem: React.FC<MessageItemProps> = ({ item }) => {
     }
 
     if (typeof children === "string") {
-      const mentionRegex = /([@#][a-zA-Z0-9_.-]+(?:\s[a-zA-Z0-9_.-]+)*)/g;
+      const mentionRegex =
+        item?.type === "system"
+          ? /(@[a-zA-Z0-9_.-]+)/g
+          : /([@#][a-zA-Z0-9_.-]+(?:\s[a-zA-Z0-9_.-]+)*)/g;
       const parts = children.split(mentionRegex);
 
       return parts.map((part: any, i: number) => {
         if (typeof part === "string" && part.startsWith("@")) {
+          const label = part.slice(1).trim();
+          const mentionId =
+            props["data-id"] ||
+            (item?.type === "system"
+              ? resolveSystemMentionUserId(label, systemMentionMembers)
+              : "");
+
+          if (!mentionId) {
+            return item?.type === "system" ? (
+              <span key={`${label}-${i}`}>{label}</span>
+            ) : (
+              linkifyText(part, linkifyOptions)
+            );
+          }
+
           return (
             <GlobalMention
-              key={`${part.slice(1)}-${i}`}
-              id={props["data-id"]}
+              key={`${mentionId}-${i}`}
+              id={mentionId}
               trigger="@"
-              label={part.slice(1).trim()}
+              label={label}
               item={item}
               currentUser={currentUser}
             />
@@ -294,7 +342,9 @@ const MessageItem: React.FC<MessageItemProps> = ({ item }) => {
 
   return (
     <div>
-      <div className="w-full text-[#344054] text-[13px] lg:text-[15px] font-[400] break-words custom-message">
+      <div
+        className={`w-full text-[#344054] text-[13px] ${item?.type === "system" ? "" : "lg:text-[15px]"} font-[400] break-words custom-message`}
+      >
         <div
           style={{
             whiteSpace: "pre-wrap",
@@ -311,12 +361,20 @@ const MessageItem: React.FC<MessageItemProps> = ({ item }) => {
                   <p
                     style={{
                       margin: "0",
-                      lineHeight: "22px",
+                      lineHeight: item?.type === "system" ? "18px" : "22px",
                       color: item?.type === "system" ? "#6B7280" : "",
                       wordBreak: "break-word",
                     }}
                   >
                     {React.Children.map(children, (child) => {
+                      if (
+                        typeof child === "string" &&
+                        item?.type === "system"
+                      ) {
+                        return renderTextWithMentions({
+                          props: { children: child },
+                        });
+                      }
                       return typeof child === "string"
                         ? linkifyText(child, linkifyOptions)
                         : renderTextWithMentions(child);

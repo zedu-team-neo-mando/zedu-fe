@@ -29,8 +29,6 @@ export const ArticleCard = ({ title, desc, tag, image }: ArticleCardProps) => {
         <p className="text-xs leading-relaxed text-neutral-600 sm:text-sm">
           {desc}
         </p>
-
-        <button className="text-left text-sm text-blue-900">Read More</button>
       </div>
     </article>
   );

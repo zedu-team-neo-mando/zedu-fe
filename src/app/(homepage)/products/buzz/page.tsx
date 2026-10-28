@@ -22,9 +22,6 @@ export const metadata: Metadata = {
     "university class discussions",
     "interactive communication for students",
   ],
-  icons: {
-    icon: "/TelexIcon.svg",
-  },
   openGraph: {
     title: "Zedu Buzz - Instant Voice Conversations for Learning Teams",
     description:

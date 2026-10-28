@@ -1,5 +1,12 @@
 "use client";
-import React, { useState, useRef, useEffect, useContext, useMemo } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useContext,
+  useMemo,
+  useCallback,
+} from "react";
 import {
   Popover,
   PopoverContent,
@@ -21,15 +28,65 @@ export interface User {
   default_avatar_url: string;
 }
 
+const UserRow = React.memo(function UserRow({
+  user,
+  index,
+  highlighted,
+  onSelect,
+  onHover,
+}: {
+  user: User;
+  index: number;
+  highlighted: boolean;
+  onSelect: (user: User) => void;
+  onHover: (index: number) => void;
+}) {
+  return (
+    <div
+      data-row-index={index}
+      onMouseDown={(e) => e.preventDefault()}
+      onMouseEnter={() => onHover(index)}
+      onClick={() => onSelect(user)}
+      className={`flex items-center gap-[10px] px-4 py-[10px] hover:bg-[#F1F1FE] cursor-pointer ${
+        highlighted ? "bg-[#F1F1FE]" : ""
+      }`}
+    >
+      <Image
+        src={user?.avatar_url || user?.default_avatar_url || images?.user}
+        alt={user?.name}
+        width={20}
+        height={20}
+        className="rounded-[5px] size-6 object-cover border"
+      />
+      <div className="flex items-center gap-[6px]">
+        <span className="text-[#101828] text-sm font-semibold">
+          {user?.name}
+        </span>
+        {user?.username && (
+          <>
+            <div className="w-1 h-1 rounded-full bg-[#E4E7EC]" />
+            <span className="text-[14px] text-[#344054]">{user?.username}</span>
+          </>
+        )}
+      </div>
+    </div>
+  );
+});
+
 const NewChatHeader = ({ onUsersSelected }: any) => {
   const { state } = useContext(DataContext);
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [highlightIndex, setHighlightIndex] = useState(0);
+  // Key repeat can outrun React renders; the ref keeps every press counted
+  // even when several land between two renders.
+  const highlightRef = useRef(0);
   const triggerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const popoverContentRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const orgId =
     state.orgId ||
@@ -45,21 +102,87 @@ const NewChatHeader = ({ onUsersSelected }: any) => {
     );
   }, [users, selectedUsers]);
 
+  // The list shrinks when a user is picked and empties while the search
+  // debounce is pending, so keep the keyboard highlight inside it.
+  useEffect(() => {
+    setHighlightIndex((prev) =>
+      Math.min(prev, Math.max(filteredUsers.length - 1, 0))
+    );
+  }, [filteredUsers.length]);
+
+  useEffect(() => {
+    highlightRef.current = highlightIndex;
+
+    // VS Code-style "minimal reveal": scroll only the list container (never
+    // an ancestor), move just enough to bring the row into view, and animate
+    // it — each new press retargets the same short ease instead of stacking
+    // instant scrollIntoView jumps.
+    const container = listRef.current;
+    const row = container?.querySelector<HTMLElement>(
+      `[data-row-index="${highlightIndex}"]`
+    );
+    if (!container || !row) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const rowRect = row.getBoundingClientRect();
+    let delta = 0;
+    if (rowRect.top < containerRect.top) {
+      delta = rowRect.top - containerRect.top;
+    } else if (rowRect.bottom > containerRect.bottom) {
+      delta = rowRect.bottom - containerRect.bottom;
+    }
+    if (delta === 0) return;
+
+    const from = container.scrollTop;
+    const to = Math.max(
+      0,
+      Math.min(from + delta, container.scrollHeight - container.clientHeight)
+    );
+    const reduceMotion = window.matchMedia?.(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (reduceMotion || Math.abs(to - from) < 2) {
+      container.scrollTop = to;
+      return;
+    }
+
+    const duration = 120;
+    const start = performance.now();
+    let raf = 0;
+    const step = (now: number) => {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      container.scrollTop = from + (to - from) * eased;
+      if (t < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [highlightIndex]);
+
   useEffect(() => {
     onUsersSelected(selectedUsers);
   }, [selectedUsers, onUsersSelected]);
 
   const handleSearch = (search: string) => {
     setInputValue(search);
+    highlightRef.current = 0;
+    setHighlightIndex(0);
     if (!open) setOpen(true);
   };
 
-  const handleSelectUser = (user: User) => {
+  const handleSelectUser = useCallback((user: User) => {
     setSelectedUsers((prev) => [...prev, user]);
     setInputValue("");
+    highlightRef.current = 0;
+    setHighlightIndex(0);
     setOpen(false);
     setTimeout(() => inputRef.current?.focus(), 10);
-  };
+  }, []);
+
+  const handleHoverRow = useCallback((index: number) => {
+    highlightRef.current = index;
+    setHighlightIndex(index);
+  }, []);
 
   const handleRemoveUser = (userId: string) => {
     setSelectedUsers((prev) => prev.filter((user) => user?.id !== userId));
@@ -76,6 +199,55 @@ const NewChatHeader = ({ onUsersSelected }: any) => {
       target.scrollHeight - target.scrollTop - target.clientHeight < 48;
     if (nearBottom && hasMore && !loading) {
       loadMore();
+    }
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      if (!open) {
+        setOpen(true);
+        return;
+      }
+
+      if (event.key === "ArrowDown") {
+        const next = Math.max(
+          Math.min(highlightRef.current + 1, filteredUsers.length - 1),
+          0
+        );
+        highlightRef.current = next;
+        setHighlightIndex(next);
+
+        // Page more users in as the highlight reaches the last loaded row.
+        if (
+          filteredUsers.length > 0 &&
+          next === filteredUsers.length - 1 &&
+          hasMore &&
+          !loading
+        ) {
+          loadMore();
+        }
+      } else {
+        const next = Math.max(highlightRef.current - 1, 0);
+        highlightRef.current = next;
+        setHighlightIndex(next);
+      }
+      return;
+    }
+
+    if (!open) return;
+
+    if (event.key === "Enter") {
+      const user = filteredUsers[highlightRef.current];
+      if (user) {
+        event.preventDefault();
+        handleSelectUser(user);
+      }
+      return;
+    }
+
+    if (event.key === "Escape") {
+      setOpen(false);
     }
   };
 
@@ -140,6 +312,7 @@ const NewChatHeader = ({ onUsersSelected }: any) => {
                 value={inputValue}
                 onChange={(e) => handleSearch(e.target.value)}
                 onClick={handleInputClick}
+                onKeyDown={handleKeyDown}
                 onFocus={() => {
                   setIsInputFocused(true);
                 }}
@@ -167,6 +340,7 @@ const NewChatHeader = ({ onUsersSelected }: any) => {
             align="start"
             sideOffset={5}
             style={{ width: triggerRef.current?.offsetWidth || "auto" }}
+            onKeyDown={handleKeyDown}
             onInteractOutside={(e) => {
               if (inputRef.current?.contains(e.target as Node)) {
                 e.preventDefault();
@@ -174,42 +348,20 @@ const NewChatHeader = ({ onUsersSelected }: any) => {
             }}
           >
             <div
+              ref={listRef}
               className="py-2 w-full max-h-[400px] overflow-auto"
               onScroll={handleListScroll}
             >
               {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
-                  <div
+                filteredUsers.map((user, index) => (
+                  <UserRow
                     key={user?.id}
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => handleSelectUser(user)}
-                    className="flex items-center gap-[10px] px-4 py-[10px] hover:bg-[#F1F1FE] cursor-pointer"
-                  >
-                    <Image
-                      src={
-                        user?.avatar_url ||
-                        user?.default_avatar_url ||
-                        images?.user
-                      }
-                      alt={user?.name}
-                      width={20}
-                      height={20}
-                      className="rounded-[5px] size-6 object-cover border"
-                    />
-                    <div className="flex items-center gap-[6px]">
-                      <span className="text-[#101828] text-sm font-semibold">
-                        {user?.name}
-                      </span>
-                      {user?.username && (
-                        <>
-                          <div className="w-1 h-1 rounded-full bg-[#E4E7EC]" />
-                          <span className="text-[14px] text-[#344054]">
-                            {user?.username}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
+                    user={user}
+                    index={index}
+                    highlighted={index === highlightIndex}
+                    onSelect={handleSelectUser}
+                    onHover={handleHoverRow}
+                  />
                 ))
               ) : (
                 <div className="px-3 py-2 text-[#667085]">

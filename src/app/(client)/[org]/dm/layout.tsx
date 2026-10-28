@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { useParams, usePathname } from "next/navigation";
 import GeneralNotificationConnection from "~/components/layout/centrifugo/general-notification-connection";
 import DMNav from "~/components/layout/sidebar/dm-nav";
 
@@ -71,6 +72,11 @@ function Layout({ children }: LayoutProps) {
 
   const isLargeScreen = windowWidth >= 1024;
 
+  // On the DMs index route, mobile shows the DM list as the page itself.
+  const pathname = usePathname();
+  const params = useParams();
+  const isDmIndex = pathname?.replace(/\/$/, "") === `/${params?.org}/dm`;
+
   //
 
   return (
@@ -80,6 +86,7 @@ function Layout({ children }: LayoutProps) {
         resizerRef={resizerRef}
         sidebarWidth={sidebarWidth}
         sidebarRef={sidebarRef}
+        fullPageOnMobile={isDmIndex}
       />
 
       <div

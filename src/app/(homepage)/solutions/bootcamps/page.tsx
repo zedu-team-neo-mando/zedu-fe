@@ -22,9 +22,6 @@ export const metadata: Metadata = {
     "hands-on learning platform",
     "Zedu bootcamps",
   ],
-  icons: {
-    icon: "/TelexIcon.svg",
-  },
   openGraph: {
     title: "Zedu for Bootcamps - Structured Cohort Management",
     description:

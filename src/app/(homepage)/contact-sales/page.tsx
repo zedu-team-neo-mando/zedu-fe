@@ -17,9 +17,6 @@ export const metadata: Metadata = {
     "AI education platform pricing",
     "Zedu onboarding",
   ],
-  icons: {
-    icon: "/TelexIcon.svg",
-  },
   openGraph: {
     title: "Contact Sales - Zedu for Schools and Cohorts",
     description:

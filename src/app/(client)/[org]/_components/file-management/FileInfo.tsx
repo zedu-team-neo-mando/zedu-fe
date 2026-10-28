@@ -1,6 +1,6 @@
 import Image from "next/image";
 import React from "react";
-import { Folder, X } from "lucide-react";
+import { File, Folder, X } from "lucide-react";
 import { InfoIcon } from "lucide-react";
 import { formatFileSize, getFileIconClass } from "./FileList";
 
@@ -100,14 +100,9 @@ const FileInfo = ({ file, isOpen, onClose }: FileInfoProps) => {
                 className="w-full h-full object-contain"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gray-50">
-                <Image
-                  src="/images/no-preview.png"
-                  alt="No preview available"
-                  width={200}
-                  height={150}
-                  className="w-full h-full object-contain opacity-60"
-                />
+              <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gray-50 text-gray-400">
+                <File size={40} strokeWidth={1.5} aria-hidden="true" />
+                <p className="text-sm">No preview available</p>
               </div>
             )}
           </div>

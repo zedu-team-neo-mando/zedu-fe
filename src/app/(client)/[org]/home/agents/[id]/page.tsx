@@ -1096,7 +1096,7 @@ $result = $stmt->get_result();
                 return (
                   <React.Fragment key={message.id}>
                     {showDateDivider && (
-                      <div className="relative my-4">
+                      <div className="sticky top-0 z-10 my-4 bg-white">
                         <div className="absolute inset-0 flex items-center">
                           <div className="w-full border-t border-dotted border-[#E6EAEF]"></div>
                         </div>

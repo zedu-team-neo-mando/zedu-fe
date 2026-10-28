@@ -5,9 +5,16 @@ import { DataContext } from "~/store/GlobalState";
 
 const TYPING_EXPIRE_MS = 4000;
 
-const TypingUsers = () => {
+type TypingUsersProps = {
+  /** "channel" reads the channel/DM list, "thread" reads the open thread's list. */
+  scope?: "channel" | "thread";
+};
+
+const TypingUsers = ({ scope = "channel" }: TypingUsersProps) => {
   const { state, dispatch } = useContext(DataContext);
-  const { userTyping } = state;
+  const isThread = scope === "thread";
+  const userTyping = isThread ? state.threadTyping : state.userTyping;
+  const typingAction = isThread ? ACTIONS.THREAD_TYPING : ACTIONS.USER_TYPING;
 
   useEffect(() => {
     if (!userTyping?.length) return;
@@ -17,7 +24,7 @@ const TypingUsers = () => {
       userTyping.forEach((typer: any) => {
         if (now - (typer?.at || 0) > TYPING_EXPIRE_MS) {
           dispatch({
-            type: ACTIONS.USER_TYPING,
+            type: typingAction,
             payload: { userId: typer.id, typing: false },
           });
         }
@@ -25,7 +32,7 @@ const TypingUsers = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [userTyping, dispatch]);
+  }, [userTyping, dispatch, typingAction]);
 
   if (!userTyping?.length) return null;
 

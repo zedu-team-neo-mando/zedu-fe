@@ -9,6 +9,7 @@ import images from "~/assets/images";
 import { PostRequest } from "~/utils/new-request";
 import { useRouter } from "next/navigation";
 import { useOrganisationUsers } from "~/hooks/useOrganisationUsers";
+import Tooltips from "~/app/(client)/[org]/_components/tooltip";
 
 const SkeletonCard = () => (
   <div className="border border-gray-200 rounded-lg overflow-hidden animate-pulse w-full">
@@ -128,21 +129,29 @@ export default function PeopleTab() {
                   </div>
                   <div className="p-3">
                     <div className="flex items-center gap-1 min-w-0">
-                      <span className="font-bold text-[15px] truncate">
-                        {user.name}
-                      </span>
+                      <Tooltips text={user.name || ""}>
+                        <span className="font-bold text-[15px] truncate">
+                          {user.name}
+                        </span>
+                      </Tooltips>
                       <ExternalLink
                         size={12}
                         className="shrink-0 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity"
                       />
                     </div>
-                    <p className="text-[13px] text-gray-500 mt-0.5 line-clamp-1">
-                      {user.email}
-                    </p>
+                    {user.email && (
+                      <Tooltips text={user.email}>
+                        <p className="text-[13px] text-gray-500 mt-0.5 line-clamp-1">
+                          {user.email}
+                        </p>
+                      </Tooltips>
+                    )}
                     {user.phone_number && (
-                      <p className="text-[13px] text-gray-500 mt-1 line-clamp-1">
-                        {user.phone_number}
-                      </p>
+                      <Tooltips text={user.phone_number}>
+                        <p className="text-[13px] text-gray-500 mt-1 line-clamp-1">
+                          {user.phone_number}
+                        </p>
+                      </Tooltips>
                     )}
                     <div className="mt-2 flex items-center gap-2">
                       <span

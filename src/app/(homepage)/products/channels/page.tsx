@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { ogImageUrl, siteUrl } from "~/lib/env-urls";
 import Image from "next/image";
-import { ArrowBtn, OutlineBtn } from "../../_components/ui/Button";
+import { ArrowBtn } from "../../_components/ui/Button";
 import {
   FilesIcon,
   MessagesQuestionIcon,
@@ -26,9 +26,6 @@ export const metadata: Metadata = {
     "university discussion channels",
     "bootcamp class communication",
   ],
-  icons: {
-    icon: "/TelexIcon.svg",
-  },
   openGraph: {
     title: "Zedu Channels - Organized Communication for Learning Teams",
     description:
@@ -159,7 +156,6 @@ const ChannelProductPage = () => {
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 lg:justify-start">
               <ArrowBtn text="Start using channels" linkToHome />
-              <OutlineBtn text="Watch a Demo" />
             </div>
           </div>
 

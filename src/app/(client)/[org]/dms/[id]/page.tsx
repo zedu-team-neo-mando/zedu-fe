@@ -6,6 +6,7 @@ import { DataContext } from "~/store/GlobalState";
 import { ACTIONS } from "~/store/Actions";
 import { GetRequest } from "~/utils/new-request";
 import { setMessageHighlight } from "~/utils/message-highlight";
+import { isIndividualDmType } from "~/lib/search/navigate";
 import Loading from "~/components/ui/loading";
 
 const DmDeepLinkPage = () => {
@@ -43,10 +44,11 @@ const DmDeepLinkPage = () => {
         }
 
         const data = res?.data?.data;
-        const channelType = data?.channel_type;
+        const channelType = data?.type || data?.channel_type;
+        const isIndividualDm = isIndividualDmType(channelType);
         const participants = data?.participants || [];
 
-        if (channelType === "dm") {
+        if (isIndividualDm) {
           dispatch({ type: ACTIONS.PARTICIPANT, payload: participants[0] });
         } else {
           dispatch({ type: ACTIONS.PARTICIPANTS, payload: participants });
@@ -68,7 +70,7 @@ const DmDeepLinkPage = () => {
         if (messageId) query.set("message_id", messageId);
         const queryString = query.toString() ? `?${query.toString()}` : "";
 
-        if (channelType === "dm") {
+        if (isIndividualDm) {
           const participantId =
             data?.participant_id ||
             participants.find(

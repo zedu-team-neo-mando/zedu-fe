@@ -3,12 +3,45 @@
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
+import Loading from "~/components/ui/loading";
+import { showError, showSuccess } from "~/components/toast/sonner";
+import { formatTime } from "~/utils";
+import { PostRequest } from "~/utils/request";
+
+const RESEND_COOLDOWN_SECONDS = 60;
 
 const CheckEmail = () => {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
+  const [resending, setResending] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timerId = setInterval(() => {
+      setCooldown((previous) => previous - 1);
+    }, 1000);
+    return () => clearInterval(timerId);
+  }, [cooldown]);
+
+  const handleResend = async () => {
+    if (resending || cooldown > 0) return;
+    if (!email) {
+      showError("We couldn't find your email address. Please sign up again.");
+      return;
+    }
+
+    setResending(true);
+    const res = await PostRequest("/auth/email-request", { email });
+
+    if (res?.status === 200 || res?.status === 201) {
+      setCooldown(RESEND_COOLDOWN_SECONDS);
+      showSuccess(res?.data?.message || "Email sent. Check your inbox.");
+    }
+    setResending(false);
+  };
 
   return (
     <>
@@ -70,9 +103,15 @@ const CheckEmail = () => {
             <Button
               type="button"
               variant="default"
+              onClick={handleResend}
+              disabled={resending || cooldown > 0}
               className="py-6 bg-[#7141F8] hover:bg-[#8760f8] text-white"
             >
-              Resend Email
+              {cooldown > 0 ? (
+                `Resend Email in ${formatTime(cooldown)}`
+              ) : (
+                <>Resend Email {resending && <Loading />}</>
+              )}
             </Button>
             <Link href="/auth/login">
               <Button

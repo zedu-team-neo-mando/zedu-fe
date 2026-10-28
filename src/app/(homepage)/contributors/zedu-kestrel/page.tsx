@@ -16,9 +16,6 @@ export const metadata: Metadata = {
     "AI Product Engineer",
     "Zedu learning workspace",
   ],
-  icons: {
-    icon: "/TelexIcon.svg",
-  },
   openGraph: {
     title: "Team Kestrel Contributors | HNG 15 Internship",
     description:

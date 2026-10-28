@@ -52,7 +52,7 @@ export default function ChannelNav({
     if (sidebarRef && savedScroll) {
       sidebarRef.current.scrollTop = parseInt(savedScroll, 10);
     }
-  }, []);
+  }, [sidebarRef]);
 
   const handleScroll = () => {
     if (sidebarRef) {

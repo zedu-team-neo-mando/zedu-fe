@@ -55,7 +55,7 @@ const ThreadsSidebar = ({ handleSendMessage, fetchMoreData, hasMore }: any) => {
           subscription={state?.replySubscription}
           sendMessage={handleSendMessage}
           show={false}
-          showTyping={false}
+          typingScope="thread"
           draftKey={`thread:${state?.thread?.thread_id || "open"}`}
         />
       </div>

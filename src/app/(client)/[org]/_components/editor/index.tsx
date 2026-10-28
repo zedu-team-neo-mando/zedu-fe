@@ -528,7 +528,8 @@ const UseTextEditor = (
 
       const secondaryTextSpan = document.createElement("span");
       secondaryTextSpan.textContent =
-        channel?.description || `${channel?.members_count ?? 0} members`;
+        channel?.description ||
+        `${channel?.members_count ?? 0} ${(channel?.members_count ?? 0) === 1 ? "member" : "members"}`;
       secondaryTextSpan.className = "text-xs text-gray-500 secondary-span";
       textContainer.appendChild(mainTextLine);
       textContainer.appendChild(secondaryTextSpan);
@@ -805,6 +806,9 @@ const UseTextEditor = (
     },
     onBlur: () => handleTypingRef.current?.(false),
     editorProps: {
+      attributes: {
+        spellcheck: "true",
+      },
       handlePaste(view, event, slice) {
         const items = event.clipboardData?.items;
 

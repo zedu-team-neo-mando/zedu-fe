@@ -165,13 +165,14 @@ function ResetPassword() {
             <div className="flex flex-col gap-[16px] mb-[32px]">
               <div className="w-full flex flex-col gap-[8px] relative">
                 <label
-                  htmlFor="password"
+                  htmlFor="code"
                   className="text-[14px] font-[400] leading-[21px]"
                 >
                   Enter code from email
                 </label>
 
                 <InputOTP
+                  id="code"
                   maxLength={6}
                   className="flex w-full"
                   // onComplete={onOtpSubmit}
@@ -186,7 +187,7 @@ function ResetPassword() {
                   ))}
                 </InputOTP>
                 {errors.code && (
-                  <small className="text-[12px] text-[#F81404]">
+                  <small className="text-xs text-[#F81404]">
                     {errors.code}
                   </small>
                 )}
@@ -202,6 +203,7 @@ function ResetPassword() {
                 <div className="w-full flex flex-col gap-[2px]">
                   <div className="relative">
                     <input
+                      id="password"
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={handlePasswordChange}
@@ -241,6 +243,7 @@ function ResetPassword() {
                 <div className="w-full flex flex-col gap-[2px]">
                   <div className="relative">
                     <input
+                      id="confirmPassword"
                       type={showPassword ? "text" : "password"}
                       value={confirmPassword}
                       onChange={handleConfirmPasswordChange}

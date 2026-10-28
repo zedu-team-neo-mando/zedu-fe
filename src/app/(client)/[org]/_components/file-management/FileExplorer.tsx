@@ -20,7 +20,12 @@ import MoveFileModal, { FolderInfo } from "./MoveFile";
 import { FilterOption } from "../sorting/sorting";
 import FilterSection from "../../filter/filterSection";
 import { useParams } from "next/navigation";
-import { GetRequest, PostRequest, PutRequest } from "~/utils/new-request";
+import {
+  DeleteRequest,
+  GetRequest,
+  PostRequest,
+  PutRequest,
+} from "~/utils/new-request";
 import FilePreview from "./FilePreview";
 import Loading from "~/components/ui/loading";
 import DeleteFolderModal from "./DeleteFolderModal";
@@ -398,14 +403,26 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ viewType, folderId }) => {
         limit: 10,
       });
 
-      const response = await GetRequest(`/files?${queryString}`);
+      const [response, favoritesResponse] = await Promise.all([
+        GetRequest(`/files?${queryString}`),
+        GetRequest("/files/favorites"),
+      ]);
       if (response?.status === 200) {
         const fetchedFiles = response.data?.data?.files || [];
+        const pinnedIds = new Set<string>(
+          favoritesResponse?.status === 200 &&
+            Array.isArray(favoritesResponse.data?.data)
+            ? favoritesResponse.data.data.map(
+                (pinned: { file?: { id?: string } }) => String(pinned.file?.id)
+              )
+            : []
+        );
         fileDetailsCache.current.clear();
         setFiles(
-          fetchedFiles.map((file: Record<string, unknown>) =>
-            mapApiFileToFileDetails(file, channelLabelMap)
-          )
+          fetchedFiles.map((file: Record<string, unknown>) => ({
+            ...mapApiFileToFileDetails(file, channelLabelMap),
+            pinned: pinnedIds.has(String(file.id)),
+          }))
         );
 
         const pagination = parseFilesListPagination(
@@ -714,13 +731,37 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ viewType, folderId }) => {
       setModalState({ type: "rename-folder", data: folderToEdit });
     }
   };
-  const handlePinClick = (fileId: string) => {
-    // TODO: API call to pin/unpin file
-    setFiles((prevFiles) =>
-      prevFiles.map((file) =>
-        file.id === fileId ? { ...file, pinned: !file.pinned } : file
-      )
-    );
+  const pendingPinIds = useRef(new Set<string>());
+
+  const handlePinClick = async (fileId: string) => {
+    const fileInfo = files.find((file) => file.id === fileId);
+    if (!fileInfo || pendingPinIds.current.has(fileId)) return;
+
+    const wasPinned = Boolean(fileInfo.pinned);
+    const setPinned = (pinned: boolean) =>
+      setFiles((prevFiles) =>
+        prevFiles.map((file) =>
+          file.id === fileId ? { ...file, pinned } : file
+        )
+      );
+
+    pendingPinIds.current.add(fileId);
+    setPinned(!wasPinned);
+    try {
+      const response = wasPinned
+        ? await DeleteRequest(`/files/file/${fileId}/pin`)
+        : await PostRequest(`/files/file/${fileId}/pin`);
+
+      if (response?.status !== 200 && response?.status !== 201) {
+        setPinned(wasPinned);
+        // The request helpers already toast the backend message when present
+        if (!response?.response?.data?.message) {
+          showError(wasPinned ? "Failed to unpin file" : "Failed to pin file");
+        }
+      }
+    } finally {
+      pendingPinIds.current.delete(fileId);
+    }
   };
   const handleShareClick = (fileId: string) => {
     const fileInfo = displayFiles.find((file) => file.id === fileId);

@@ -14,9 +14,6 @@ export const metadata: Metadata = {
     "HNG 15 Internship",
     "Zedu learning workspace",
   ],
-  icons: {
-    icon: "/TelexIcon.svg",
-  },
   openGraph: {
     title: `${TEAM_NAME} Contributors | HNG 15 Internship`,
     description: `Meet the contributors of ${TEAM_NAME} from the HNG 15 Internship building Zedu.`,

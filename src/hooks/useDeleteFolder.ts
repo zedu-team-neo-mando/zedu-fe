@@ -1,8 +1,15 @@
 "use client";
 import { useState } from "react";
 import { DeleteRequest } from "~/utils/new-request";
-import { AxiosError } from "axios";
+import { isAxiosError } from "axios";
 import { showError, showSuccess } from "~/components/toast/sonner";
+
+// DeleteRequest catches request errors and returns the AxiosError instead of
+// throwing, and it already toasts the server's message. Only show our own
+// toast when there is no server message to show (e.g. a network error).
+const hasServerMessage = (response: unknown) =>
+  isAxiosError<{ message?: string }>(response) &&
+  Boolean(response.response?.data?.message);
 
 export const useDeleteFolder = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,14 +24,12 @@ export const useDeleteFolder = () => {
         return true;
       }
 
-      showError("Unexpected response from the server.");
+      if (!hasServerMessage(response)) {
+        showError("An error occurred while deleting the folder.");
+      }
       return false;
-    } catch (error) {
-      const axiosError = error as AxiosError<{ message: string }>;
-      const errorMessage =
-        axiosError?.response?.data?.message ||
-        "An error occurred while deleting the folder.";
-      showError(errorMessage);
+    } catch {
+      showError("An error occurred while deleting the folder.");
       return false;
     } finally {
       setIsLoading(false);

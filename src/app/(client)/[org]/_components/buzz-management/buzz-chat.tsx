@@ -1,9 +1,10 @@
 "use client";
 import React, {
-  Fragment,
+  useCallback,
   useContext,
-  useRef,
   useEffect,
+  useEffectEvent,
+  useRef,
   useState,
 } from "react";
 
@@ -40,9 +41,9 @@ const BuzzChat = () => {
   const scrollableContainerRef = useRef<HTMLDivElement>(null);
   const hasDispatchedRef = useRef(false);
 
-  const getData = async () => {
+  const getData = useCallback(async () => {
     await GetRequest(`/threads/channels/${id}?page=1&limit=1`);
-  };
+  }, [id]);
 
   useEffect(() => {
     const container = scrollableContainerRef.current;
@@ -68,12 +69,17 @@ const BuzzChat = () => {
     return () => {
       container.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [getData]);
 
-  useEffect(() => {
+  // Runs when new messages arrive; reads the latest badge and user without re-running on them.
+  const markReadOnNewMessage = useEffectEvent(() => {
     if (!showBadge && notify?.user_id !== user?.user_id) {
       getData();
     }
+  });
+
+  useEffect(() => {
+    markReadOnNewMessage();
   }, [messages]);
 
   const handleSendMessage = async (
@@ -118,7 +124,7 @@ const BuzzChat = () => {
         el.classList.remove("bg-yellow-100");
       }, 1500);
     }
-  }, [dataId, loading]);
+  }, [dataId, loading, pathname]);
 
   if (loading) return null;
 
@@ -171,14 +177,14 @@ const BuzzChat = () => {
             style={{
               display: "flex",
               flexDirection: "column-reverse",
-              overflowY: "visible",
+              overflow: "visible",
             }}
             scrollableTarget="scrollableDivs"
             inverse={true}
           >
             {Object.entries(groupedMessages)?.map(
               ([dateLabel, threads]: any) => (
-                <Fragment key={dateLabel}>
+                <div key={dateLabel} className="flex flex-col-reverse">
                   {threads?.map((item: any, index: number) => {
                     const nextMessage = threads[index + 1];
                     const shouldShowAvatar =
@@ -257,7 +263,7 @@ const BuzzChat = () => {
                     );
                   })}
 
-                  <div className="relative my-2">
+                  <div className="sticky top-0 z-10 my-2">
                     <div className="absolute inset-0 flex items-center">
                       <div className="w-full border-t border-dotted border-[#E6EAEF]"></div>
                     </div>
@@ -267,7 +273,7 @@ const BuzzChat = () => {
                       </span>
                     </div>
                   </div>
-                </Fragment>
+                </div>
               )
             )}
           </InfiniteScroll>

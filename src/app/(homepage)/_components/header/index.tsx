@@ -9,12 +9,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "~/components/ui/accordion";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { DataContext } from "~/store/GlobalState";
@@ -66,6 +60,8 @@ const topLevelLinks: NavLink[] = [
 const Header: React.FC = () => {
   const [windowWidth, setWindowWidth] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const dropdownNavigationRef = React.useRef<HTMLDivElement>(null);
   const [token, setToken] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
@@ -89,6 +85,22 @@ const Header: React.FC = () => {
     setToken(userToken);
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+    if (!openDropdown) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !dropdownNavigationRef.current?.contains(event.target)
+      ) {
+        setOpenDropdown(null);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [openDropdown]);
 
   const toggleMenu = () => {
     setIsOpen((prev) => !prev);
@@ -115,7 +127,7 @@ const Header: React.FC = () => {
                   <Image
                     className="h-8 w-auto"
                     src={windowWidth < 1024 && isOpen ? logoWhite : logoBlack}
-                    alt="Logo"
+                    alt="Zedu"
                     width={100}
                     height={100}
                   />
@@ -124,31 +136,45 @@ const Header: React.FC = () => {
 
               <div className="hidden h-6 border-l border-[#F0F2F5] lg:block" />
 
-              <div className="hidden h-16 items-center sm:space-x-4 md:space-x-6 lg:flex">
+              <div
+                ref={dropdownNavigationRef}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") setOpenDropdown(null);
+                }}
+                className="hidden h-16 items-center sm:space-x-4 md:space-x-6 lg:flex"
+              >
                 {dropdownSections.map((section) => (
-                  <DropdownMenu key={section.title}>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        className={`flex h-full items-center gap-1 border-b-2 px-1 pt-1 text-sm font-medium text-[#344054] transition-colors duration-200 hover:text-[#5F5FE1] ${
-                          pathname?.includes(section.basePath)
-                            ? "border-primary-500 text-[#5F5FE1]"
-                            : "border-transparent"
-                        }`}
-                      >
-                        {section.title}
-                        <ChevronDown className="h-4 w-4" />
-                      </button>
-                    </DropdownMenuTrigger>
-
-                    <DropdownMenuContent
-                      align="start"
-                      className="z-[9999] w-56 rounded-lg bg-white p-4"
+                  <div key={section.title} className="relative h-full">
+                    <button
+                      type="button"
+                      aria-expanded={openDropdown === section.title}
+                      aria-controls={`${section.title.toLowerCase()}-dropdown`}
+                      onClick={() =>
+                        setOpenDropdown((current) =>
+                          current === section.title ? null : section.title
+                        )
+                      }
+                      className={`flex h-full items-center gap-1 border-b-2 px-1 pt-1 text-sm font-medium text-[#344054] transition-colors duration-200 hover:text-[#5F5FE1] ${
+                        pathname?.includes(section.basePath)
+                          ? "border-primary-500 text-[#5F5FE1]"
+                          : "border-transparent"
+                      }`}
                     >
-                      {section.items.map((item) => (
-                        <DropdownMenuItem key={item.href} asChild>
+                      {section.title}
+                      <ChevronDown className="h-4 w-4" />
+                    </button>
+
+                    {openDropdown === section.title && (
+                      <div
+                        id={`${section.title.toLowerCase()}-dropdown`}
+                        className="absolute left-0 top-full z-[9999] mt-1 w-56 rounded-lg bg-white p-4 shadow-md"
+                      >
+                        {section.items.map((item) => (
                           <Link
+                            key={item.href}
                             href={item.href}
-                            className={`cursor-pointer py-2 ${
+                            onClick={() => setOpenDropdown(null)}
+                            className={`block rounded-md px-2 py-2 transition-colors duration-200 hover:bg-[#F2F4F7] hover:text-[#5F5FE1] focus:bg-[#F2F4F7] focus:text-[#5F5FE1] ${
                               pathname === item.href
                                 ? "font-medium text-primary-500"
                                 : ""
@@ -156,10 +182,10 @@ const Header: React.FC = () => {
                           >
                             {item.label}
                           </Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 ))}
 
                 {topLevelLinks.map((item) => (
@@ -315,6 +341,7 @@ const Header: React.FC = () => {
                   <Link
                     href="/contact-sales"
                     className="flex w-full items-center justify-center rounded-lg border border-white/40 py-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-white/10"
+                    onClick={() => setIsOpen(false)}
                   >
                     Contact Sales
                   </Link>

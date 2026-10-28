@@ -4,17 +4,8 @@ import Link from "next/link";
 import SectionWrapper from "./component/SectionWrapper";
 import { siteUrl } from "~/lib/env-urls";
 
-// Set document title for client component
-const useDocumentTitle = (title: string) => {
-  useEffect(() => {
-    document.title = title;
-  }, [title]);
-};
 function Policy() {
   const [activeSection, setActiveSection] = useState<string>("");
-
-  // Set document title
-  useDocumentTitle("Privacy Policy - Zedu");
 
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 

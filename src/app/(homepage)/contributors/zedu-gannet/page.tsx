@@ -11,9 +11,6 @@ export const metadata: Metadata = {
   title: "Team Zedu-Gannet Contributors",
   description:
     "Meet Team Zedu-Gannet — contributors building collaborative learning experiences on Zedu.",
-  icons: {
-    icon: "/TelexIcon.svg",
-  },
   alternates: {
     canonical: siteUrl("/contributors/zedu-gannet"),
   },

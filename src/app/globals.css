@@ -861,3 +861,7 @@ html.dark .zedu-marketing .text-\[\#344054\] {
 html.dark .zedu-marketing .text-black {
   color: #000;
 }
+.channel-export-new-button:hover {
+  background-color: #e9e7ff !important;
+  color: #4545b0 !important;
+}

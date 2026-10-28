@@ -1,5 +1,38 @@
 import { ACTIONS } from "./Actions";
 
+type TypingPayload = { userId?: string; username?: string; typing?: boolean };
+
+/** Adds, refreshes or removes one typer; returns the same list if nothing applies. */
+const applyTyping = (
+  list: any[],
+  currentUser: any,
+  { userId, username, typing }: TypingPayload = {}
+) => {
+  const currentId = String(currentUser?.user_id || currentUser?.id || "");
+  if (!userId || String(userId) === currentId) return list;
+
+  if (!typing) {
+    return list.filter((typer: any) => String(typer.id) !== String(userId));
+  }
+
+  const exists = list.some((typer: any) => String(typer.id) === String(userId));
+  if (exists) {
+    return list.map((typer: any) =>
+      String(typer.id) === String(userId)
+        ? {
+            ...typer,
+            username: username || typer.username || "Someone",
+            at: Date.now(),
+          }
+        : typer
+    );
+  }
+  return [
+    ...list,
+    { id: userId, username: username || "Someone", at: Date.now() },
+  ];
+};
+
 const toPreviewThreadItem = (message: any) => ({
   thread_id: message.thread_id,
   channels_id: message.channel_id,
@@ -498,45 +531,30 @@ const reducers = (state: any, action: any) => {
         chatSubscription: payload,
       };
     case ACTIONS.USER_TYPING: {
-      const { userId, username, typing } = payload || {};
-      const currentId = String(state.user?.user_id || state.user?.id || "");
-      if (!userId || String(userId) === currentId) return state;
-
-      const list = state.userTyping || [];
-      if (typing) {
-        const exists = list.some(
-          (typer: any) => String(typer.id) === String(userId)
-        );
-        if (exists) {
-          return {
-            ...state,
-            userTyping: list.map((typer: any) =>
-              String(typer.id) === String(userId)
-                ? {
-                    ...typer,
-                    username: username || typer.username || "Someone",
-                    at: Date.now(),
-                  }
-                : typer
-            ),
-          };
-        }
-        return {
-          ...state,
-          userTyping: [
-            ...list,
-            { id: userId, username: username || "Someone", at: Date.now() },
-          ],
-        };
-      }
-
+      const userTyping = applyTyping(
+        state.userTyping || [],
+        state.user,
+        payload
+      );
+      return userTyping === (state.userTyping || [])
+        ? state
+        : { ...state, userTyping };
+    }
+    case ACTIONS.THREAD_TYPING: {
+      const threadTyping = applyTyping(
+        state.threadTyping || [],
+        state.user,
+        payload
+      );
+      return threadTyping === (state.threadTyping || [])
+        ? state
+        : { ...state, threadTyping };
+    }
+    case ACTIONS.CLEAR_THREAD_TYPING:
       return {
         ...state,
-        userTyping: list.filter(
-          (typer: any) => String(typer.id) !== String(userId)
-        ),
+        threadTyping: [],
       };
-    }
     case ACTIONS.CLEAR_TYPING:
       return {
         ...state,

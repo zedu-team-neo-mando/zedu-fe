@@ -25,4 +25,4 @@ jobs:
       contents: read
       actions: write
       pull-requests: read
-    uses: zedu-hng/zedu-ci/.github/workflows/pr-review-recheck.yml@181371c60af0e32605794c6f0c4520f1ef739271
+    uses: zedu-hng/zedu-ci/.github/workflows/pr-review-recheck.yml@4f63fc5bf4721ba2807e51d83b34beaf1cf9c8db

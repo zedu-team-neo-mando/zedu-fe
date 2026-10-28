@@ -35,7 +35,23 @@ export default function ReplyConnection() {
 
     const onPublication = (ctx: any) => {
       console.log(ctx, "connection logs from reply-connection");
+      if (ctx?.data?.type === "typing") {
+        dispatch({
+          type: ACTIONS.THREAD_TYPING,
+          payload: {
+            userId: ctx.data?.user?.id || ctx.data?.user?.user_id,
+            username: ctx.data?.user?.username,
+            typing: ctx.data?.typing,
+          },
+        });
+        return;
+      }
+
       if (ctx?.data?.type === "message") {
+        dispatch({
+          type: ACTIONS.THREAD_TYPING,
+          payload: { userId: ctx.data?.user_id, typing: false },
+        });
         dispatch({
           type: ACTIONS.REPLIES,
           payload: { newMessage: ctx.data, isRealTime: true },
@@ -63,6 +79,7 @@ export default function ReplyConnection() {
       sub.off("error", onError);
       releaseChannelSubscription(centrifugeClient, threadId, sub);
       dispatch({ type: ACTIONS.REPLY_SUBSCRIPTION, payload: null });
+      dispatch({ type: ACTIONS.CLEAR_THREAD_TYPING });
     };
   }, [dispatch, state?.thread?.thread_id]);
 

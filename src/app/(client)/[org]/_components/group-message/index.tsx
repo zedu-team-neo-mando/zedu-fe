@@ -1,8 +1,9 @@
 "use client";
 import React, {
-  Fragment,
+  useCallback,
   useContext,
   useEffect,
+  useEffectEvent,
   useRef,
   useState,
 } from "react";
@@ -36,7 +37,7 @@ const GroupMessage = ({ participants }: any) => {
   const scrollableContainerRef = useRef<HTMLDivElement>(null);
   const hasDispatchedRef = useRef(false);
 
-  const clearDmUnread = () => {
+  const clearDmUnread = useCallback(() => {
     dispatch({
       type: ACTIONS.UPDATE_DM_COUNT,
       payload: {
@@ -45,19 +46,19 @@ const GroupMessage = ({ participants }: any) => {
       },
     });
     dispatch({ type: ACTIONS.DM_COUNT, payload: 0 });
-  };
+  }, [dispatch, id]);
 
-  const getData = async () => {
+  const getData = useCallback(async () => {
     if (!id) return;
     await GetRequest(`/group-dms/channels/${id}/threads?page=1&limit=1`);
     clearDmUnread();
-  };
+  }, [id, clearDmUnread]);
 
   // Mark as read and clear Nav highlight whenever this group DM is opened
   useEffect(() => {
     if (!id) return;
     getData();
-  }, [id]);
+  }, [id, getData]);
 
   useEffect(() => {
     const container = scrollableContainerRef.current;
@@ -83,12 +84,17 @@ const GroupMessage = ({ participants }: any) => {
     return () => {
       container.removeEventListener("scroll", handleScroll);
     };
-  }, [id]);
+  }, [getData]);
 
-  useEffect(() => {
+  // Runs when new messages arrive; reads the latest badge and user without re-running on them.
+  const markReadOnNewMessage = useEffectEvent(() => {
     if (!showBadge && notify?.user_id !== user?.user_id) {
       getData();
     }
+  });
+
+  useEffect(() => {
+    markReadOnNewMessage();
   }, [chats]);
 
   const handleEditMessage = async (content: any) => {
@@ -163,13 +169,13 @@ const GroupMessage = ({ participants }: any) => {
         style={{
           display: "flex",
           flexDirection: "column-reverse",
-          overflowY: "visible",
+          overflow: "visible",
         }}
         scrollableTarget="scrollableDivs"
         inverse={true}
       >
         {Object.entries(groupedMessages)?.map(([dateLabel, threads]: any) => (
-          <Fragment key={dateLabel}>
+          <div key={dateLabel} className="flex flex-col-reverse">
             {threads?.map((item: any, index: number) => {
               const nextMessage = threads[index + 1];
               const shouldShowAvatar =
@@ -227,7 +233,7 @@ const GroupMessage = ({ participants }: any) => {
               );
             })}
 
-            <div className="relative my-2">
+            <div className="sticky top-0 z-10 my-2">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-dotted border-[#E6EAEF]"></div>
               </div>
@@ -237,7 +243,7 @@ const GroupMessage = ({ participants }: any) => {
                 </span>
               </div>
             </div>
-          </Fragment>
+          </div>
         ))}
       </InfiniteScroll>
 

@@ -41,7 +41,7 @@ const ProfileSidebar = ({ user }: any) => {
       </nav>
 
       {/* Profile body */}
-      <div className="py-3 flex flex-col gap-3 flex-1 overflow-hidden">
+      <div className="py-3 flex flex-col gap-3 flex-1 min-h-0 overflow-y-auto">
         <div className="flex flex-col gap-5 px-5">
           <div className="">
             <UserAvatar
