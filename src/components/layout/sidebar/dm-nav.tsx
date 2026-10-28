@@ -201,10 +201,42 @@ export default function DMNav({ resizerRef, sidebarWidth, sidebarRef }: any) {
     router.push(`/${orgSlug}/home/people/new-chat`);
   };
 
+  type FilterType = "all" | "unread" | "groups";
+  const [filter, setFilter] = useState<FilterType>("all");
+
+  const unreadCount = useMemo(
+    () =>
+      (state?.dms || []).filter((dm: any) => (dm?.thread_count || 0) > 0)
+        .length,
+    [state?.dms]
+  );
+
+  const groupCount = useMemo(
+    () =>
+      (state?.dms || []).filter(
+        (dm: any) =>
+          dm?.channel_type === "group_dm" || dm?.channel_type === "group"
+      ).length,
+    [state?.dms]
+  );
+
   const searchData = useMemo(
     () => filterDmList(state?.dms, searchInput),
     [state?.dms, searchInput]
   );
+
+  const filteredData = useMemo(() => {
+    if (filter === "unread") {
+      return searchData.filter((dm: any) => (dm?.thread_count || 0) > 0);
+    }
+    if (filter === "groups") {
+      return searchData.filter(
+        (dm: any) =>
+          dm?.channel_type === "group_dm" || dm?.channel_type === "group"
+      );
+    }
+    return searchData;
+  }, [searchData, filter]);
 
   return (
     <>
@@ -214,16 +246,24 @@ export default function DMNav({ resizerRef, sidebarWidth, sidebarRef }: any) {
         className={`fixed top-[60px] lg:rounded-tl-[8px] lg:rounded-bl-[8px] bottom-[60px] left-0 lg:left-[85px] h-[100dvh] bg-blue-300 lg:translate-x-0  ${state?.openSidebar ? "translate-x-[85px]" : "-translate-x-full "}
       pt-4 flex flex-col gap-4 sm:w-[350px] transition-transform duration-300 ease-in-out z-30`}
       >
-        <div className="flex items-center justify-between px-3">
-          <div className="flex items-center gap-[5px] md:justify-between w-full">
+        {/* Fixed 56px (h-14) Header Container */}
+        <div className="flex items-center justify-between h-14 px-3 border-b border-[#5F5FE1]/40 shrink-0">
+          <div className="flex items-center gap-[5px] justify-between w-full">
             <OrganisationMenu name="Direct Messages" />
 
-            <button type="button" onClick={handleNewChat}>
+            <button
+              type="button"
+              onClick={handleNewChat}
+              className="p-1.5 rounded-md hover:bg-[#4A4AAF] transition-colors"
+              aria-label="New direct message"
+              title="New direct message"
+            >
               <PlusIcon color="white" size={20} strokeWidth={2} />
             </button>
           </div>
         </div>
 
+        {/* Integrated Search Container */}
         <div className="relative h-fit w-full px-3">
           <Input
             type="search"
@@ -248,10 +288,60 @@ export default function DMNav({ resizerRef, sidebarWidth, sidebarRef }: any) {
           )}
         </div>
 
-        {/* Must be a bounded flex child so overflow-auto scrolls here (InfiniteScroll target). */}
+        {/* Streamlined Filter Controls (All, Unread, Groups) */}
+        <div className="flex items-center gap-1.5 px-3">
+          <button
+            type="button"
+            onClick={() => setFilter("all")}
+            className={cn(
+              "px-2.5 py-1 text-xs font-medium rounded-md transition-colors",
+              filter === "all"
+                ? "bg-[#5F5FE1] text-white"
+                : "bg-[#4A4AAF]/70 text-white/80 hover:bg-[#4A4AAF] hover:text-white"
+            )}
+          >
+            All
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilter("unread")}
+            className={cn(
+              "px-2.5 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1",
+              filter === "unread"
+                ? "bg-[#5F5FE1] text-white"
+                : "bg-[#4A4AAF]/70 text-white/80 hover:bg-[#4A4AAF] hover:text-white"
+            )}
+          >
+            <span>Unread</span>
+            {unreadCount > 0 && (
+              <span className="text-[10px] bg-blue-500 text-white px-1.5 py-0.2 rounded-full font-bold">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => setFilter("groups")}
+            className={cn(
+              "px-2.5 py-1 text-xs font-medium rounded-md transition-colors flex items-center gap-1",
+              filter === "groups"
+                ? "bg-[#5F5FE1] text-white"
+                : "bg-[#4A4AAF]/70 text-white/80 hover:bg-[#4A4AAF] hover:text-white"
+            )}
+          >
+            <span>Groups</span>
+            {groupCount > 0 && (
+              <span className="text-[10px] bg-blue-500 text-white px-1.5 py-0.2 rounded-full font-bold">
+                {groupCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Bounded Scrollable Container */}
         <div
           id="dmScrollableDiv"
-          className="flex-1 min-h-0 overflow-y-auto [&::-webkit-scrollbar]:hidden text-blue-50 cursor-pointer pb-20"
+          className="flex-1 min-h-0 overflow-y-auto [&::-webkit-scrollbar]:hidden text-blue-50 cursor-pointer pb-2"
           ref={sidebarScrollRef}
           onScroll={handleScroll}
           onClick={() =>
@@ -261,7 +351,7 @@ export default function DMNav({ resizerRef, sidebarWidth, sidebarRef }: any) {
           <InfiniteScroll
             dataLength={state?.dms?.length || 0}
             next={loadMore}
-            hasMore={hasMore && !searchInput}
+            hasMore={hasMore && !searchInput && filter === "all"}
             loader={
               <div className="flex justify-center p-4">
                 <Loader2 className="animate-spin text-white/70" size={20} />
@@ -270,18 +360,18 @@ export default function DMNav({ resizerRef, sidebarWidth, sidebarRef }: any) {
             scrollableTarget="dmScrollableDiv"
           >
             <div className="flex flex-col">
-              {searchData?.map((dm: any, index: number) => {
+              {filteredData?.map((dm: any, index: number) => {
                 return (
                   <Fragment key={String(dm.channel_id || dm.channels_id)}>
                     <div
-                      className={`flex items-start gap-3 px-3 py-4 hover:bg-[#4B4BB4] ${dm?.channel_id === id || dm?.channels_id === id ? "bg-[#4B4BB4]" : ""}`}
+                      className={`flex items-center gap-3 px-3 py-3 hover:bg-[#4B4BB4] transition-colors ${dm?.channel_id === id || dm?.channels_id === id ? "bg-[#4B4BB4]" : ""}`}
                       onClick={() =>
                         dm?.is_suggested
                           ? handleSuggestedRoute(dm)
                           : handleRoute(dm)
                       }
                     >
-                      <div className="relative">
+                      <div className="relative shrink-0">
                         <UserAvatar item={dm} size="2xs" alt="avatar" />
                         {!isUserDeactivated(dm) && (
                           <span
@@ -289,44 +379,61 @@ export default function DMNav({ resizerRef, sidebarWidth, sidebarRef }: any) {
                           />
                         )}
                       </div>
-                      <div className="flex-1">
-                        <div className="relative flex justify-between items-start mb-1">
-                          <span className="text-[15px] font-semibold text-white break-words max-w-[200px] line-clamp-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className="text-[14px] font-semibold text-white truncate">
                             {dm.username}
                           </span>
-
-                          <div className="">
-                            {dm.thread_count > 0 && (
-                              <div
-                                className={cn(
-                                  `absolute right-3 top-6 flex items-center justify-center rounded-full bg-blue-200 hover:bg-blue-500 text-white tracking-[-0.5%] font-bold text-right text-[10px] px-2 size-5`
-                                )}
-                              >
-                                {formatCount(dm?.thread_count || 0)}
-                              </div>
-                            )}
-                            <span className="text-[12px] text-[#BABAFB]">
-                              {moment(dm.last_read_at).format("LT")}
-                            </span>
-                          </div>
+                          <span className="text-[11px] text-[#BABAFB] shrink-0 font-medium whitespace-nowrap">
+                            {moment(dm.last_read_at).format("LT")}
+                          </span>
                         </div>
-                        <p className="text-[14px] text-[#D0D0FD] break-words max-w-[200px] line-clamp-2">
-                          {stripHtmlTags(dm.preview_message)}
-                        </p>
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-[13px] text-[#D0D0FD] truncate flex-1 leading-snug">
+                            {stripHtmlTags(dm.preview_message)}
+                          </p>
+                          {dm.thread_count > 0 && (
+                            <span
+                              className={cn(
+                                "shrink-0 flex items-center justify-center rounded-full bg-blue-500 text-white font-bold text-[10px] px-1.5 h-4 min-w-4 tracking-[-0.5%]"
+                              )}
+                            >
+                              {formatCount(dm?.thread_count || 0)}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    {index !== searchData?.length - 1 && (
-                      <hr className="border-[#5F5FE1]" />
+                    {index !== filteredData?.length - 1 && (
+                      <hr className="border-[#5F5FE1]/40" />
                     )}
                   </Fragment>
                 );
               })}
 
-              {searchData?.length === 0 && (
-                <p className="self-center mt-10">No recent messages</p>
+              {filteredData?.length === 0 && (
+                <p className="self-center mt-10 text-sm text-blue-100">
+                  {filter === "unread"
+                    ? "No unread messages"
+                    : filter === "groups"
+                      ? "No group conversations"
+                      : "No recent messages"}
+                </p>
               )}
             </div>
           </InfiniteScroll>
+        </div>
+
+        {/* Sticky Footer Wrapper for Action Button (Does not overlap list items) */}
+        <div className="p-3 bg-blue-300 border-t border-[#5F5FE1]/40 shrink-0 mt-auto">
+          <button
+            type="button"
+            onClick={handleNewChat}
+            className="w-full flex items-center justify-center gap-2 h-10 px-4 rounded-md bg-[#4A4AAF] hover:bg-[#5F5FE1] text-white font-medium text-sm transition-colors shadow-sm"
+          >
+            <PlusIcon size={16} />
+            <span>New Direct Message</span>
+          </button>
         </div>
       </div>
 
