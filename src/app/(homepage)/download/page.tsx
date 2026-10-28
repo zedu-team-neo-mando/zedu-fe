@@ -149,9 +149,9 @@ const DownLoadPage = () => {
       </section>
       <section className="relative isolate flex w-full flex-col items-center gap-5 overflow-hidden px-4 py-12 text-center sm:gap-6 sm:px-8 sm:py-16 lg:gap-8 lg:px-12">
         <div className="flex flex-col gap-3 items-center">
-          <h1 className=" text-2xl font-semibold leading-tight text-neutral-900 sm:text-3xl md:text-4xl text-center">
+          <h2 className=" text-2xl font-semibold leading-tight text-neutral-900 sm:text-3xl md:text-4xl text-center">
             Everything you need in one app
-          </h1>
+          </h2>
           <p className="max-w-[95%] text-sm text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[85%] lg:max-w-[65%] lg:text-lg">
             Zedu combines communication, file sharing, and scheduling into a
             single, easy-to-use platform.
