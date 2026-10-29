@@ -306,7 +306,7 @@ const Footer = () => {
             </div>
             <div className="flex flex-col gap-1 text-white/95">
               <span className="font-semibold leading-none tracking-[-0.02em]">
-                © 2026 Zedu. All Rights Reserved
+                © {new Date().getFullYear()} Zedu. All Rights Reserved
               </span>
               <Link
                 href="mailto:contact@zedu.chat"
