@@ -9,7 +9,6 @@ import React, {
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
-import rehypeSanitize from "rehype-sanitize";
 import Prism from "prismjs";
 import "prismjs/themes/prism.css";
 import "prismjs/components/prism-javascript";
@@ -49,11 +48,6 @@ import DocumentPreviewModal from "./document-preview-modal";
 import { Media } from "~/types/channel";
 import { linkifyText } from "~/utils/linkify-text";
 import { replaceEmojiWithImages } from "~/lib/apple-emoji";
-import { appleEmojiDatasourceBaseUrl } from "~/lib/env-urls";
-import {
-  messageSanitizeSchema,
-  rehypeEmojiImagesOnly,
-} from "~/lib/message-sanitize";
 import {
   getDocumentCategory,
   isPreviewableDocument,
@@ -391,11 +385,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ item }) => {
         >
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
-            rehypePlugins={[
-              rehypeRaw,
-              [rehypeSanitize, messageSanitizeSchema],
-              rehypeEmojiImagesOnly(appleEmojiDatasourceBaseUrl()),
-            ]}
+            rehypePlugins={[rehypeRaw]}
             components={{
               p: ({ children }) => {
                 return (
