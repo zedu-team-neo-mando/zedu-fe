@@ -10,6 +10,7 @@ import { formatSearchTimestamp, stripHtmlAndDecode } from "~/lib/search/format";
 import { GetRequest, PostRequest } from "~/utils/new-request";
 import UserAvatar from "~/components/layout/user-avatar";
 import { DeactivationBadge } from "~/components/layout/deactivation-badge";
+import { cn } from "~/lib/utils";
 
 const RECENT_SEARCHES_KEY = "recentSearches";
 const PREVIEW_LIMIT = 4;
@@ -18,14 +19,21 @@ const MIN_QUERY_LENGTH = 2;
 interface SearchInputProps {
   name?: string;
   orgId?: string;
+  isMobile?: boolean;
+  onClose?: () => void;
 }
 
 type PreviewItem =
   | { type: "message"; data: MessageSearchResult }
   | { type: "person"; data: UserSearchResult };
 
-export const SearchInput = ({ name, orgId }: SearchInputProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const SearchInput = ({
+  name,
+  orgId,
+  isMobile = false,
+  onClose,
+}: SearchInputProps) => {
+  const [isOpen, setIsOpen] = useState(isMobile);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery] = useDebounce(searchQuery, 300);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
@@ -96,12 +104,15 @@ export const SearchInput = ({ name, orgId }: SearchInputProps) => {
       ) {
         setIsOpen(false);
         setActiveIndex(-1);
+        if (isMobile) {
+          onClose?.();
+        }
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [isMobile, onClose]);
 
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
@@ -115,12 +126,15 @@ export const SearchInput = ({ name, orgId }: SearchInputProps) => {
         setIsOpen(false);
         setActiveIndex(-1);
         inputRef.current?.blur();
+        if (isMobile) {
+          onClose?.();
+        }
       }
     };
 
     document.addEventListener("keydown", handleShortcut);
     return () => document.removeEventListener("keydown", handleShortcut);
-  }, []);
+  }, [isMobile, onClose]);
 
   useEffect(() => {
     const trimmedQuery = debouncedQuery.trim();
@@ -194,8 +208,9 @@ export const SearchInput = ({ name, orgId }: SearchInputProps) => {
       setIsOpen(false);
       setActiveIndex(-1);
       setSearchQuery("");
+      onClose?.();
     },
-    [orgSlug, router, saveRecentSearch]
+    [onClose, orgSlug, router, saveRecentSearch]
   );
 
   const openMessageResult = useCallback(
@@ -213,9 +228,11 @@ export const SearchInput = ({ name, orgId }: SearchInputProps) => {
       saveRecentSearch(searchQuery);
       setIsOpen(false);
       setSearchQuery("");
+      onClose?.();
     },
     [
       dispatch,
+      onClose,
       orgSlug,
       resolvedOrgId,
       router,
@@ -247,9 +264,10 @@ export const SearchInput = ({ name, orgId }: SearchInputProps) => {
         );
         setIsOpen(false);
         setSearchQuery("");
+        onClose?.();
       }
     },
-    [orgSlug, resolvedOrgId, router, saveRecentSearch, searchQuery]
+    [onClose, orgSlug, resolvedOrgId, router, saveRecentSearch, searchQuery]
   );
 
   const handlePreviewSelect = useCallback(
@@ -287,10 +305,28 @@ export const SearchInput = ({ name, orgId }: SearchInputProps) => {
   return (
     <div
       ref={searchRef}
-      className="w-full max-w-xl mx-auto p-2 md:p-4 relative"
+      className={
+        isMobile
+          ? "w-full relative"
+          : "w-full max-w-xl mx-auto p-2 md:p-4 relative"
+      }
     >
       <div className="flex items-center w-full bg-blue-300 rounded-md relative">
-        <Search className="text-white mx-1 md:mx-2 shrink-0" size={19} />
+        <button
+          type="button"
+          onClick={() => {
+            if (searchQuery.trim()) {
+              handleSearch(searchQuery);
+            } else {
+              inputRef.current?.focus();
+              setIsOpen(true);
+            }
+          }}
+          className="p-1 hover:bg-white/10 rounded ml-1 md:ml-1.5 shrink-0 flex items-center justify-center focus:outline-none focus-visible:ring-1 focus-visible:ring-white"
+          aria-label="Search"
+        >
+          <Search className="text-white" size={19} />
+        </button>
         {channelName && (
           <div className="flex items-center justify-center px-2 py-1 my-2 rounded-md bg-white shrink-0">
             <Hash className="text-black" size={16} />
@@ -302,6 +338,7 @@ export const SearchInput = ({ name, orgId }: SearchInputProps) => {
         <input
           ref={inputRef}
           type="text"
+          autoFocus={isMobile}
           placeholder={
             channelName
               ? `Search in #${channelName}`
@@ -341,7 +378,10 @@ export const SearchInput = ({ name, orgId }: SearchInputProps) => {
               setActiveIndex((prev) => Math.max(prev - 1, -1));
             }
           }}
-          className="bg-transparent text-white text-xs md:text-sm placeholder:text-xs md:placeholder:text-sm placeholder-white/90 pl-1 md:pl-2 pr-2 md:pr-4 py-1.5 md:py-2 rounded-md focus:outline-none focus:ring-0 w-28 sm:w-48 md:w-64 lg:w-80"
+          className={cn(
+            "bg-transparent text-white text-xs md:text-sm placeholder:text-xs md:placeholder:text-sm placeholder-white/90 pl-1 md:pl-2 pr-2 md:pr-4 py-1.5 md:py-2 rounded-md focus:outline-none focus:ring-0",
+            isMobile ? "flex-1 min-w-0" : "w-28 sm:w-48 md:w-64 lg:w-80"
+          )}
         />
         {searchQuery ? (
           <button
@@ -355,14 +395,23 @@ export const SearchInput = ({ name, orgId }: SearchInputProps) => {
             <X className="w-4 h-4 text-white" />
           </button>
         ) : (
-          <kbd className="hidden lg:inline-flex shrink-0 whitespace-nowrap items-center rounded border border-white/30 px-1.5 py-0.5 text-[10px] text-white/80 mr-2">
-            Ctrl K
-          </kbd>
+          !isMobile && (
+            <kbd className="hidden lg:inline-flex shrink-0 whitespace-nowrap items-center rounded border border-white/30 px-1.5 py-0.5 text-[10px] text-white/80 mr-2">
+              Ctrl K
+            </kbd>
+          )
         )}
       </div>
 
       {(showPreviewPanel || showRecentPanel) && (
-        <div className="absolute top-full mt-2 w-[min(100%,32rem)] left-1/2 -translate-x-1/2 bg-popover text-popover-foreground border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden">
+        <div
+          className={cn(
+            "bg-popover text-popover-foreground border border-gray-200 shadow-xl z-50 overflow-hidden",
+            isMobile
+              ? "fixed left-0 right-0 top-[60px] bottom-0 rounded-none border-x-0 border-b-0 max-h-none overflow-y-auto"
+              : "absolute top-full mt-2 w-[min(100%,32rem)] left-1/2 -translate-x-1/2 rounded-lg"
+          )}
+        >
           {showRecentPanel && (
             <div className="p-3">
               <div className="text-xs font-semibold text-gray-500 mb-2 uppercase">
@@ -396,7 +445,13 @@ export const SearchInput = ({ name, orgId }: SearchInputProps) => {
           )}
 
           {showPreviewPanel && (
-            <div className="max-h-[28rem] overflow-y-auto">
+            <div
+              className={
+                isMobile
+                  ? "h-full overflow-y-auto pb-16"
+                  : "max-h-[28rem] overflow-y-auto"
+              }
+            >
               {isLoadingPreview ? (
                 <div className="flex items-center justify-center gap-2 py-8 text-sm text-gray-500">
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -517,6 +572,12 @@ export const SearchInput = ({ name, orgId }: SearchInputProps) => {
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {isMobile && !showRecentPanel && !showPreviewPanel && (
+        <div className="fixed left-0 right-0 top-[60px] bottom-0 bg-popover text-popover-foreground p-6 text-center text-sm text-gray-500">
+          Type at least 2 characters to search messages and people
         </div>
       )}
     </div>
