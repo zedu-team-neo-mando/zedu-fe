@@ -11,10 +11,14 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { TEAM } from "./team";
+import { siteUrl } from "~/lib/env-urls";
 
 export const metadata: Metadata = {
   title: `${TEAM.name} Contributors`,
   description: `Meet the ${TEAM.name} team contributing to Zedu.`,
+  alternates: {
+    canonical: siteUrl("/contributors/sparrow"),
+  },
 };
 
 const getInitials = (name: string) =>
