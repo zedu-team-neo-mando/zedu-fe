@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { GuideNotifyMe } from "./guide-notify-me";
 
 interface GuideResourceProps {
   id: number;
@@ -46,9 +47,7 @@ export const GuideResourceCard = ({
         </div>
 
         {link === "#" ? (
-          <span className="inline-flex items-center gap-2 text-sm font-medium text-neutral-500 mt-3">
-            Coming soon
-          </span>
+          <GuideNotifyMe title={title} />
         ) : (
           <Link
             href={link}
