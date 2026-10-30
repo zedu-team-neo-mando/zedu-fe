@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Star } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ArrowBtn, OutlineBtn } from "../ui/Button";
+import { useCelebration } from "./CelebrationThemeContext";
 
 interface Metric {
   text: string;
@@ -118,15 +119,43 @@ function MetricCard({ metric }: { metric: Metric }) {
 }
 
 const HeroSection = () => {
+  const { celebration } = useCelebration();
+
   return (
-    <section className="relative isolate flex w-full flex-col items-center gap-4 overflow-hidden px-4 py-10 text-center sm:gap-6 sm:px-8 sm:py-16  lg:gap-8 lg:px-12">
+    <section className="relative isolate flex w-full flex-col items-center gap-4 overflow-hidden px-4 py-10 text-center sm:gap-6 sm:px-8 sm:py-16 lg:gap-8 lg:px-12">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[30%] bg-gradient-to-t from-blue-50/30 to-white"
+        className={`pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[35%] transition-all duration-500 ${
+          celebration
+            ? celebration.heroGlowClass
+            : "bg-gradient-to-t from-blue-50/30 to-white"
+        }`}
       />
+      {/* Seasonal celebration hero badge */}
+      {celebration && (
+        <div
+          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium shadow-sm transition-all sm:text-sm ${celebration.heroBadgeBgClass}`}
+        >
+          <span role="img" aria-hidden="true">
+            {celebration.iconEmoji}
+          </span>
+          <span className="font-semibold">{celebration.badge}</span>
+          <span className="hidden sm:inline text-neutral-400">|</span>
+          <span className="hidden sm:inline font-normal">
+            {celebration.greeting}
+          </span>
+        </div>
+      )}
       <h1 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-4xl md:text-5xl text-center">
         Built for Bootcamps and{" "}
-        <span className="text-primary-500">Learning</span> Communities
+        <span
+          className={`transition-colors duration-300 ${
+            celebration ? celebration.heroSpanClass : "text-primary-500"
+          }`}
+        >
+          Learning
+        </span>{" "}
+        Communities
       </h1>
       <p className="max-w-[95%] text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
         Bring learners and educators together with organized conversations,
@@ -166,14 +195,14 @@ const HeroSection = () => {
         ))}
       </div>{" "}
       <div className="w-full max-w-6xl overflow-hidden rounded-2xl">
-        <div className="relative aspect-[16/10]  w-full sm:aspect-[16/9] lg:aspect-[2/1] ">
+        <div className="relative aspect-[16/10] w-full sm:aspect-[16/9] lg:aspect-[2/1]">
           <Image
             src="/images/homepage/hero-img.png"
             alt="Preview of the learning communication interface"
             fill
             priority
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 92vw, 1200px"
-            className="object-contain object-center "
+            className="object-contain object-center"
           />
         </div>
       </div>

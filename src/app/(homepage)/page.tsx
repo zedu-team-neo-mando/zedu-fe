@@ -8,6 +8,8 @@ import { FAQSection } from "./_components/home/FAQSection";
 import { DynamicFooter } from "./_components/footer/dynamic-footer";
 import { getHomeStructuredData } from "./_lib/homeStructuredData";
 import { ogImageUrl } from "~/lib/env-urls";
+import { CelebrationThemeProvider } from "./_components/home/CelebrationThemeContext";
+import { CelebrationBanner } from "./_components/home/CelebrationBanner";
 
 export const metadata: Metadata = {
   title: {
@@ -43,22 +45,25 @@ const HomePage = () => {
   );
 
   return (
-    <section className="mt-12">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: structuredData }}
-      />
-      <HeroSection />
-      <FeatureSection />
-      <ArticlesSection />
-      <PricingSection />
-      <WhySection />
-      <FAQSection />
-      <DynamicFooter
-        text="Run Your Next Cohort Without Limits"
-        description="Join thousands of educators building better learning experiences."
-      />
-    </section>
+    <CelebrationThemeProvider>
+      <CelebrationBanner />
+      <section className="mt-8">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: structuredData }}
+        />
+        <HeroSection />
+        <FeatureSection />
+        <ArticlesSection />
+        <PricingSection />
+        <WhySection />
+        <FAQSection />
+        <DynamicFooter
+          text="Run Your Next Cohort Without Limits"
+          description="Join thousands of educators building better learning experiences."
+        />
+      </section>
+    </CelebrationThemeProvider>
   );
 };
 
