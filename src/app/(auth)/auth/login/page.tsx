@@ -15,7 +15,7 @@ import AppleSignin from "react-apple-signin-auth";
 import { Separator } from "~/components/ui/separator";
 import { Eye, EyeOff } from "lucide-react";
 import { saveRememberMe } from "~/utils/auth-session";
-import { getLoggedInRedirectPath } from "~/app/(auth)/layout";
+import { getLoggedInRedirectPath } from "~/utils/auth-redirect";
 
 function resolvePostLoginRedirect(orgSlug?: string, user?: any): string {
   let selectedTemplate: string | null = null;

@@ -13,7 +13,7 @@ import { GetRequest } from "~/utils/new-request";
 import { showSuccess } from "~/components/toast/sonner";
 import { useRBAC } from "~/hooks/useRBAC";
 
-export const Client = () => {
+const Client = () => {
   const router = useRouter();
   const { state, dispatch } = useContext(DataContext);
   const { orgSlug, orgData } = state;
