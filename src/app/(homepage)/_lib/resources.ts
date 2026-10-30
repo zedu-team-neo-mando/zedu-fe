@@ -64,6 +64,16 @@ export const resources: ResourceItem[] = [
     link: "#",
   },
   {
+    id: 5,
+    tab: "guides",
+    category: "Tools",
+    title: "Cohort Communication Planner",
+    description:
+      "Answer four questions about your cohort and get a downloadable playbook with channels, a weekly roadmap, and a communication schedule.",
+    image: "/images/homepage/resources/image-3.png",
+    link: "/resources/cohort-communication-planner",
+  },
+  {
     id: 6,
     tab: "webinars",
     category: "Webinar",
