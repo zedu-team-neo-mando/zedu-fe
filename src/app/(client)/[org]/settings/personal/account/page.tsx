@@ -4,7 +4,6 @@ import { Edit2Icon } from "lucide-react";
 import SettingsLabel from "../../components/settings-label";
 import DeleteAccount from "./components/delete-account";
 import EditProfileDialog from "../../../_components/edit-profile-modal";
-import StatusModal from "../../../_components/status";
 import { DataContext } from "~/store/GlobalState";
 import { ACTIONS } from "~/store/Actions";
 import { getUserStatus } from "~/utils/user-status";
@@ -132,7 +131,6 @@ const AccountPage = () => {
         isOpen={profileDialog}
         onClose={() => setProfileDialog(false)}
       />
-      <StatusModal />
     </div>
   );
 };

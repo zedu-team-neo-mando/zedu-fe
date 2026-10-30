@@ -130,9 +130,12 @@ function TermsOfService() {
           </ul>
         </div>
 
-        <div className="mt-16 md:mt-10 w-[375px] md:w-[700px] lg:w-[815px] py-3 px-5 text-black">
-          <p className="text-2xl md:text-4xl font-semibold leading-10 pb-5">
+        <div className="mt-16 md:mt-10 w-full min-w-0 md:w-[700px] lg:w-[815px] py-3 px-5 text-black">
+          <p className="text-2xl md:text-4xl font-semibold leading-10 pb-2">
             Terms of Service
+          </p>
+          <p className="text-neutral-600 text-sm lg:text-base pb-5">
+            Last updated: 10 October 2026
           </p>
 
           <section id="acceptance" className="p-5">
@@ -152,10 +155,11 @@ function TermsOfService() {
               Use of the App
             </h2>
             <p className="text-[#5C5C5C] text-sm lg:text-xl">
-              The Zedu App is a workflow automation platform that uses AI agents
-              to streamline processes like content creation, invoice processing,
-              customer engagement, document handling, and other business
-              operations for enterprise teams and individuals. You agree to use
+              The Zedu App is an education and cohort-communication platform for
+              schools, universities, bootcamps, educators, and learners. It lets
+              you organise learners into cohorts, communicate in channels and
+              direct messages, hold voice and video calls, share files and
+              learning resources, and use AI study assistants. You agree to use
               the App only for lawful purposes and in accordance with these
               Terms. You agree not to:
             </p>
@@ -263,7 +267,10 @@ function TermsOfService() {
             <p className="text-[#5C5C5C] text-sm lg:text-xl">
               These Terms shall be governed by and construed in accordance with
               the laws of the United Kingdom, without regard to its conflict of
-              law principles.
+              law principles. This does not affect any rights you have under the
+              data protection laws of the country where you live. For example,
+              residents of Nigeria keep their rights under the Nigeria Data
+              Protection Act (NDP Act) 2023, as described in our Privacy Policy.
             </p>
           </section>
         </div>

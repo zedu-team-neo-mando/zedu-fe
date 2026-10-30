@@ -225,6 +225,8 @@ const SideBar: React.FC = () => {
                     <div className="relative flex flex-col items-center overflow-visible">
                       <Link
                         href={`/${orgSlug}/notifications`}
+                        aria-label="Notifications"
+                        title="Notifications"
                         className={`flex flex-col group z-50 cursor-pointer items-center justify-center w-full p-1 ${
                           pathname === `/${orgSlug}/notifications`
                             ? "font-medium scale-[1.05]"

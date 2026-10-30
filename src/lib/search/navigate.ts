@@ -156,6 +156,7 @@ export async function openSearchMessageResult({
   if (messageId && threadId && messageId !== threadId) {
     query.set("message_id", messageId);
   }
+  query.set("from", "search");
   const encodedQuery = query.toString();
   const queryString = encodedQuery ? `?${encodedQuery}` : "";
 

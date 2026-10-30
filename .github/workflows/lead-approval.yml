@@ -1,9 +1,10 @@
 name: Lead approval
 
-# Caller: the logic lives in zedu-hng/zedu-ci (lead-approval.yml), pinned by commit. This file sets the
-# triggers, concurrency and token permissions. Keep the file name: other workflows look it up.
-# Sets "Lead approved" once one of the PR's team leads approves (or a reviewer adds lead-verified).
-# The relay and the sweep dispatch this file with `pr` and `base_ref`.
+# Caller: the logic lives in zedu-hng/zedu-ci (lead-approval.yml), pinned by commit. Keep the file name:
+# other workflows look it up.
+# The gate is switched off (`enforce_lead_approval: false`). One automatic run per head posts the
+# "Lead approved" success that the reviewer queue waits for; the 5-minute sweep and label/review
+# triggers are disabled. Dispatch it manually to re-check a PR.
 
 on:
   pull_request_target:
@@ -15,8 +16,6 @@ on:
       - synchronize
       - reopened
       - ready_for_review
-      - labeled
-      - unlabeled
   workflow_dispatch:
     inputs:
       pr:
@@ -25,19 +24,11 @@ on:
       base_ref:
         description: Branch the pull request targets
         required: true
-  schedule:
-    - cron: "*/5 * * * *"
 
 permissions: {}
 
-# Labels Lead approval doesn't read get a group of their own, so adding one can't cancel a check.
 concurrency:
-  group: >-
-    lead-approval-${{
-      (contains(fromJSON('["labeled", "unlabeled"]'), github.event.action) &&
-       !contains(fromJSON('["lead-verified", "sync", "hotfix"]'), github.event.label.name) &&
-       format('label-{0}', github.run_id))
-      || github.event.pull_request.number || inputs.pr || github.run_id }}
+  group: lead-approval-${{ github.event.pull_request.number || inputs.pr || github.run_id }}
   cancel-in-progress: true
 
 jobs:
@@ -49,6 +40,6 @@ jobs:
       contents: read
       pull-requests: read
       statuses: write
-    uses: zedu-hng/zedu-ci/.github/workflows/lead-approval.yml@4f63fc5bf4721ba2807e51d83b34beaf1cf9c8db
+    uses: zedu-hng/zedu-ci/.github/workflows/lead-approval.yml@8e31deaa857e62ed4bac364dfe8457eaaafd93f0
     with:
       enforce_lead_approval: false

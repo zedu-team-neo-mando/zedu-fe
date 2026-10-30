@@ -149,9 +149,7 @@ export default function ChatConnection() {
 
       const onPublication = (ctx: any) => {
         const result = ctx?.data;
-        // console.log("chat conn", ctx);
         const { data } = ctx;
-        // console.log("DM chat publishing", data);
 
         if (data?.type === "typing") {
           dispatch({

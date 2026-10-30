@@ -122,7 +122,10 @@ const ImageViewer = ({ onClose, item, image, images }: any) => {
         </div>
 
         <button
+          type="button"
           onClick={onClose}
+          aria-label="Close image preview"
+          title="Close"
           className="absolute right-5 sm:top-5 text-white hover:text-gray-300"
         >
           <X size={24} />
@@ -167,16 +170,20 @@ const ImageViewer = ({ onClose, item, image, images }: any) => {
       <div className="flex justify-between items-center text-white">
         <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={handleReset}
             className="px-2 py-1 border rounded hover:bg-white/10"
+            aria-label="Reset zoom and rotation"
             title="Reset Zoom & Rotation"
           >
             <RefreshCwIcon size={18} />
           </button>
 
           <button
+            type="button"
             onClick={handleZoomOut}
             className="px-2 py-1 border rounded hover:bg-white/10"
+            aria-label="Zoom out"
             title="Zoom Out"
           >
             <MinusIcon size={18} />
@@ -193,8 +200,10 @@ const ImageViewer = ({ onClose, item, image, images }: any) => {
           </div>
 
           <button
+            type="button"
             onClick={handleZoomIn}
             className="px-2 py-1 border rounded hover:bg-white/10"
+            aria-label="Zoom in"
             title="Zoom In"
           >
             <PlusIcon size={18} />

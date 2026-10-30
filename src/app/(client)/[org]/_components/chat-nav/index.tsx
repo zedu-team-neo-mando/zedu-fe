@@ -1,4 +1,5 @@
 "use client";
+import { NotificationBanner } from "~/app/(client)/[org]/_components/notification-banner";
 import { EllipsisVertical, HeadphonesIcon } from "lucide-react";
 import React, { useState, useRef, useContext } from "react";
 import { Avatar, AvatarImage } from "~/components/ui/avatar";
@@ -105,6 +106,12 @@ const ChatHeader = ({ participants }: any) => {
   return (
     <nav className="flex items-center justify-between h-14 px-4 sm:px-5 border-b border-[#E6EAEF] bg-white shrink-0">
       <h2 className="text-[#1D2939] text-base lg:text-lg font-bold truncate max-w-[200px] sm:max-w-xs md:max-w-md lg:max-w-lg">
+  const navigation = (
+    <nav className="flex items-center justify-between flex-wrap gap-3 p-5 border-b border-[#E6EAEF]">
+      <h2
+        tabIndex={-1}
+        className="text-[#1D2939] text-base lg:text-lg font-bold"
+      >
         {participantLabel}
       </h2>
 
@@ -192,6 +199,13 @@ const ChatHeader = ({ participants }: any) => {
         memberCount={participants?.length}
       />
     </nav>
+  );
+
+  return (
+    <header className="shrink-0">
+      {navigation}
+      <NotificationBanner />
+    </header>
   );
 };
 

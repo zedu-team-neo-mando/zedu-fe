@@ -5,6 +5,7 @@ import SettingsLabel from "../../components/settings-label";
 import DeleteAccount from "./components/delete-account";
 import { DataContext } from "~/store/GlobalState";
 import { getInitials } from "~/utils/utils";
+import { getCountryName } from "~/utils/country-name";
 import EditOrganisationDialog from "../../../_components/edit-profile-modal/organisation";
 import { RequirePermission } from "~/components/rbac/RequirePermission";
 
@@ -22,7 +23,7 @@ const AccountPage = () => {
             Your Organisation Information
           </h1>
           <p className="text-sm text-[#344054]">
-            Manage your account data with ease.
+            Manage your organisation's details.
           </p>
         </div>
 
@@ -70,7 +71,7 @@ const AccountPage = () => {
               <div className="space-y-2">
                 <h3 className="text-sm text-[#475467]">Country</h3>
                 <p className="capitalize text-sm md:text-base">
-                  {orgData?.country}
+                  {getCountryName(orgData?.country)}
                 </p>
               </div>
             </div>

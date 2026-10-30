@@ -1,11 +1,10 @@
 name: Lead approval review
 
-# Trigger only. A review on a fork PR runs with a read-only token and can't set the Lead approved
-# status, so this does nothing itself; lead-approval-relay.yml (trusted, workflow_run) re-checks the
-# PR as soon as this finishes, instead of waiting for Lead approval's cron, which GitHub often drops.
+# Trigger only. Runs on every review so review-feedback.yml (workflow_run) can set the
+# changes-requested label without checking out PR code. Lead approval itself no longer re-checks
+# automatically.
 
-# The run name carries the PR number, so the relay can find the PR even when the run's commit no
-# longer matches it (the base moved, changing the test-merge commit).
+# The run name carries the PR number for review-feedback.
 run-name: "Lead approval review #${{ github.event.pull_request.number }}"
 
 on:
@@ -26,4 +25,4 @@ jobs:
     steps:
       - env:
           PR: ${{ github.event.pull_request.number }}
-        run: echo "Review on PR $PR; lead-approval-relay.yml re-checks it."
+        run: echo "Review on PR $PR; review-feedback.yml picks this up."

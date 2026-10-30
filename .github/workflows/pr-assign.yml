@@ -27,4 +27,4 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: zedu-hng/zedu-ci/.github/workflows/pr-assign.yml@4f63fc5bf4721ba2807e51d83b34beaf1cf9c8db
+    uses: zedu-hng/zedu-ci/.github/workflows/pr-assign.yml@8e31deaa857e62ed4bac364dfe8457eaaafd93f0

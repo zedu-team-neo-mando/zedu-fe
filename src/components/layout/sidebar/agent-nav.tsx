@@ -14,6 +14,7 @@ import { GetRequest } from "~/utils/new-request";
 import { AgentRecentCard } from "~/app/(client)/[org]/_components/agent-card/recent-card";
 import { usePathname } from "next/navigation";
 import OrganisationMenu from "~/app/(client)/[org]/_components/org-dropdown";
+import { parseStoredAccordions } from "~/utils/stored-accordions";
 
 //
 
@@ -61,19 +62,22 @@ export default function AgentNav({
   };
 
   const [openAccordions, setOpenAccordions] = useState<string[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("openAccordions3");
-      return saved ? JSON.parse(saved) : ["activated"];
-    }
-    return ["activated"];
+    if (typeof window === "undefined") return ["activated"];
+    return parseStoredAccordions(localStorage.getItem("openAccordions3"), [
+      "activated",
+    ]);
   });
 
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("openAccordions3");
-      setOpenAccordions(JSON.parse(stored || '["activated", "suggestions"]'));
+      setOpenAccordions(
+        parseStoredAccordions(localStorage.getItem("openAccordions3"), [
+          "activated",
+          "suggestions",
+        ])
+      );
       setIsHydrated(true);
     }
   }, []);

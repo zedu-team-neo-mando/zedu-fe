@@ -2,7 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import React, { useContext, useEffect, useLayoutEffect, useState } from "react";
+import React, {
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { Button } from "~/components/ui/button";
 import {
   Accordion,
   AccordionContent,
@@ -60,6 +67,7 @@ const topLevelLinks: NavLink[] = [
 const Header: React.FC = () => {
   const [windowWidth, setWindowWidth] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const dropdownNavigationRef = React.useRef<HTMLDivElement>(null);
   const [token, setToken] = useState<any>(null);
@@ -105,6 +113,20 @@ const Header: React.FC = () => {
   const toggleMenu = () => {
     setIsOpen((prev) => !prev);
   };
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen]);
 
   return (
     <>
@@ -246,31 +268,46 @@ const Header: React.FC = () => {
               )}
             </div>
 
-            <div
+            <Button
+              ref={menuButtonRef}
+              type="button"
+              variant="ghost"
+              aria-label={
+                isOpen ? "Close navigation menu" : "Open navigation menu"
+              }
+              aria-expanded={isOpen}
+              aria-controls="mobile-navigation"
               onClick={toggleMenu}
-              className="relative z-50 flex h-6 w-6 cursor-pointer items-center justify-center lg:hidden"
+              className="relative z-50 flex h-6 w-6 cursor-pointer items-center justify-center p-0 hover:bg-transparent lg:hidden"
             >
-              <div
+              <span
+                aria-hidden="true"
                 className={`absolute h-0.5 w-full bg-current transition-transform duration-300 ease-in-out ${
                   isOpen ? "rotate-45 bg-gray-50" : "-translate-y-1.5"
                 }`}
               />
-              <div
+              <span
+                aria-hidden="true"
                 className={`absolute h-0.5 w-full bg-current transition-opacity duration-300 ease-in-out ${
                   isOpen ? "opacity-0" : "opacity-100"
                 }`}
               />
-              <div
+              <span
+                aria-hidden="true"
                 className={`absolute h-0.5 w-full bg-current transition-transform duration-300 ease-in-out ${
                   isOpen ? "-rotate-45 bg-gray-50" : "translate-y-1.5"
                 }`}
               />
-            </div>
+            </Button>
           </div>
         </div>
 
         {isOpen && (
-          <nav className="fixed inset-x-0 top-0 z-50 h-full overflow-y-auto bg-gradient-to-b from-[#5A34C6] to-[#4A2BA3] px-4 pt-20 lg:hidden [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:w-2">
+          <nav
+            id="mobile-navigation"
+            aria-label="Mobile navigation"
+            className="fixed inset-x-0 top-0 z-50 h-full overflow-y-auto bg-gradient-to-b from-[#5A34C6] to-[#4A2BA3] px-4 pt-20 lg:hidden [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:w-2"
+          >
             <div className="flex flex-col justify-between gap-4 py-4">
               <div className="flex flex-col gap-4 text-white">
                 <Accordion type="single" collapsible className="w-full px-4">

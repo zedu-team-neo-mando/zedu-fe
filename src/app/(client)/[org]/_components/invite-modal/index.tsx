@@ -1,3 +1,4 @@
+import { isValidEmail } from "~/lib/utils";
 import React, { useState, useRef, useEffect, useContext } from "react";
 import {
   Dialog,
@@ -58,8 +59,7 @@ const InviteModal = () => {
     if ((e.key === "Enter" || e.key === " ") && inputValue.trim()) {
       e.preventDefault();
 
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (emailRegex.test(inputValue.trim())) {
+      if (isValidEmail(inputValue.trim())) {
         addInvitee(inputValue.trim());
         setError(null);
       } else {
@@ -100,8 +100,7 @@ const InviteModal = () => {
   // submit emails
   const handleSubmit = async () => {
     if (inputValue.trim()) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (emailRegex.test(inputValue.trim())) {
+      if (isValidEmail(inputValue.trim())) {
         addInvitee(inputValue.trim());
         setError(null);
         setInputValue("");

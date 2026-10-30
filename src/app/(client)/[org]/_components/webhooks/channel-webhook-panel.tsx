@@ -194,7 +194,10 @@ export default function ChannelWebhookPanel({
           </button>
         </div>
         <div className="p-5">
-          <CopyToClipboardWithTooltip textToCopy={webhook.webhook_url}>
+          <CopyToClipboardWithTooltip
+            textToCopy={webhook.webhook_url}
+            label="Copy webhook URL"
+          >
             <code className="block w-full break-all rounded-xl bg-[#F2F4F7] border border-[#E6EAEF] px-4 py-3 text-sm text-[#344054] font-mono cursor-pointer hover:border-[#5757CD]/40 transition-colors">
               {webhook.webhook_url}
             </code>

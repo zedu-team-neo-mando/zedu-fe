@@ -21,7 +21,13 @@ const JoinChannel = () => {
   const handleJoin = async () => {
     setButtonloading(true);
 
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    let user: { username?: string } = {};
+    try {
+      user = JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      setButtonloading(false);
+      return;
+    }
 
     const res = await PostRequest(`/channels/${id}/join`, {
       username: user?.username,

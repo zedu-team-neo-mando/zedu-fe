@@ -74,7 +74,12 @@ function VerifyAccount() {
       <main className="w-full min-h-screen flex flex-col md:flex-row">
         <section className="w-full md:w-[45%] bg-[#F9FAFB] px-[20px] md:px-[40px] py-[20px] hidden lg:block">
           <Link href="/">
-            <Image src="/login_logo.svg" alt="" width={86} height={31} />
+            <Image
+              src="/login_logo.svg"
+              alt="Zedu home"
+              width={86}
+              height={31}
+            />
           </Link>
           <div>
             <div className="w-full flex flex-col gap-[12px] mb-[40px] md:mb-[71px]">
@@ -85,9 +90,9 @@ function VerifyAccount() {
                 </span>{" "}
               </h1>
               <p className="w-full text-center text-[12px] md:text-[14px] text-[#344054] font-[400] leading-[18px] md:leading-[21px] px-[20px] md:px-[90px]">
-                Your central hub for AI-powered workflows. Streamline content
-                creation, manage documents, build customer relationships,
-                process invoices, and more. One platform, endless possibilities.
+                Bring learners and educators together with organized channels,
+                cohort collaboration, and AI support, all in one learning
+                workspace.
               </p>
             </div>
             <Image

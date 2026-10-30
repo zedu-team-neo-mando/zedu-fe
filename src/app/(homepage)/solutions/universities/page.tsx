@@ -69,7 +69,7 @@ const higherEducationCards = [
     desc: "Create dedicated channels so conversations, announcements, and resources stay structured and accessible.",
   },
   {
-    title: "AI Assisted Learning",
+    title: "AI-Assisted Learning",
     desc: "Built-in AI tools help summarize discussions, answer common questions, and support both educators and students.",
   },
 ];
@@ -114,7 +114,7 @@ const institutionSecurityCards = [
 const comparisonData = {
   withoutTitle: "Without Zedu",
   withoutItems: [
-    "Universities only get email, messaging apps, and LMS tools, making communication scattered",
+    "Universities juggle email, messaging apps, and LMS tools, making communication scattered",
     "Important updates from professors or departments are often lost in crowded inboxes or long discussion threads",
     "Students often don't know where to ask questions about lectures, and finding resources becomes difficult",
     "Professors and teaching assistants juggle multiple tools just to manage communication and collaboration",
@@ -274,7 +274,7 @@ const UniversitiesSolutionsPage = () => {
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div className="flex flex-col items-center text-center gap-4">
           <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
-            How Zedu transforms Universities
+            How Zedu Transforms Universities
           </h1>
         </div>
 

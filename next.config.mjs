@@ -101,6 +101,14 @@ const nextConfig = {
   compiler: {
     removeConsole: isDev ? false : true,
   },
+  async rewrites() {
+    return [
+      {
+        source: "/firebase-messaging-sw.js",
+        destination: "/api/firebase-messaging-sw",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

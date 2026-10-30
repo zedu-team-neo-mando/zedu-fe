@@ -18,9 +18,7 @@ import UserSidebar from "./_components/profile-sidebar/user-sidebar";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { UploadProvider } from "~/store/UploadContext";
 import UploadProgressPopover from "./_components/file-management/UploadProgressPopover";
-import OneSignalProvider from "~/components/layout/onesignal/onesignal-provider";
-import OneSignalSubscriptionSync from "~/components/layout/onesignal/onesignal-subscription";
-import { NotificationBanner } from "./_components/notification-banner";
+import FirebasePush from "~/components/layout/firebase/firebase-push";
 import IncomingCallPopupContainer from "~/app/(client)/[org]/_components/buzz-management/IncomingCallPopupContainer";
 import StatusConnection from "~/components/layout/centrifugo/status-connection";
 import ChatBuzzSidePanel from "./_components/buzz-management/chatBuzzSidePanel";
@@ -35,6 +33,11 @@ import {
 } from "~/utils/org-switch";
 import { useOrganisationUsers } from "~/hooks/useOrganisationUsers";
 import { isReservedPathSegment } from "~/lib/reserved-paths";
+import ErrorState, {
+  ErrorStateVariant,
+  errorVariantFromStatus,
+} from "~/components/ui/error-state";
+import usePageTitle from "~/hooks/use-page-title";
 
 const ClientLayout = ({
   children,
@@ -42,8 +45,10 @@ const ClientLayout = ({
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [orgError, setOrgError] = useState<ErrorStateVariant | null>(null);
   const { state, dispatch } = useContext(DataContext);
   const pathname = usePathname();
+  usePageTitle(pathname);
   const prevPathnameRef = useRef<string | null>(null);
   const segments = pathname.split("/");
   const slug = segments[1];
@@ -75,6 +80,7 @@ const ClientLayout = ({
 
   useEffect(() => {
     let cancelled = false;
+    setOrgError(null);
 
     const storedSlug =
       localStorage.getItem("orgSlug") ||
@@ -223,8 +229,10 @@ const ClientLayout = ({
 
         redirectAfterOrgSwitch(nextSlug, channelId);
         return;
-      } else if (status === 404 || status === 400) {
-        router.push("/404");
+      } else if (!status || [400, 403, 404].includes(status) || status >= 500) {
+        // Show the real cause in place: a missing workspace, no membership,
+        // or a request that actually failed.
+        setOrgError(errorVariantFromStatus(status));
       }
 
       finish();
@@ -298,12 +306,13 @@ const ClientLayout = ({
 
   if (loading) return null;
 
+  if (orgError) return <ErrorState variant={orgError} />;
+
   if (isStandaloneBuzzSession) {
     return (
       <UploadProvider>
         <TooltipProvider>
-          <OneSignalProvider />
-          <OneSignalSubscriptionSync />
+          <FirebasePush />
           <ChannelBuzzProvider options={channelBuzzOptions}>
             {children}
           </ChannelBuzzProvider>
@@ -323,8 +332,7 @@ const ClientLayout = ({
         </>
       )}
       <TooltipProvider>
-        <OneSignalProvider />
-        <OneSignalSubscriptionSync />
+        <FirebasePush />
         {!isRecorderSession && <StatusConnection />}
 
         <ChannelBuzzProvider options={channelBuzzOptions}>
@@ -351,7 +359,6 @@ const ClientLayout = ({
           </div>
         </ChannelBuzzProvider>
         <UploadProgressPopover />
-        <NotificationBanner />
         <IncomingCallPopupContainer />
       </TooltipProvider>
     </UploadProvider>

@@ -3,15 +3,12 @@ module.exports = {
   parserPreset: "conventional-changelog-conventionalcommits",
   ignores: [
     (commit) => {
-      const header = (commit ?? "").split("\n")[0];
+      const header = commit.header ?? "";
       return (
         header.startsWith("Merge pull request") ||
         header.startsWith("Merge branch") ||
         header.startsWith("Merge remote-tracking branch") ||
-        header.startsWith('Revert "Merge') ||
-        // GitHub UI edits ("Update AGENTS.md", "Create foo.yml", …). The PR title
-        // becomes the squashed commit on dev and is validated separately.
-        /^(Update|Create|Delete|Rename|Edit) .+\.\w+$/.test(header)
+        header.startsWith('Revert "Merge')
       );
     },
   ],
@@ -40,7 +37,6 @@ module.exports = {
         "docs",
         "feat",
         "fix",
-        "hotfix",
         "perf",
         "refactor",
         "revert",

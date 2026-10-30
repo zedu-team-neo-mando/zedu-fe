@@ -4,43 +4,66 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { Button } from "~/components/ui/button";
 import Loading from "~/components/ui/loading";
 import { showError, showSuccess } from "~/components/toast/sonner";
 import { formatTime } from "~/utils";
-import { PostRequest } from "~/utils/request";
 
 const RESEND_COOLDOWN_SECONDS = 60;
+
+const secondsUntil = (deadline: number) =>
+  Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
 
 const CheckEmail = () => {
   const searchParams = useSearchParams();
   const email = searchParams.get("email") || "";
   const [resending, setResending] = useState(false);
+  // When the cooldown ends, as a timestamp. The countdown is recalculated from
+  // the clock, so it stays correct if the browser pauses the tab's timers.
+  const [cooldownEndsAt, setCooldownEndsAt] = useState(0);
   const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {
-    if (cooldown <= 0) return;
-    const timerId = setInterval(() => {
-      setCooldown((previous) => previous - 1);
-    }, 1000);
-    return () => clearInterval(timerId);
-  }, [cooldown]);
+    if (!cooldownEndsAt) return;
+    const update = () => setCooldown(secondsUntil(cooldownEndsAt));
+    update();
+    const timerId = setInterval(update, 1000);
+    document.addEventListener("visibilitychange", update);
+    return () => {
+      clearInterval(timerId);
+      document.removeEventListener("visibilitychange", update);
+    };
+  }, [cooldownEndsAt]);
 
   const handleResend = async () => {
     if (resending || cooldown > 0) return;
     if (!email) {
-      showError("We couldn't find your email address. Please sign up again.");
+      showError(
+        "We couldn't find your email address. Please request a password reset again."
+      );
       return;
     }
 
     setResending(true);
-    const res = await PostRequest("/auth/email-request", { email });
-
-    if (res?.status === 200 || res?.status === 201) {
-      setCooldown(RESEND_COOLDOWN_SECONDS);
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/auth/email-request`,
+        { email }
+      );
+      setCooldownEndsAt(Date.now() + RESEND_COOLDOWN_SECONDS * 1000);
       showSuccess(res?.data?.message || "Email sent. Check your inbox.");
+    } catch (error) {
+      const message = axios.isAxiosError<{ message?: string }>(error)
+        ? error.response?.data?.message
+        : undefined;
+      showError(
+        message ||
+          "Couldn't resend the email. Check your connection and try again."
+      );
+    } finally {
+      setResending(false);
     }
-    setResending(false);
   };
 
   return (
@@ -48,7 +71,12 @@ const CheckEmail = () => {
       <main className="w-full min-h-screen flex flex-col md:flex-row">
         <section className="w-full md:w-[45%] bg-[#F9FAFB] px-[20px] md:px-[40px] py-[20px] hidden lg:block">
           <Link href="/">
-            <Image src="/login_logo.svg" alt="" width={86} height={31} />
+            <Image
+              src="/login_logo.svg"
+              alt="Zedu home"
+              width={86}
+              height={31}
+            />
           </Link>
           <div>
             <div className="w-full flex flex-col gap-[12px] mb-[40px] md:mb-[71px]">

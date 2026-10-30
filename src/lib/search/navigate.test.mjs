@@ -38,8 +38,8 @@ test("routes channel, individual-DM, and group-DM roots and replies", async () =
       const path = channelType === "channel" ? "home/channels" : "dms";
       const query =
         messageId === "parent-1"
-          ? "?thread_id=parent-1"
-          : "?thread_id=parent-1&message_id=reply-9";
+          ? "?thread_id=parent-1&from=search"
+          : "?thread_id=parent-1&message_id=reply-9&from=search";
       assert.equal(
         await navigate(channelType, messageId),
         `/acme/${path}/channel-1${query}`

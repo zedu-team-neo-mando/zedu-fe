@@ -31,7 +31,7 @@ jobs:
       contents: read
       pull-requests: read
       statuses: write
-    uses: zedu-hng/zedu-ci/.github/workflows/pr-rules.yml@4f63fc5bf4721ba2807e51d83b34beaf1cf9c8db
+    uses: zedu-hng/zedu-ci/.github/workflows/pr-rules.yml@8e31deaa857e62ed4bac364dfe8457eaaafd93f0
     with:
       protected: '^(\.github/|AGENTS\.md$|CONTRIBUTING\.md$|components\.json$|eslint\.config\.mjs$|\.prettierrc$|\.prettierignore$|tsconfig\.json$|next\.config\.mjs$|postcss\.config\.|tailwind\.config\.|commitlint\.config|\.gitleaks\.toml$|\.semgrepignore$|\.husky/|\.npmrc$)'
       size_exclude: '(^|/)(pnpm-lock\.yaml|package-lock\.json|yarn\.lock)$|\.tsbuildinfo$'

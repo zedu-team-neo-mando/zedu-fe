@@ -8,7 +8,7 @@ import { FAQSection } from "../../_components/home/FAQSection";
 import type { HomeFAQ } from "../../_lib/faqData";
 
 export const metadata: Metadata = {
-  title: "File Management",
+  title: "File Management for Classes and Cohorts",
   description:
     "Manage course files in one structured workspace with Zedu File Management. Organize resources, share securely, and collaborate across classes, cohorts, and departments.",
   keywords: [

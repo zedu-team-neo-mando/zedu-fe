@@ -29,10 +29,14 @@ describe("Contact Sales phone validation", () => {
     });
 
     cy.get("#phone").clear().type("+234 801 234 5678");
+    cy.get("#organization_type").click();
+    cy.contains("[role=option]", "Bootcamp").click();
     cy.contains("button", "Send").click();
 
-    cy.wait("@contactSales")
-      .its("request.body.phone_number")
-      .should("equal", "2348012345678");
+    cy.wait("@contactSales").then(({ request }) => {
+      expect(request.body.phone_number).to.equal("2348012345678");
+      expect(request.body.organization_type).to.equal("Bootcamp");
+      expect(request.body.message).to.match(/^Organization type: Bootcamp/);
+    });
   });
 });

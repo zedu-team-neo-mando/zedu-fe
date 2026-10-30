@@ -1,3 +1,4 @@
+import { isValidEmail } from "~/lib/utils";
 import React, { useState, useRef, useEffect, useContext } from "react";
 import { X, AlertCircle } from "lucide-react";
 import { DataContext } from "~/store/GlobalState";
@@ -64,13 +65,12 @@ const InviteMany = ({
       .filter(Boolean);
     if (rawEmails.length > 1) {
       e.preventDefault();
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       let added = false;
       let duplicate = false;
       let invalid = false;
       const currentEmails = invitees.map((invitee) => invitee.email);
       rawEmails.forEach((email) => {
-        if (!emailRegex.test(email)) {
+        if (!isValidEmail(email)) {
           invalid = true;
           return;
         }
@@ -97,10 +97,9 @@ const InviteMany = ({
     if ((e.key === "Enter" || e.key === " ") && inputValue.trim()) {
       e.preventDefault();
 
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       const email = inputValue.trim();
 
-      if (emailRegex.test(email)) {
+      if (isValidEmail(email)) {
         // Check for duplicates
         const isDuplicate = invitees.some((invitee) => invitee.email === email);
         if (isDuplicate) {
