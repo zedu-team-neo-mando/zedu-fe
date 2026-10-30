@@ -21,6 +21,22 @@ import {
 
 import { isAutoCreatedOrg } from "~/utils/organisation";
 import { saveRememberMe } from "~/utils/auth-session";
+import {
+  captureAttribution,
+  clearStoredAttribution,
+  formatAttributionMessage,
+  getStoredAttribution,
+} from "~/utils/attribution";
+
+/**
+ * Adds the stored campaign attribution to a registration webhook message, then
+ * clears it so it is only credited to this one sign-up.
+ */
+const withAttribution = (message: string) => {
+  const attributed = `${message}${formatAttributionMessage(getStoredAttribution())}`;
+  clearStoredAttribution();
+  return attributed;
+};
 
 /**
  * User registration page supporting email/password, Google, Apple auth, and template onboarding.
@@ -94,7 +110,7 @@ function SignUp() {
         RegisterWebhookRequest(
           user?.username,
           "User Registration (Apple)",
-          message.trim(),
+          withAttribution(message.trim()),
           "success"
         );
       }
@@ -106,6 +122,9 @@ function SignUp() {
   };
 
   useEffect(() => {
+    // Covers campaign links that point straight at the sign-up page.
+    captureAttribution();
+
     const fromInvite = new URLSearchParams(window.location.search).get(
       "invite"
     );
@@ -243,7 +262,7 @@ function SignUp() {
         RegisterWebhookRequest(
           user?.username,
           "User Registration",
-          message.trim(),
+          withAttribution(message.trim()),
           "success"
         );
       } else {
@@ -299,7 +318,7 @@ function SignUp() {
           RegisterWebhookRequest(
             user?.username,
             "User Registration",
-            message.trim(),
+            withAttribution(message.trim()),
             "success"
           );
         }

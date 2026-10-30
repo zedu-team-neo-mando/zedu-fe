@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import React from "react";
+import React, { Suspense } from "react";
 import { ogImageUrl, siteUrl } from "~/lib/env-urls";
 import { Toaster } from "~/components/ui/toaster";
 import { DataProvider } from "~/store/GlobalState";
 import Footer from "./_components/footer";
 import Header from "./_components/header";
+import AttributionTracker from "./_components/attribution-tracker";
 import { ForceLightTheme } from "~/components/theme/force-light-theme";
 
 export const metadata: Metadata = {
@@ -76,6 +77,9 @@ export default function RootLayout({
         </div>
 
         <Toaster />
+        <Suspense fallback={null}>
+          <AttributionTracker />
+        </Suspense>
       </DataProvider>
     </ForceLightTheme>
   );
