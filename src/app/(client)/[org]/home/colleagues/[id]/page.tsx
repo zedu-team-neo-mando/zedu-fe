@@ -54,8 +54,10 @@ export default function ColleageProfile() {
     if (id) {
       const getAgents = async () => {
         const res = await GetRequest(`/organisations/${orgId}/agents/${id}`);
-        setAgent(res.data.data);
-        dispatch({ type: ACTIONS.COLLEAGUE, payload: res.data.data });
+        if (res.status === 200 || res.status === 201) {
+          setAgent(res.data.data);
+          dispatch({ type: ACTIONS.COLLEAGUE, payload: res.data.data });
+        }
       };
       getAgents();
     }

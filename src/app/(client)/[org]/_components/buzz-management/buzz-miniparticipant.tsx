@@ -132,6 +132,8 @@ export const BuzzMiniParticipant = ({
               : "bg-black/50 hover:bg-black/60"
           }`}
           title={isPinned ? "Unpin participant" : "Pin participant"}
+          aria-label={isPinned ? "Unpin participant" : "Pin participant"}
+          aria-pressed={isPinned}
         >
           {isPinned ? (
             <PinOff className="size-3.5 text-white" strokeWidth={2} />
@@ -139,14 +141,24 @@ export const BuzzMiniParticipant = ({
             <Pin className="size-3.5 text-white" strokeWidth={2} />
           )}
         </button>
-        <button className="flex items-center justify-center w-6 h-6 bg-black/50 hover:bg-black/60 rounded transition-colors border-0">
+        <button
+          type="button"
+          className="flex items-center justify-center w-6 h-6 bg-black/50 hover:bg-black/60 rounded transition-colors border-0"
+          aria-label={audioTrack ? "Microphone active" : "Microphone muted"}
+          title={audioTrack ? "Microphone active" : "Microphone muted"}
+        >
           {audioTrack ? (
             <Mic className="size-3.5 text-white" strokeWidth={2} />
           ) : (
             <MicOff className="size-3.5 text-white" strokeWidth={2} />
           )}
         </button>
-        <button className="flex items-center justify-center w-6 h-6 bg-black/50 hover:bg-black/60 rounded transition-colors border-0">
+        <button
+          type="button"
+          className="flex items-center justify-center w-6 h-6 bg-black/50 hover:bg-black/60 rounded transition-colors border-0"
+          aria-label="More participant options"
+          title="More participant options"
+        >
           <EllipsisVertical className="size-3.5 text-white" strokeWidth={2} />
         </button>
       </div>

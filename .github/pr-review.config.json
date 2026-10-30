@@ -59,7 +59,8 @@
   "hardcodedUrls": {
     "allowPatterns": [
       "^https?://(www\\.)?w3\\.org(/|$)",
-      "^https?://avatars\\.githubusercontent\\.com/"
+      "^https?://avatars\\.githubusercontent\\.com/",
+      "^https?://(www\\.)?gstatic\\.com/firebasejs/"
     ],
     "excludePathPrefixes": ["cypress/", ".github/"],
     "scanExtensions": [".ts", ".tsx", ".js", ".jsx", ".mjs"]

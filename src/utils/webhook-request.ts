@@ -1,4 +1,5 @@
 import axios from "axios";
+import { buildWebhookUrl } from "./webhook-url";
 
 // ==========PATCH REQUEST=====================
 export const RegisterWebhookRequest = async (
@@ -9,7 +10,12 @@ export const RegisterWebhookRequest = async (
 ) => {
   try {
     const res = axios.get(
-      `${process.env.NEXT_PUBLIC_REGISTER_WEBHOOK_URL}?event_name=${event_name}&message=${message}&status=${status}&username=${username}`
+      buildWebhookUrl(process.env.NEXT_PUBLIC_REGISTER_WEBHOOK_URL!, {
+        event_name,
+        message,
+        status,
+        username,
+      })
     );
     return res;
   } catch (error: any) {
@@ -26,7 +32,13 @@ export const LoginWebhookRequest = async (
 ) => {
   try {
     const res = axios.get(
-      `${process.env.NEXT_PUBLIC_LOGIN_WEBHOOK_URL}?event_name=${event_name}&message=${message}&status=${status}&username=${username}&avatar_url=${avatar_url}`
+      buildWebhookUrl(process.env.NEXT_PUBLIC_LOGIN_WEBHOOK_URL!, {
+        event_name,
+        message,
+        status,
+        username,
+        avatar_url,
+      })
     );
     return res;
   } catch (error: any) {
@@ -42,7 +54,12 @@ export const PageVisitsWebhook = async (
 ) => {
   try {
     const res = axios.get(
-      `${process.env.NEXT_PUBLIC_PAGE_VISIT_WEBHOOK_URL}?event_name=${event_name}&message=${message}&status=${status}&username=${username}`
+      buildWebhookUrl(process.env.NEXT_PUBLIC_PAGE_VISIT_WEBHOOK_URL!, {
+        event_name,
+        message,
+        status,
+        username,
+      })
     );
     return res;
   } catch (error: any) {
@@ -58,7 +75,12 @@ export const SuccessWebhook = async (
 ) => {
   try {
     const res = axios.get(
-      `${process.env.NEXT_PUBLIC_SUCCESS_WEBHOOK_URL}?event_name=${event_name}&message=${message}&status=${status}&username=${username}`
+      buildWebhookUrl(process.env.NEXT_PUBLIC_SUCCESS_WEBHOOK_URL!, {
+        event_name,
+        message,
+        status,
+        username,
+      })
     );
     return res;
   } catch (error: any) {
@@ -74,7 +96,12 @@ export const ErrorWebhook = async (
 ) => {
   try {
     const res = axios.get(
-      `${process.env.NEXT_PUBLIC_ERROR_WEBHOOK_URL}?event_name=${event_name}&message=${message}&status=${status}&username=${username}`
+      buildWebhookUrl(process.env.NEXT_PUBLIC_ERROR_WEBHOOK_URL!, {
+        event_name,
+        message,
+        status,
+        username,
+      })
     );
     return res;
   } catch (error: any) {

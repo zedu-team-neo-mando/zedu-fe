@@ -11,6 +11,11 @@ import {
 import { PutRequest } from "~/utils/new-request";
 import { showError, showSuccess } from "~/components/toast/sonner";
 import Loading from "~/components/ui/loading";
+import {
+  PASSWORD_HINT,
+  PASSWORD_TOO_SHORT_MESSAGE,
+  isPasswordTooShort,
+} from "~/lib/password";
 const UpdatePassword = () => {
   const [open, setOpen] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
@@ -18,6 +23,7 @@ const UpdatePassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [newPasswordError, setNewPasswordError] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -26,6 +32,11 @@ const UpdatePassword = () => {
 
   const handleSaveNewPassword = async (e: FormEvent) => {
     e.preventDefault();
+
+    if (isPasswordTooShort(newPassword)) {
+      setNewPasswordError(PASSWORD_TOO_SHORT_MESSAGE);
+      return;
+    }
 
     if (newPassword !== confirmPassword) {
       showError("Password does not match");
@@ -86,6 +97,7 @@ const UpdatePassword = () => {
                   id="password"
                   placeholder="*********"
                   type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
                   className="w-full border rounded px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
@@ -93,6 +105,9 @@ const UpdatePassword = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={
+                    showPassword ? "Hide old password" : "Show old password"
+                  }
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -103,7 +118,7 @@ const UpdatePassword = () => {
             <div className="mb-4">
               <label
                 className="block text-sm font-medium mb-1"
-                htmlFor="password"
+                htmlFor="new-password"
               >
                 New Password
               </label>
@@ -112,24 +127,41 @@ const UpdatePassword = () => {
                   id="new-password"
                   placeholder="*********"
                   type={showNewPassword ? "text" : "password"}
+                  aria-describedby="new-password-help"
+                  aria-invalid={Boolean(newPasswordError)}
+                  autoComplete="new-password"
                   className="w-full border rounded px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
+                  onChange={(e) => {
+                    setNewPassword(e.target.value);
+                    setNewPasswordError("");
+                  }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowNewPassword((prev) => !prev)}
+                  aria-label={
+                    showNewPassword ? "Hide new password" : "Show new password"
+                  }
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
                 >
                   {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              <p
+                id="new-password-help"
+                className={`mt-1 text-xs ${
+                  newPasswordError ? "text-red-500" : "text-gray-500"
+                }`}
+              >
+                {newPasswordError || PASSWORD_HINT}
+              </p>
             </div>
 
             <div className="mb-4">
               <label
                 className="block text-sm font-medium mb-1"
-                htmlFor="password"
+                htmlFor="confirm-password"
               >
                 Confirm Password
               </label>
@@ -138,6 +170,7 @@ const UpdatePassword = () => {
                   id="confirm-password"
                   placeholder="*********"
                   type={showConfirmPassword ? "text" : "password"}
+                  autoComplete="new-password"
                   className="w-full border rounded px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -145,6 +178,11 @@ const UpdatePassword = () => {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  aria-label={
+                    showConfirmPassword
+                      ? "Hide password confirmation"
+                      : "Show password confirmation"
+                  }
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500"
                 >
                   {showConfirmPassword ? (

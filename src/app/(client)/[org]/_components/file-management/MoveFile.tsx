@@ -28,10 +28,17 @@ interface MoveFileModalProps {
   isOpen: boolean;
   onClose: () => void;
   fileToMove: FileDetails | null;
-  // eslint-disable-next-line no-unused-vars
+
   onMove: (folderId: string) => void;
   folders: FolderInfo[];
-  // eslint-disable-next-line no-unused-vars
+  currentFolderPage: number;
+  totalFolderPages: number;
+  isLoadingFolders: boolean;
+  folderLoadError: boolean;
+  onRetryFolders: () => void;
+
+  onFolderPageChange: (page: number) => void;
+
   onFoldersChange: (folders: FolderInfo[]) => void;
 }
 
@@ -41,6 +48,12 @@ const MoveFileModal: React.FC<MoveFileModalProps> = ({
   fileToMove,
   onMove,
   folders: propFolders,
+  currentFolderPage,
+  totalFolderPages,
+  isLoadingFolders,
+  folderLoadError,
+  onRetryFolders,
+  onFolderPageChange,
   onFoldersChange,
 }) => {
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
@@ -95,6 +108,11 @@ const MoveFileModal: React.FC<MoveFileModalProps> = ({
     onClose();
   };
 
+  const changeFolderPage = (page: number) => {
+    setSelectedFolderId(null);
+    onFolderPageChange(page);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-[500px]">
@@ -110,24 +128,39 @@ const MoveFileModal: React.FC<MoveFileModalProps> = ({
 
           {/* Scrollable folder list */}
           <div className="max-h-[300px] flex flex-col gap-3 overflow-y-auto">
-            {folders.map((folder) => (
-              <div
-                key={folder.id}
-                onClick={() => setSelectedFolderId(folder.id)}
-                className={`flex items-center hover:bg-gray-100 justify-between px-4 py-0.5 cursor-pointer transition-colors ${
-                  selectedFolderId === folder.id && "bg-[#D0D0FD]"
-                }`}
-              >
-                <div className="flex text-[#5F5FE1] items-center gap-3">
-                  <Folder strokeWidth={3} fill="currentColor" size={20} />
-                  <p className="text-sm  font-medium">{folder.name}</p>
-                </div>
-                <ChevronRightIcon
-                  size={14}
-                  className="text-[#344054] font-medium"
-                />
+            {folderLoadError && (
+              <div className="flex items-center justify-between gap-3 px-4 py-2 text-sm text-[#344054]">
+                <span>Failed to load folders</span>
+                <Button variant="outline" size="sm" onClick={onRetryFolders}>
+                  Retry
+                </Button>
               </div>
-            ))}
+            )}
+            {!isLoadingFolders &&
+              folders.map((folder) => (
+                <div
+                  key={folder.id}
+                  onClick={() => setSelectedFolderId(folder.id)}
+                  className={`flex items-center hover:bg-gray-100 justify-between px-4 py-0.5 cursor-pointer transition-colors ${
+                    selectedFolderId === folder.id && "bg-[#D0D0FD]"
+                  }`}
+                >
+                  <div className="flex text-[#5F5FE1] items-center gap-3">
+                    <Folder strokeWidth={3} fill="currentColor" size={20} />
+                    <p className="text-sm  font-medium">{folder.name}</p>
+                  </div>
+                  <ChevronRightIcon
+                    size={14}
+                    className="text-[#344054] font-medium"
+                  />
+                </div>
+              ))}
+
+            {isLoadingFolders && (
+              <p className="px-4 py-2 text-sm text-[#667085]">
+                Loading folders…
+              </p>
+            )}
 
             {/* New folder input */}
             {isCreatingFolder && (
@@ -175,6 +208,31 @@ const MoveFileModal: React.FC<MoveFileModalProps> = ({
               </div>
             )}
           </div>
+          {totalFolderPages > 1 && (
+            <div className="mt-3 flex items-center justify-between text-sm text-[#344054]">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => changeFolderPage(currentFolderPage - 1)}
+                disabled={isLoadingFolders || currentFolderPage === 1}
+              >
+                Previous
+              </Button>
+              <span>
+                Page {currentFolderPage} of {totalFolderPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => changeFolderPage(currentFolderPage + 1)}
+                disabled={
+                  isLoadingFolders || currentFolderPage === totalFolderPages
+                }
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
 
         <DialogFooter className="flex flex-row w-full !justify-between items-center">
@@ -198,7 +256,7 @@ const MoveFileModal: React.FC<MoveFileModalProps> = ({
             </DialogClose>
             <Button
               onClick={handleMove}
-              disabled={!selectedFolderId}
+              disabled={!selectedFolderId || isLoadingFolders}
               className="bg-[#7141f8] text-white px-6 py-2 hover:bg-[#7141f8]/90 disabled:bg-[#D0D5DD] disabled:text-[#98A2B3] disabled:cursor-not-allowed"
             >
               Move

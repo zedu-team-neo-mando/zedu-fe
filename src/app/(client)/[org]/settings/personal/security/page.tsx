@@ -45,7 +45,12 @@ const SecurityPage = () => {
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    let user: { id?: string } | null = null;
+    try {
+      user = JSON.parse(localStorage.getItem("user") || "{}");
+    } catch {
+      return;
+    }
     const getData = async () => {
       const res = await GetRequest(
         `/users/${user?.id}/login-audit?page=${currentPage}&limit=${itemsPerPage}`
@@ -70,6 +75,13 @@ const SecurityPage = () => {
           </p>
         </div>
         <UpdatePassword />
+      </div>
+
+      <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg mb-4 text-sm flex items-center justify-between">
+        <span>
+          For security purposes, we approximate your session location based on
+          your IP address, which may not match your exact physical location
+        </span>
       </div>
 
       <div className="mx-2 md:m-4 lg:mx-8 border rounded-md overflow-x-auto">

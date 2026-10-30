@@ -29,6 +29,11 @@ export default function OrganisationMenu({ name }: Props) {
   const pathname = usePathname();
 
   const handleLogout = async () => {
+    try {
+      sessionStorage.removeItem("pending_org");
+    } catch {
+      // ignore
+    }
     localStorage.clear();
     window.location.href = "/auth/login";
   };

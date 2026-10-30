@@ -65,6 +65,9 @@ export const ChannelCard = (props: ComponentProps) => {
   // Determine if this card is the currently selected one
   const isSelected = props.channels_id === (props.selectedChannelId || id);
   const isActive = props?.mention_count > 0 || props?.thread_count > 0;
+  // text-blue-50 is too faint on the selected and hover background
+  // (bg-blue-200), so those rows switch to white text and icons.
+  const restingColor = "text-blue-50 group-hover:text-white";
 
   //
 
@@ -81,19 +84,22 @@ export const ChannelCard = (props: ComponentProps) => {
           <LockClosedIcon
             className={cn(
               "size-4",
-              props.active ? "text-white" : "text-blue-50"
+              isActive || isSelected ? "text-white" : restingColor
             )}
           />
         ) : (
           <HashIcon
-            className={cn("size-4", isActive ? "text-white" : "text-blue-50")}
+            className={cn(
+              "size-4",
+              isActive || isSelected ? "text-white" : restingColor
+            )}
           />
         )}
 
         <p
           className={cn(
             "text-[15px] leading-4 lowercase truncate py-1 w-[180px]",
-            isActive ? "font-semibold text-white" : "text-blue-50"
+            isActive || isSelected ? "font-semibold text-white" : restingColor
           )}
           title={props.name}
         >

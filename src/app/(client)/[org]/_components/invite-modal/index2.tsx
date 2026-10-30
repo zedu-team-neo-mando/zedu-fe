@@ -1,3 +1,4 @@
+import { isValidEmail } from "~/lib/utils";
 import React, { useState, useRef, useEffect, useContext } from "react";
 import {
   Dialog,
@@ -109,8 +110,7 @@ const InviteModal = () => {
       }
 
       // Basic email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (emailRegex.test(inputValue.trim())) {
+      if (isValidEmail(inputValue.trim())) {
         addInvitee(inputValue.trim());
         setError(null);
         setShowPopover(false);
@@ -139,11 +139,6 @@ const InviteModal = () => {
 
   const handleContainerClick = () => {
     textareaRef.current?.focus();
-  };
-
-  const isValidEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
   };
 
   return (

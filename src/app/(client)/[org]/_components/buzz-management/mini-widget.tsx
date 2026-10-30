@@ -95,14 +95,20 @@ const MiniWidget = () => {
         </div>
         <div className="flex items-center gap-2">
           <button
+            type="button"
             className="w-8 h-8 border border-[#E4E7EC] rounded-lg flex items-center justify-center text-[#344054] hover:bg-[#4a4e6b25] transition-colors"
             onClick={handleMaximize}
+            aria-label="Maximize buzz call"
+            title="Maximize"
           >
             <Maximize2 size={15} />
           </button>
           <button
+            type="button"
             className="w-8 h-8 border border-[#E4E7EC] rounded-lg flex items-center justify-center text-[#344054] hover:bg-[#4a4e6b25] transition-colors"
             onClick={handleMinimize}
+            aria-label="Minimize buzz call"
+            title="Minimize"
           >
             <Minus size={17} />
           </button>
@@ -142,7 +148,9 @@ const MiniWidget = () => {
       )}
       <div className="flex items-center justify-evenly gap-2 py-4 px-3 border-t border-t-gray-200">
         <button
+          type="button"
           title={`${isAudioPublishing ? "Mute" : "Unmute"} mic`}
+          aria-label={`${isAudioPublishing ? "Mute" : "Unmute"} mic`}
           className={`size-full rounded-lg flex items-center justify-center transition-colors ${
             !isAudioPublishing
               ? "bg-red-500 text-white"
@@ -153,7 +161,9 @@ const MiniWidget = () => {
           {!isAudioPublishing ? <MicOff size={20} /> : <Mic size={20} />}
         </button>
         <button
+          type="button"
           title={`${isVideoPublishing ? "Turn off" : "Turn on"} video`}
+          aria-label={`${isVideoPublishing ? "Turn off" : "Turn on"} video`}
           className={`size-full rounded-lg flex items-center justify-center transition-colors ${
             !isVideoPublishing
               ? "bg-red-500 text-white"
@@ -164,7 +174,10 @@ const MiniWidget = () => {
           {!isVideoPublishing ? <VideoOff size={20} /> : <Video size={20} />}
         </button>
         <button
+          type="button"
           title={`${isEmojiPickerOpen ? "Hide" : "Add"} reactions`}
+          aria-label={`${isEmojiPickerOpen ? "Hide" : "Add"} reactions`}
+          aria-expanded={isEmojiPickerOpen}
           className={`size-full border border-[#E4E7EC] rounded-lg flex items-center justify-center text-[#344054] hover:bg-[#00000012] transition-colors ${
             isEmojiPickerOpen ? "bg-blue-100 border-blue-400" : ""
           }`}
@@ -174,7 +187,10 @@ const MiniWidget = () => {
         </button>
         <div className="relative size-full">
           <button
+            type="button"
             title={`${isHandRaised ? "Lower" : "Raise"} hand`}
+            aria-label={`${isHandRaised ? "Lower" : "Raise"} hand`}
+            aria-pressed={isHandRaised}
             onClick={toggleHandRaise}
             className={`size-full border border-[#E4E7EC] rounded-lg flex items-center justify-center transition-colors ${
               isHandRaised
@@ -197,10 +213,15 @@ const MiniWidget = () => {
           </div>
         </div>
         <button
+          type="button"
           className="bg-red-500 text-white rounded-lg p-2.5 hover:bg-red-600 transition-colors size-full font-medium flex items-center justify-center"
           onClick={
             buzzParticipants?.length === 1 ? handleEndCall : handleLeaveCall
           }
+          aria-label={
+            buzzParticipants?.length === 1 ? "End call" : "Leave call"
+          }
+          title={buzzParticipants?.length === 1 ? "End call" : "Leave call"}
         >
           <PhoneOff size={20} />
         </button>

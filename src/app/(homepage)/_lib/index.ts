@@ -4,8 +4,8 @@ export const whyCardsData = [
     desc: "Zedu is designed around cohorts, classrooms, and structured learning — with features that support educators instead of corporate workflows",
   },
   {
-    title: "No Per-Student Pricing",
-    desc: "Scale your cohorts without worrying about per-user fees. Flexible pricing built for growing classes and bootcamps.",
+    title: "No Per-Seat Fees",
+    desc: "Pay one flat price per plan, not per student. Plans differ by cohort size and admin limits, so you can grow your classes predictably.",
   },
   {
     title: "AI-Powered Teaching Support",

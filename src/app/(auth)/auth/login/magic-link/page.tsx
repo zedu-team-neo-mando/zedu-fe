@@ -24,7 +24,12 @@ function MagicLink() {
   const hasVerifiedRef = React.useRef(false);
 
   useEffect(() => {
-    if (token && !hasVerifiedRef.current) {
+    if (!token) {
+      setStatus("not-verified");
+      setloading(false);
+      return;
+    }
+    if (!hasVerifiedRef.current) {
       const VerifyToken = async () => {
         hasVerifiedRef.current = true; // Set ref to true to prevent re-running
 

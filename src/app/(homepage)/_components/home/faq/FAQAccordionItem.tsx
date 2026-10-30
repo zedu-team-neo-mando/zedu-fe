@@ -4,6 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "~/components/ui/accordion";
+import { cn } from "~/lib/utils";
 import type { HomeFAQ } from "../../../_lib/faqData";
 
 type FAQAccordionItemProps = {
@@ -15,11 +16,16 @@ export const FAQAccordionItem = ({ faq, isOpen }: FAQAccordionItemProps) => {
   return (
     <AccordionItem
       value={faq.id}
-      className="overflow-hidden rounded-xl border border-[#E5E8FF] bg-[#FAFAFF]"
+      className="overflow-hidden rounded-xl border border-[#E5E8FF] bg-white shadow-sm"
     >
-      <AccordionTrigger className="px-4 py-4 text-sm font-semibold text-[#101828] hover:no-underline sm:px-6 sm:py-6 sm:text-base">
+      <AccordionTrigger
+        className={cn(
+          "items-center px-6 py-5 text-lg font-semibold text-[#101828] hover:no-underline sm:px-8 sm:py-6 sm:text-xl",
+          isOpen && "bg-primary-50"
+        )}
+      >
         {faq.question}
-        <span className="text-[#7141F8]">
+        <span className="ml-4 shrink-0 text-primary-500">
           {isOpen ? (
             <Minus className="h-5 w-5 sm:h-6 sm:w-6" />
           ) : (
@@ -27,7 +33,7 @@ export const FAQAccordionItem = ({ faq, isOpen }: FAQAccordionItemProps) => {
           )}
         </span>
       </AccordionTrigger>
-      <AccordionContent className="px-4 text-sm font-normal text-[#344054] sm:px-6 sm:text-base">
+      <AccordionContent className="px-6 pb-6 pt-2 text-base leading-relaxed text-[#475467] sm:px-8 sm:pb-8 sm:pt-3 sm:text-lg">
         {faq.answer}
       </AccordionContent>
     </AccordionItem>

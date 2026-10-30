@@ -14,7 +14,7 @@ const Success: React.FC = () => {
     <section className="w-full min-h-screen flex flex-col ">
       <div className="flex items-center justify-between w-full py-6 max-w-7xl px-4 sm:px-6 lg:px-8">
         <Link href="/">
-          <Image src="/Zedu.png" alt="" width={86} height={31} />
+          <Image src="/Zedu.png" alt="Zedu home" width={86} height={31} />
         </Link>
         <div>
           Go back to Login?{" "}
@@ -28,7 +28,7 @@ const Success: React.FC = () => {
         <main className="flex flex-col gap-6 mx-auto md:mx-auto items-center">
           <div className="flex flex-col gap-[32px] items-center">
             <h3 className="font-semibold text-2xl text-[#1D2939] text-center">
-              Awesome! mail sent.
+              Awesome! Email sent.
             </h3>
             <Image src={success} alt="success" width={120} height={120} />
             <Suspense fallback={<p>Loading email...</p>}>
@@ -45,7 +45,7 @@ const SuccessContent: React.FC = () => {
   const email = searchParams.get("email");
 
   return (
-    <p className="font-normal text-[lg] text-[#344054] text-center">
+    <p className="font-normal text-lg text-[#344054] text-center">
       We&apos;ve just sent an email to <strong>{email}</strong> with detailed
       instructions on how to access your account.
     </p>

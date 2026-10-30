@@ -96,7 +96,7 @@ const comparisonData = {
     "Important updates and resources are often lost in crowded channels or long messages and chats",
     "Students often don't know where to ask questions about lectures, and finding resources becomes difficult",
     "Mentors struggle to keep track of student progress and manage group programs across different platforms",
-    "Feedback on assignments and discussions happen in scattered places, making it hard to follow progress.",
+    "Feedback on assignments and discussions happens in scattered places, making it hard to follow progress.",
   ],
   withTitle: "With Zedu",
   withItems: [
@@ -163,7 +163,7 @@ const BootCampsSolutionsPage = () => {
             <div className="relative aspect-[16/11] w-full sm:aspect-[4/3] lg:aspect-[16/10]">
               <Image
                 src="/images/homepage/solutions/bootcamps-hero.png"
-                alt="Students seated together while collaborating in the Zedu school workspace"
+                alt="Students seated together while collaborating in the Zedu bootcamp workspace"
                 fill
                 priority
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 680px"

@@ -20,6 +20,7 @@ import ChannelInviteModal from "~/app/(client)/[org]/_components/invite-modal/ch
 import OrganisationMenu from "~/app/(client)/[org]/_components/org-dropdown";
 import Tooltips from "~/app/(client)/[org]/_components/tooltip";
 import { formatCount } from "~/utils/utils";
+import { parseStoredAccordions } from "~/utils/stored-accordions";
 // import AddColleagueDialog from "~/app/(client)/[org]/_components/colleagues/add-colleagues-modal";
 // import { ColleaguesCard } from "~/app/(client)/[org]/_components/colleagues/card";
 
@@ -64,13 +65,12 @@ export default function ChannelNav({
   };
 
   const [openAccordions, setOpenAccordions] = useState<string[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("openAccordions");
-      return saved
-        ? JSON.parse(saved)
-        : ["starred", "channels", "workflows", "agents", "people"];
-    }
-    return ["starred", "channels", "workflows", "agents", "people"];
+    const defaults = ["starred", "channels", "workflows", "agents", "people"];
+    if (typeof window === "undefined") return defaults;
+    return parseStoredAccordions(
+      localStorage.getItem("openAccordions"),
+      defaults
+    );
   });
 
   const handleAccordionChanges = (values: string[]) => {
@@ -132,14 +132,17 @@ export default function ChannelNav({
             <Link
               href={`/${orgSlug}/threads`}
               className={cn(
-                "relative flex-1 flex items-center gap-[2px] py-[7px] px-2 mx-2 mb-2 hover:bg-blue-200 hover:text-white rounded-lg ",
-                pathname.includes("/threads") ? "bg-blue-200" : ""
+                "group relative flex-1 flex items-center gap-[2px] py-[7px] px-2 mx-2 mb-2 hover:bg-blue-200 hover:text-white rounded-lg ",
+                pathname.includes("/threads") ? "bg-blue-200 text-white" : ""
               )}
             >
-              <ChatBubbleIcon />
+              <ChatBubbleIcon color="currentColor" />
               <p
                 className={cn(
-                  "text-[15px] leading-4 truncate w-[180px] text-blue-50"
+                  "text-[15px] leading-4 truncate w-[180px]",
+                  pathname.includes("/threads")
+                    ? "font-semibold text-white"
+                    : "text-blue-50 group-hover:text-white"
                 )}
               >
                 Threads
@@ -163,16 +166,19 @@ export default function ChannelNav({
             <Link
               href={`/${orgSlug}/buzzs`}
               className={cn(
-                "flex-1 flex items-center gap-[2px] py-[7px] px-2 mx-2 hover:bg-blue-200 hover:text-white rounded-lg ",
-                pathname.includes("/buzzs") ? "bg-blue-200" : ""
+                "group flex-1 flex items-center gap-[2px] py-[7px] px-2 mx-2 hover:bg-blue-200 hover:text-white rounded-lg ",
+                pathname.includes("/buzzs") ? "bg-blue-200 text-white" : ""
               )}
             >
               <div className="mt-[2px]">
-                <HeadphoneIcon />
+                <HeadphoneIcon color="currentColor" />
               </div>
               <p
                 className={cn(
-                  "text-[15px] leading-4 truncate w-[180px] text-blue-50"
+                  "text-[15px] leading-4 truncate w-[180px]",
+                  pathname.includes("/buzzs")
+                    ? "font-semibold text-white"
+                    : "text-blue-50 group-hover:text-white"
                 )}
               >
                 Buzzes

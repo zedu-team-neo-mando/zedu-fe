@@ -51,8 +51,6 @@ export default function ChatAgoraConnection() {
     const onPublication = async (ctx: any) => {
       const payload = ctx?.data;
 
-      // console.log("chat agora centrifugo", payload);
-
       // Always use the ref to get the absolute latest list
       const currentParticipants = participantsRef.current || [];
       const currentChats = chatsRef.current || [];
@@ -165,7 +163,6 @@ export default function ChatAgoraConnection() {
         }
 
         if (stickerData?.sticker === "away") {
-          console.log();
           const updated = latestParticipants.map((p: any) =>
             String(p.user_id) === String(stickerData.user_id)
               ? { ...p, handsRaised: false }
@@ -178,8 +175,6 @@ export default function ChatAgoraConnection() {
 
       if (payload?.type === "buzz_message") {
         const newMessage = payload;
-
-        console.log();
 
         dispatch({
           type: ACTIONS.BUZZ_CHATS,

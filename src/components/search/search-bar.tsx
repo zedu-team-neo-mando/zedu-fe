@@ -70,6 +70,8 @@ export const SearchInput = ({ name, orgId }: SearchInputProps) => {
   useEffect(() => {
     if (recentSearches.length > 0) {
       localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recentSearches));
+    } else {
+      localStorage.removeItem(RECENT_SEARCHES_KEY);
     }
   }, [recentSearches]);
 

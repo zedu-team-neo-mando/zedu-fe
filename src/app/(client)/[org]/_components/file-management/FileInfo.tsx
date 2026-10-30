@@ -56,7 +56,10 @@ const FileInfo = ({ file, isOpen, onClose }: FileInfoProps) => {
           <h2 className="text-base font-medium text-gray-700">Info</h2>
         </div>
         <button
+          type="button"
           onClick={onClose}
+          aria-label="Close file info"
+          title="Close"
           className="text-gray-400 hover:text-[#667085] transition-colors"
         >
           <X size={20} />

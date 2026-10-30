@@ -250,7 +250,9 @@ const MessageBox = ({
         return;
       }
 
-      if (event.shiftKey) {
+      if (event.shiftKey || event.ctrlKey || event.metaKey) {
+        // Mod-Enter is bound by the editor to setHardBreak; returning here
+        // stops it from also submitting the message.
         return;
       } else if (
         editor?.isActive("bulletList") ||

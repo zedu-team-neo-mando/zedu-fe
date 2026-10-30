@@ -17,6 +17,7 @@ import { GetRequest, PostRequest } from "~/utils/new-request";
 import { useParams } from "next/navigation";
 import Loading from "~/components/ui/loading";
 import { DataContext } from "~/store/GlobalState";
+import { NotificationPermissionHelp } from "~/app/(client)/[org]/_components/notification-permission-guidance";
 
 export default function NotificationSettingsModal() {
   const [open, setOpen] = useState(false);
@@ -96,6 +97,7 @@ export default function NotificationSettingsModal() {
         </DialogHeader>
 
         <div className="mt-4 space-y-4">
+          <NotificationPermissionHelp />
           <div>
             <label className="text-sm font-medium text-gray-900 mb-2 block">
               Send a notification for

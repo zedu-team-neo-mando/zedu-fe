@@ -35,7 +35,6 @@ export function ScreenSharePlayer({
           throw new Error("Container disappeared");
         }
 
-        // @ts-ignore - Agora SDK supports config object in play method
         await videoTrack.play(containerRef.current, { fit: "contain" });
 
         if (mounted) {

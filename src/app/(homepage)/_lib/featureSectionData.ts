@@ -8,7 +8,7 @@ export const otherFeatures = [
   {
     title: "Live Teaching",
     description:
-      "Your digital classroom for meetings and empowering structured discussions, real-time collaboration, and smarter academic engagement",
+      "Your digital classroom for meetings and empowering structured discussions, real-time collaboration, and smarter academic engagement.",
     icon: "/images/homepage/icons/live-teaching.png",
   },
   {

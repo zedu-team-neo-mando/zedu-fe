@@ -36,3 +36,5 @@ export function getPathValue(pathname: string, level: number): string | null {
 
   return decodeURIComponent(pathSegments[level]); // Return the decoded path segment
 }
+
+export { isValidEmail } from "./email";

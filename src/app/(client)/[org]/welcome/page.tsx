@@ -2,24 +2,16 @@
 import { useContext, useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { GetRequest } from "~/utils/request";
 import { DataContext } from "~/store/GlobalState";
 
-// The backend auto-creates a workspace at signup, so onboard-status can be
-// true before the user has chosen one. A missing type is never default.
-const isAutoCreatedOrg = () => {
-  try {
-    const user = JSON.parse(localStorage.getItem("user") || "null");
-    const type = user?.organisation?.type ?? "";
-    return type.trim().toLowerCase() === "user default org";
-  } catch {
-    return false;
-  }
-};
+import { isAutoCreatedOrg } from "~/utils/organisation";
 
+/** Welcome onboarding view allowing user to initiate organization creation. */
 const Welcome = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { org } = useParams<{ org: string }>();
   const [loading, setLoading] = useState(true);
   const { state } = useContext(DataContext);
@@ -65,9 +57,14 @@ const Welcome = () => {
 
           <div>
             <Button
-              onClick={() =>
-                router.push(`/${orgSlug}/welcome/create-organization`)
-              }
+              onClick={() => {
+                const template = searchParams.get("template");
+                router.push(
+                  `/${orgSlug}/welcome/create-organization${
+                    template ? `?template=${encodeURIComponent(template)}` : ""
+                  }`
+                );
+              }}
               className=" bg-blue-400 w-[180px] py-6 px-10 text-white text-base font-medium hover hover:bg-blue-300"
             >
               Get Started

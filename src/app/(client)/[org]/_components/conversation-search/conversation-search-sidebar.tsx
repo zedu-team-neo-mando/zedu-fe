@@ -172,6 +172,7 @@ export default function ConversationSearchSidebar({
             <input
               ref={inputRef}
               type="search"
+              aria-label="Search in conversation"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search"

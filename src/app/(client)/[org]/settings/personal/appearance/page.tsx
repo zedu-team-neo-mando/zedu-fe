@@ -129,7 +129,7 @@ const AppearancePage = () => {
         <section className="max-w-2xl">
           <h2 className="mb-1 text-sm font-semibold">Color mode</h2>
           <p className="mb-4 text-sm text-[#667085]">
-            Changing this only affects this device, just like Slack.
+            Changing this only affects this device.
           </p>
 
           <RadioGroup

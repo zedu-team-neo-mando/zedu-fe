@@ -1,12 +1,18 @@
+"use client";
+
+import { WhyFeatureCard } from "../ui/WhyFeatureCard";
 import { WhyCard } from "../ui/WhyCard";
 import { ArrowBtn } from "../ui/Button";
 import { otherReasons, whyCardsData } from "../../_lib";
 import Image from "next/image";
+import { ArrowRight, GraduationCap, Users } from "lucide-react";
+
+const whyCardIcons = [GraduationCap, Users];
 
 export const WhySection = () => {
   return (
     <>
-      <section className="relative isolate flex w-full flex-col items-center gap-6 overflow-hidden px-4 py-12 text-center sm:gap-6 sm:px-8 sm:py-16   lg:gap-8 lg:px-12">
+      <section className="relative isolate flex w-full flex-col items-center gap-8 overflow-hidden bg-primary-50 px-4 py-12 text-center sm:gap-10 sm:px-8 sm:py-16 lg:gap-12 lg:px-12 lg:py-20">
         <div className="flex flex-col gap-3 items-center">
           <h1 className=" text-2xl font-semibold leading-tight text-neutral-900 sm:text-3xl md:text-4xl text-center">
             Why Educators Choose Zedu
@@ -17,9 +23,36 @@ export const WhySection = () => {
           </p>
         </div>
 
-        <div className="grid w-full max-w-7xl grid-cols-1 place-items-center gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid w-full max-w-7xl grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
           {whyCardsData.map((card, index) => (
-            <WhyCard key={index} title={card.title} desc={card.desc} />
+            <WhyFeatureCard
+              key={card.title}
+              title={card.title}
+              desc={card.desc}
+              icon={whyCardIcons[index]}
+              cta={
+                card.title === "No Per-Seat Fees" ? (
+                  <button
+                    type="button"
+                    onClick={(e) =>
+                      window.dispatchEvent(
+                        new CustomEvent("open-zedu-calculator", {
+                          detail: e.currentTarget,
+                        })
+                      )
+                    }
+                    className="group mt-1 inline-flex items-center gap-1.5 rounded-full border border-primary-500 bg-transparent px-4 py-1.5 text-sm font-semibold text-primary-500 transition-colors duration-150 hover:bg-primary-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                  >
+                    Calculate Your Savings
+                    <ArrowRight
+                      className="transition-transform duration-300 ease-out group-hover:translate-x-1"
+                      size={15}
+                      strokeWidth={2.5}
+                    />
+                  </button>
+                ) : undefined
+              }
+            />
           ))}
         </div>
       </section>
@@ -28,7 +61,7 @@ export const WhySection = () => {
         <div className="pointer-events-none absolute inset-0 -z-10">
           <Image
             src={"/images/homepage/svg-bg.png"}
-            alt="a wavy svg background for style"
+            alt="A wavy decorative background"
             fill
             priority
             sizes="100vw"
@@ -43,7 +76,7 @@ export const WhySection = () => {
               </h2>
             </div>
             <div className="mt-1">
-              <ArrowBtn text="Get started for free" inverted linkToHome />
+              <ArrowBtn text="Get started for free" linkToHome />
             </div>
           </div>
 

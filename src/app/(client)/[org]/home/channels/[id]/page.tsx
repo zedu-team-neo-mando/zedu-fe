@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 
 import ArchivedChannel from "../../../_components/archived-channel";
 import ChannelConnection from "~/components/layout/centrifugo/channel-connection";
@@ -23,10 +23,30 @@ import { ACTIONS } from "~/store/Actions";
 import { useIsSmUp } from "~/hooks/use-media-query";
 import { cn } from "~/lib/utils";
 import RestrictedChannel from "../../../_components/restricted-channel";
+import { ComposerSkeleton } from "../../../_components/ChannelMessage/channel-loading-skeleton";
+import ErrorState, {
+  ErrorStateVariant,
+  errorVariantFromStatus,
+} from "~/components/ui/error-state";
 import ConversationSearchSidebar, {
   CONVERSATION_SEARCH_PANEL_TRANSITION,
   getConversationSearchSidebarWidth,
 } from "../../../_components/conversation-search/conversation-search-sidebar";
+
+const CHANNEL_ERROR_COPY: Partial<
+  Record<ErrorStateVariant, { title: string; description: string }>
+> = {
+  "not-found": {
+    title: "Channel not found",
+    description:
+      "This channel doesn't exist or has been deleted. Check the link, or pick a channel from the list.",
+  },
+  "no-access": {
+    title: "You don't have access to this channel",
+    description:
+      "It may be private, or you may have been removed. Ask a channel admin to add you.",
+  },
+};
 
 const ChannelsPage = () => {
   const params = useParams();
@@ -42,6 +62,20 @@ const ChannelsPage = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [render, setRender] = useState(true);
+  const [channelError, setChannelError] = useState<ErrorStateVariant | null>(
+    null
+  );
+
+  useEffect(() => {
+    setChannelError(null);
+  }, [channelId]);
+
+  const handleChannelError = useCallback(
+    (status: number | undefined | null) => {
+      setChannelError(status === null ? null : errorVariantFromStatus(status));
+    },
+    []
+  );
 
   useEffect(() => {
     if (!state?.channelReady) {
@@ -171,9 +205,26 @@ const ChannelsPage = () => {
     String(state?.channelDetails?.channels_id || "") ===
     String(channelId || "");
 
+  if (channelError) {
+    return (
+      <div className="flex h-[calc(100dvh-70px)] relative w-full overflow-hidden">
+        <UseGetSingleChannel onError={handleChannelError} />
+        <ErrorState
+          variant={channelError}
+          {...CHANNEL_ERROR_COPY[channelError]}
+          action={{
+            label: "Go to channels",
+            href: `/${params?.org}/home/channels`,
+          }}
+          className="min-h-0 h-full"
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-[calc(100dvh-70px)] relative w-full overflow-hidden">
-      <UseGetSingleChannel />
+      <UseGetSingleChannel onError={handleChannelError} />
       <ChannelConnection />
       <ChannelAgoraConnection />
 
@@ -190,11 +241,15 @@ const ChannelsPage = () => {
         <ChannelsMessage />
 
         <div className="absolute bottom-0 left-0 right-[17px]">
-          {!render && state?.channelDetails?.access === false ? (
+          {/* Until this channel's details load we don't know whether the user
+              may post, so never show an editable composer before then. */}
+          {!channelReady ? (
+            <ComposerSkeleton />
+          ) : !render && state?.channelDetails?.access === false ? (
             <JoinChannel />
           ) : state?.channelDetails?.archived ? (
             <ArchivedChannel />
-          ) : channelReady && state?.channelDetails?.is_restricted ? (
+          ) : state?.channelDetails?.is_restricted ? (
             <RestrictedChannel />
           ) : (
             <MessageBox

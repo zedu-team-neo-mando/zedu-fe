@@ -19,6 +19,6 @@ jobs:
     if: github.repository == 'zedu-hng/zedu-fe'
     permissions:
       contents: read
-    uses: zedu-hng/zedu-ci/.github/workflows/obfuscation-sweep.yml@4f63fc5bf4721ba2807e51d83b34beaf1cf9c8db
+    uses: zedu-hng/zedu-ci/.github/workflows/obfuscation-sweep.yml@8e31deaa857e62ed4bac364dfe8457eaaafd93f0
     with:
       allow_long_paths: "src/app/**/svgs/index.tsx"

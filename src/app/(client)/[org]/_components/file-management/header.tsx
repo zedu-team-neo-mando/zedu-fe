@@ -239,8 +239,9 @@ const Header = ({
                       open={isMobileMenuOpen}
                       onOpenChange={setIsMobileMenuOpen}
                     >
-                      <PopoverTrigger>
+                      <PopoverTrigger asChild>
                         <Button
+                          aria-label="Open upload menu"
                           className={`px-3 py-2 border border-[#BABAFB] flex items-center gap-2 hover:bg-[#F6F7F9] ${isMobileMenuOpen ? "bg-[#F6F7F9]" : "active:bg-[#F6F7F9]"}`}
                         >
                           <Plus className="text-[#8686F9] size-4" />
@@ -292,7 +293,7 @@ const Header = ({
                       open={isUploadPopoverOpen}
                       onOpenChange={setIsUploadPopoverOpen}
                     >
-                      <PopoverTrigger>
+                      <PopoverTrigger asChild>
                         <ActionBtns
                           icon={Upload}
                           text="Upload File"
@@ -353,20 +354,36 @@ const Header = ({
   );
 };
 
-export const ActionBtns = ({
-  icon: Icon,
-  text,
-  onClick,
-  isPopoverOpen,
-}: ActionBtnsProps) => {
-  return (
-    <Button
-      className={`px-3 py-2 border border-[#BABAFB] flex items-center gap-2 hover:bg-[#F6F7F9] ${isPopoverOpen ? "bg-[#F6F7F9]" : "active:bg-[#F6F7F9]"}`}
-      onClick={onClick}
-    >
-      <Icon className="text-[#8686F9] size-4" />
-      <span className="text-[#5F5FE1] font-semibold">{text}</span>
-    </Button>
-  );
-};
+// Forwards the ref and extra props so it can be a Radix trigger's child
+// (asChild) instead of a button nested inside the trigger's own button.
+export const ActionBtns = React.forwardRef<
+  HTMLButtonElement,
+  ActionBtnsProps &
+    Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, keyof ActionBtnsProps>
+>(
+  (
+    {
+      icon: Icon,
+      text,
+      onClick,
+      isPopoverOpen,
+      classname: _classname,
+      ...props
+    },
+    ref
+  ) => {
+    return (
+      <Button
+        ref={ref}
+        {...props}
+        className={`px-3 py-2 border border-[#BABAFB] flex items-center gap-2 hover:bg-[#F6F7F9] ${isPopoverOpen ? "bg-[#F6F7F9]" : "active:bg-[#F6F7F9]"}`}
+        onClick={onClick}
+      >
+        <Icon className="text-[#8686F9] size-4" />
+        <span className="text-[#5F5FE1] font-semibold">{text}</span>
+      </Button>
+    );
+  }
+);
+ActionBtns.displayName = "ActionBtns";
 export default Header;

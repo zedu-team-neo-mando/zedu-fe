@@ -63,6 +63,7 @@ const EmojiReactions: React.FC<Props> = ({ currentUser }) => {
         return (
           <button
             key={i}
+            type="button"
             className={`border px-2 py-1 rounded-full text-sm flex items-center gap-1 ${
               isReacted
                 ? "bg-blue-200 border-blue-400"
@@ -70,6 +71,8 @@ const EmojiReactions: React.FC<Props> = ({ currentUser }) => {
             }`}
             onClick={() => toggleReaction(reaction.emoji)}
             title={`${tooltipUsers}${moreCount}`}
+            aria-label={`${reaction.emoji} reaction, ${reaction.users.length}`}
+            aria-pressed={isReacted}
           >
             <span>{reaction.emoji}</span>
             <span>{reaction.users.length}</span>
@@ -79,11 +82,14 @@ const EmojiReactions: React.FC<Props> = ({ currentUser }) => {
 
       {reactions.length < MAX_REACTIONS && (
         <button
+          type="button"
           className="border px-2 py-1 rounded-full text-sm bg-white border-gray-300"
           onClick={() => {
             const emoji = prompt("Pick emoji (e.g. 😄)");
             if (emoji) toggleReaction(emoji);
           }}
+          aria-label="Add reaction"
+          title="Add reaction"
         >
           ➕
         </button>
