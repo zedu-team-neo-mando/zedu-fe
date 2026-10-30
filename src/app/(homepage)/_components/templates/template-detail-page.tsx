@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, Hash, Layers } from "lucide-react";
 import { getTemplateBySlug, TEMPLATES } from "~/data/templates";
 import type { Metadata } from "next";
-import { ogImageUrl } from "~/lib/env-urls";
+import { ogImageUrl, siteUrl } from "~/lib/env-urls";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
@@ -18,15 +18,20 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const template = getTemplateBySlug(slug);
-  if (!template) return { title: "Template Not Found" };
+  if (!template)
+    return { title: "Template Not Found", robots: { index: false } };
   const title = `${template.title} Workspace Template`;
+  const path = `/templates/${template.slug}`;
   return {
     title,
     description: `${template.description} Includes #${template.channels.slice(0, 3).join(", #")}.`,
+    alternates: {
+      canonical: siteUrl(path),
+    },
     openGraph: {
       title,
       description: template.description,
-      url: `/templates/${template.slug}`,
+      url: path,
       siteName: "Zedu",
       images: [
         {

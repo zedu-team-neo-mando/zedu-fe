@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
+import { siteUrl } from "~/lib/env-urls";
 
 export const metadata: Metadata = {
   title: "Team Ibis Contributors",
   description: "Meet the active members of Team Ibis contributing to Zedu.",
+  alternates: {
+    canonical: siteUrl("/contributors/ibis"),
+  },
 };
 
 const contributors = [

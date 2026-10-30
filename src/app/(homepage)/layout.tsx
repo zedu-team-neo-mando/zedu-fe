@@ -35,7 +35,6 @@ export const metadata: Metadata = {
     title: "Zedu - Learning Platform for Bootcamps, Schools, and Cohorts",
     description:
       "Built for modern learning: structured channels, AI-powered support, flexible education pricing, and tools that help educators run better cohorts.",
-    url: "/",
     siteName: "Zedu",
     images: [
       {
@@ -53,9 +52,6 @@ export const metadata: Metadata = {
     description:
       "Run modern learning programs with one AI-powered workspace for communication, collaboration, pricing flexibility, and cohort success.",
     images: [ogImageUrl("og-image-5.png")],
-  },
-  alternates: {
-    canonical: "/",
   },
   robots: {
     index: true,
