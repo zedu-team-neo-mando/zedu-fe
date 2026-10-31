@@ -11,14 +11,14 @@ import { ogImageUrl } from "~/lib/env-urls";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Zedu - The All-in-One Cohort Workspace for Modern Educators",
+    absolute: "Zedu - One Workspace for Your Entire Cohort",
   },
   description:
-    "The All-in-One Cohort Workspace that Multiplies Student Completion Rates. Replace fragmented chat channels, meeting links, and storage folders with a unified, AI-assisted platform.",
+    "Stop juggling scattered chat groups, meeting links, and shared folders. Zedu brings learners and educators together in one organized space built for bootcamps and learning communities.",
   openGraph: {
-    title: "Zedu - Scale Your Cohorts Without Admin Overhead",
+    title: "Zedu - One Workspace for Your Entire Cohort",
     description:
-      "The All-in-One Cohort Workspace that Multiplies Student Completion Rates. Built for bootcamps, schools, and structured learning communities.",
+      "Stop juggling scattered chat groups, meeting links, and shared folders. Zedu brings learners and educators together in one organized space built for bootcamps and learning communities.",
     url: "/",
     siteName: "Zedu",
     images: [
