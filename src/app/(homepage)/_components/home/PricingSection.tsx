@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { pricingCardsByCycle } from "../../_lib/pricingData";
 import { PricingCard } from "../ui/PricingCard";
+import { usePlanHref } from "../ui/Button";
 import Link from "next/link";
 import { PurpleArrowRight } from "../svgs";
 
@@ -17,6 +18,7 @@ export const PricingSection = ({
     "yearly"
   );
   const plans = pricingCardsByCycle[billingCycle];
+  const planHref = usePlanHref();
 
   return (
     <section className="relative isolate flex w-full flex-col items-center gap-6 overflow-hidden px-4 py-12 text-center sm:gap-6 sm:px-8 sm:py-16  lg:gap-8 lg:px-12">
@@ -88,7 +90,7 @@ export const PricingSection = ({
         size.
       </h1>
       <Link
-        href={"client/settings/organisation/billing/all-plans"}
+        href={planHref}
         className="group flex items-center gap-2 font-semibold text-primary-500"
       >
         Compare different plans

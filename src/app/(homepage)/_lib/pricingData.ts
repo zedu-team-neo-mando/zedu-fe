@@ -22,6 +22,9 @@ export type PricingCardData = {
   badgeText?: string;
 };
 
+/** Marks a CTA that must resolve to the viewer's org billing page at render time. */
+export const PLAN_CTA = "plan";
+
 const staticPricingCards: PricingCardData[] = [
   {
     key: "starter",
@@ -59,7 +62,7 @@ const staticPricingCards: PricingCardData[] = [
       { text: "Admin moderation tools", enabled: true },
     ],
     ctaText: "Start Pro Plan",
-    ctaHref: "/client/settings/organisation/billing/all-plans",
+    ctaHref: PLAN_CTA,
     ctaVariant: "filled",
     variant: "popular",
     badgeText: "Most Popular",
