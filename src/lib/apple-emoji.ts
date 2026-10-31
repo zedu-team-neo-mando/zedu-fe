@@ -30,10 +30,55 @@ export function lookupAppleEmoji(emoji: string) {
   );
 }
 
+function escapeAttribute(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 function emojiImageTag(emoji: string, unified: string) {
   const src = appleEmojiImageUrl(unified);
   if (!src) return emoji;
-  return `<img class="apple-emoji-img" alt="${emoji}" src="${src}" draggable="false" />`;
+  return `<img class="apple-emoji-img" alt="${escapeAttribute(emoji)}" src="${src}" draggable="false" />`;
+}
+
+export type EmojiToken =
+  | { type: "text"; text: string }
+  | { type: "emoji"; emoji: string; src: string };
+
+/**
+ * Splits text into plain-text and emoji-image tokens so components can render
+ * it with JSX. React escapes the text tokens itself, which is why callers must
+ * never route this through dangerouslySetInnerHTML.
+ */
+export function tokenizeAppleEmoji(value: string): EmojiToken[] {
+  if (!value) return [];
+
+  const tokens: EmojiToken[] = [];
+  let cursor = 0;
+
+  EMOJI_PATTERN.lastIndex = 0;
+  for (const match of value.matchAll(EMOJI_PATTERN)) {
+    const emoji = match[0];
+    const unified = lookupAppleEmoji(emoji);
+    const src = unified ? appleEmojiImageUrl(unified) : undefined;
+    if (!src) continue;
+
+    const offset = match.index ?? 0;
+    if (offset > cursor) {
+      tokens.push({ type: "text", text: value.slice(cursor, offset) });
+    }
+    tokens.push({ type: "emoji", emoji, src });
+    cursor = offset + emoji.length;
+  }
+
+  if (cursor < value.length) {
+    tokens.push({ type: "text", text: value.slice(cursor) });
+  }
+
+  return tokens;
 }
 
 export function replaceEmojiWithImages(value: string) {
