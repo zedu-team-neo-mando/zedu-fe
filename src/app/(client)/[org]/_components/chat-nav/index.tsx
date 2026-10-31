@@ -19,6 +19,14 @@ import {
 } from "~/utils/user-deactivation";
 import StartBuzzConfirmModal from "../buzz-management/start-buzz-confirm-modal";
 
+/**
+ * Chat header component for a direct message or group conversation.
+ * Renders a compact fixed-height navigation bar with participant avatars,
+ * call button, member list, and menu dropdown, wrapped with a notification
+ * banner below it.
+ *
+ * @param participants - Array of participant objects in the conversation.
+ */
 const ChatHeader = ({ participants }: any) => {
   const [isMenuDropdownOpen, setIsMenuDropdownOpen] = useState(false);
   const [viewMembersOpen, setViewMembersOpen] = useState(false);
@@ -31,6 +39,12 @@ const ChatHeader = ({ participants }: any) => {
   const params = useParams();
   const id = params.id as string;
 
+  /**
+   * Builds a comma-separated label of participant usernames, truncating to
+   * the first four names and appending a "+N more" suffix for larger groups.
+   *
+   * @returns The formatted participant label string, or empty string when no participants.
+   */
   const participantLabel = (() => {
     if (!participants?.length) return "";
     const maxVisible = 4;
@@ -44,6 +58,13 @@ const ChatHeader = ({ participants }: any) => {
     return `${visibleNames} +${participants.length - maxVisible} more`;
   })();
 
+  /**
+   * Creates a direct-call buzz channel, joins it as the current user, and
+   * dispatches the resulting buzz data and participants to global state.
+   * Opens the start-buzz confirmation modal on success.
+   *
+   * Shows an error toast if the call creation or join fails.
+   */
   const handleCall = async () => {
     setStartLoading(true);
     try {
@@ -130,7 +151,7 @@ const ChatHeader = ({ participants }: any) => {
           aria-label="View members"
         >
           <div className="flex items-center gap-1.5">
-            {participants?.map((member: any) => (
+            {(participants ?? []).slice(0, 3).map((member: any) => (
               <Avatar
                 key={member.user_id}
                 className="rounded-[5px] w-5 h-5 -ml-2.5 first:ml-0 border border-[#E6EAEF]"
