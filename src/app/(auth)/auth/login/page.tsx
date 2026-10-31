@@ -7,6 +7,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Toaster } from "~/components/ui/toaster";
+import { showError } from "~/components/toast/sonner";
 import { PostRequest } from "~/utils/request";
 import Loading from "~/components/ui/loading";
 import { LoginWebhookRequest } from "~/utils/webhook-request";
@@ -245,8 +246,25 @@ function Login() {
         setGoogleloading(false);
       }
     },
-    onError: () => {
-      console.error("Login Failed");
+    onError: (error) => {
+      setGoogleloading(false);
+      console.error("Google Login Failed:", error);
+      if (error.error !== "access_denied") {
+        showError(
+          "Google sign-in failed",
+          "Try again, or use email and password instead."
+        );
+      }
+    },
+    onNonOAuthError: (error) => {
+      setGoogleloading(false);
+      console.error("Google Login Failed:", error);
+      if (error.type === "popup_failed_to_open") {
+        showError(
+          "Google sign-in failed",
+          "Allow pop-ups for this site, then try again."
+        );
+      }
     },
   });
 
