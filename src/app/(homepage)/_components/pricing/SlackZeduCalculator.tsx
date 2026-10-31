@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import Link from "next/link";
 import { cn } from "~/lib/utils";
+import { usePlanHref } from "../ui/Button";
 import {
   DialogClose,
   DialogContent,
@@ -18,7 +19,6 @@ import {
 // ---------------------------------------------------------------------------
 const SLACK_RATE_PER_LEARNER_PER_MONTH = 13_500; // ₦ per learner per month
 const ZEDU_MONTHLY_PRICE = 20_000; // ₦ fixed, learner-count-independent
-const PRO_PLAN_HREF = "/client/settings/organisation/billing/all-plans"; // same as PricingCard Pro
 
 // Slider configuration
 const SLIDER_MIN = 10;
@@ -370,6 +370,7 @@ export function SlackZeduCalculator({
 }) {
   const [learnerCount, setLearnerCount] = useState(SLIDER_INITIAL);
   const [durationMonths, setDurationMonths] = useState(DEFAULT_DURATION_MONTHS);
+  const planHref = usePlanHref();
 
   const sliderPercent = learnersToPosition(learnerCount);
 
@@ -564,10 +565,10 @@ export function SlackZeduCalculator({
                 savingsPercentage={pricing.savingsPercentage}
               />
 
-              {/* CTA — reuses exact Pro plan href from PricingCard */}
+              {/* CTA — same org-resolved Pro plan target as PricingCard */}
               <div className="flex flex-col items-center gap-1.5">
                 <Link
-                  href={PRO_PLAN_HREF}
+                  href={planHref}
                   className="group flex w-full items-center justify-center gap-2 rounded-full bg-primary-500 px-5 py-2.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-primary-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 sm:text-sm"
                 >
                   Start Saving with Zedu Pro

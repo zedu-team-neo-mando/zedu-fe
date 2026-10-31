@@ -35,12 +35,32 @@ export const OutlineBtn = ({
   return button;
 };
 
+/** The Pro plan page belongs to the viewer's org, so it can only be resolved client-side. */
+export function planHrefFor(token: string | null, orgSlug: string | null) {
+  return token && orgSlug
+    ? `/${orgSlug}/settings/organisation/billing/all-plans`
+    : "/auth/sign-up";
+}
+
+export function usePlanHref() {
+  const [token, setToken] = useState<string | null>(null);
+  const [orgSlug, setOrgSlug] = useState<string | null>(null);
+
+  useEffect(() => {
+    setToken(window.localStorage.getItem("token"));
+    setOrgSlug(window.localStorage.getItem("orgSlug"));
+  }, []);
+
+  return planHrefFor(token, orgSlug);
+}
+
 export const ArrowBtn = ({
   text,
   className,
   onClick,
   href,
   linkToHome,
+  linkToPlan,
   inverted,
   loggedInText,
   hideArrow = false,
@@ -51,6 +71,7 @@ export const ArrowBtn = ({
   href?: string;
   hideArrow?: boolean;
   linkToHome?: boolean;
+  linkToPlan?: boolean;
   loggedInText?: string;
   inverted?: boolean;
 }) => {
@@ -63,6 +84,7 @@ export const ArrowBtn = ({
   }, []);
 
   if (linkToHome) href = token ? `/${orgSlug}` : "/auth/sign-up";
+  if (linkToPlan) href = planHrefFor(token, orgSlug);
 
   return (
     <Link href={href || "#"}>
