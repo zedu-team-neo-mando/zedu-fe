@@ -10,44 +10,69 @@ export const useOrganisationDms = (orgId: string) => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [failedPage, setFailedPage] = useState<number | null>(null);
+  const loadingRef = useRef(false);
+  const requestGeneration = useRef(0);
   // Keep a ref so appends always use the latest list (avoids stale closure).
   const dmsRef = useRef(state.dms);
   dmsRef.current = state.dms;
 
   const fetchDms = useCallback(
     async (pageNumber: number, isInitial: boolean) => {
-      if (!orgId) return;
+      if (!orgId || loadingRef.current) return;
 
+      loadingRef.current = true;
       setLoading(true);
-      const response = await GetRequest(
-        `/organisations/${orgId}/dms?page=${pageNumber}&limit=${LIMIT}`
-      );
-
-      if (response?.status === 200 || response?.status === 201) {
-        const newDms = response?.data?.data || [];
-        const pagination = response?.data?.pagination?.[0];
-
-        dispatch({
-          type: ACTIONS.DMS,
-          payload: isInitial ? newDms : [...(dmsRef.current || []), ...newDms],
-        });
-
-        setHasMore(
-          pagination
-            ? pagination.current_page < pagination.total_pages
-            : newDms.length >= LIMIT
+      setFailedPage(null);
+      const generation = requestGeneration.current;
+      try {
+        const response = await GetRequest(
+          `/organisations/${orgId}/dms?page=${pageNumber}&limit=${LIMIT}`
         );
+        if (generation !== requestGeneration.current) return;
+
+        if (response?.status === 200 || response?.status === 201) {
+          const newDms = response?.data?.data || [];
+          const pagination = response?.data?.pagination?.[0];
+
+          dispatch({
+            type: ACTIONS.DMS,
+            payload: isInitial
+              ? newDms
+              : [...(dmsRef.current || []), ...newDms],
+          });
+
+          setPage(pageNumber);
+          setHasMore(
+            pagination
+              ? pagination.current_page < pagination.total_pages
+              : newDms.length >= LIMIT
+          );
+        } else {
+          setFailedPage(pageNumber);
+        }
+      } catch {
+        if (generation === requestGeneration.current) setFailedPage(pageNumber);
+      } finally {
+        if (generation === requestGeneration.current) {
+          loadingRef.current = false;
+          setLoading(false);
+        }
       }
-      setLoading(false);
     },
     [orgId, dispatch]
   );
 
   useEffect(() => {
     if (!orgId) return;
+    requestGeneration.current += 1;
+    loadingRef.current = false;
     setPage(1);
     setHasMore(true);
     fetchDms(1, true);
+    return () => {
+      requestGeneration.current += 1;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     orgId,
@@ -58,12 +83,14 @@ export const useOrganisationDms = (orgId: string) => {
   ]);
 
   const loadMore = useCallback(() => {
-    if (!loading && hasMore) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      fetchDms(nextPage, false);
+    if (!loading && hasMore && failedPage === null) {
+      fetchDms(page + 1, false);
     }
-  }, [loading, hasMore, page, fetchDms]);
+  }, [loading, hasMore, failedPage, page, fetchDms]);
 
-  return { loading, hasMore, loadMore };
+  const retry = useCallback(() => {
+    if (failedPage !== null) fetchDms(failedPage, failedPage === 1);
+  }, [failedPage, fetchDms]);
+
+  return { loading, hasMore, loadMore, failedPage, retry };
 };
