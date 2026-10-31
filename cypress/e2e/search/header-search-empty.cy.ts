@@ -114,9 +114,11 @@ describe("header search with no matches", () => {
 
   it("shows search button on mobile and opens mobile search overlay", () => {
     cy.viewport(390, 844);
+    cy.get('button[aria-label="Help"]').should("be.visible");
     cy.get('button[aria-label="Search"]').should("be.visible").click();
     cy.get(`input[placeholder="${SEARCH}"]`).should("be.visible");
     cy.get('button[aria-label="Close search"]').should("be.visible").click();
     cy.get('button[aria-label="Close search"]').should("not.exist");
+    cy.get('button[aria-label="Help"]').should("be.visible");
   });
 });

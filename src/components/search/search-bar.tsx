@@ -312,21 +312,7 @@ export const SearchInput = ({
       }
     >
       <div className="flex items-center w-full bg-blue-300 rounded-md relative">
-        <button
-          type="button"
-          onClick={() => {
-            if (searchQuery.trim()) {
-              handleSearch(searchQuery);
-            } else {
-              inputRef.current?.focus();
-              setIsOpen(true);
-            }
-          }}
-          className="p-1 hover:bg-white/10 rounded ml-1 md:ml-1.5 shrink-0 flex items-center justify-center focus:outline-none focus-visible:ring-1 focus-visible:ring-white"
-          aria-label="Search"
-        >
-          <Search className="text-white" size={19} />
-        </button>
+        <Search className="text-white mx-1 md:mx-2 shrink-0" size={19} />
         {channelName && (
           <div className="flex items-center justify-center px-2 py-1 my-2 rounded-md bg-white shrink-0">
             <Hash className="text-black" size={16} />
