@@ -168,7 +168,7 @@ const FileManagementProductsPage = () => {
           <div className="relative aspect-[16/10]  w-full sm:aspect-[16/9] lg:aspect-[2/1] ">
             <Image
               src="/images/homepage/products/files-hero.png"
-              alt="Preview of the learning communication interface"
+              alt="Zedu file management interface showing course materials, folders, and shared cohort resources"
               fill
               priority
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 92vw, 1200px"
@@ -178,9 +178,9 @@ const FileManagementProductsPage = () => {
         </div>
       </section>
       <section className="relative isolate flex w-full flex-col items-center gap-4 overflow-hidden px-4 py-10 text-center sm:gap-6 sm:px-8 sm:py-16  lg:gap-8 lg:px-12">
-        <h1 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-4xl md:text-5xl text-center">
+        <h2 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-4xl md:text-5xl text-center">
           Organize and Collaborate on Learning Files
-        </h1>
+        </h2>
         <p className="max-w-[95%] text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
           Structure course materials and work together seamlessly in one
           connected workspace
@@ -226,9 +226,9 @@ const FileManagementProductsPage = () => {
         </div>
       </section>
       <section className="relative isolate flex w-full flex-col items-center gap-4 overflow-hidden px-4 py-10 text-center sm:gap-6 sm:px-8 sm:py-16  lg:gap-8 lg:px-12">
-        <h1 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-4xl md:text-5xl text-center">
+        <h2 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-4xl md:text-5xl text-center">
           Smart, Secure, and Scalable File Management
-        </h1>
+        </h2>
         <p className="max-w-[95%] text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
           Zedu brings together powerful search, secure sharing, and education
           focused workflows into one system
@@ -251,10 +251,10 @@ const FileManagementProductsPage = () => {
       </section>
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16 mt-5 bg-blue-50/30">
         <div className="flex flex-col items-center gap-4">
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
             Connected to the{" "}
             <span className="text-primary-500">Rest of Zedu</span>
-          </h1>
+          </h2>
           <p className="max-w-[95%] text-center text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
             File management integrates seamlessly with other features.
           </p>
