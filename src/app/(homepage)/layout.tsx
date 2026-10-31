@@ -6,6 +6,9 @@ import { DataProvider } from "~/store/GlobalState";
 import Footer from "./_components/footer";
 import Header from "./_components/header";
 import { ForceLightTheme } from "~/components/theme/force-light-theme";
+import { CelebrationThemeProvider } from "./_components/home/CelebrationThemeContext";
+import { CelebrationBanner } from "./_components/home/CelebrationBanner";
+import { CelebrationAtmosphere } from "./_components/home/CelebrationAtmosphere";
 
 export const metadata: Metadata = {
   metadataBase: process.env.NEXT_PUBLIC_CLIENT_URL
@@ -68,15 +71,21 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ForceLightTheme>
-      <DataProvider>
-        <div className="zedu-marketing w-full">
-          <Header />
-          <div className="pt-12 min-w-screen overflow-x-hidden">{children}</div>
-          <Footer />
-        </div>
+      <CelebrationThemeProvider>
+        <DataProvider>
+          <div className="zedu-marketing w-full min-h-screen relative flex flex-col justify-between">
+            <CelebrationAtmosphere />
+            <Header />
+            <div className="pt-20 min-w-screen overflow-x-hidden flex-1">
+              <CelebrationBanner />
+              {children}
+            </div>
+            <Footer />
+          </div>
 
-        <Toaster />
-      </DataProvider>
+          <Toaster />
+        </DataProvider>
+      </CelebrationThemeProvider>
     </ForceLightTheme>
   );
 }

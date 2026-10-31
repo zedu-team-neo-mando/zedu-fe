@@ -21,6 +21,8 @@ import { usePathname } from "next/navigation";
 import { DataContext } from "~/store/GlobalState";
 import { WidgetIcon } from "../svgs";
 import { ArrowBtn, OutlineBtn } from "../ui/Button";
+import { useCelebration } from "../home/CelebrationThemeContext";
+import { cn } from "~/lib/utils";
 
 type NavLink = {
   label: string;
@@ -74,6 +76,7 @@ const Header: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
   const { state } = useContext(DataContext);
+  const { celebration } = useCelebration();
 
   const logoWhite = "/zedu_white.png";
   const logoBlack = "/Zedu.png";
@@ -142,8 +145,15 @@ const Header: React.FC = () => {
               : "border-[#F2F4F7] bg-white"
           }`}
         >
+          {/* Seasonal festive top accent border line */}
+          {celebration && (
+            <div
+              className={`absolute top-0 inset-x-0 h-1 z-50 ${celebration.topBarGradientClass}`}
+            />
+          )}
+
           <div className="group relative mx-auto flex w-full max-w-[1300px] items-center justify-between px-4 md:px-6 lg:px-4 xl:px-8">
-            <div className="z-50 flex items-center gap-8 px-0">
+            <div className="z-50 flex items-center gap-4 sm:gap-8 px-0">
               <div className="flex shrink-0 items-center">
                 <Link href="/">
                   <Image
@@ -240,13 +250,19 @@ const Header: React.FC = () => {
                     <OutlineBtn
                       text="Contact Sales"
                       href="/contact-sales"
-                      className="px-3 py-1.5"
+                      className={cn(
+                        "px-3 py-1.5",
+                        celebration && celebration.heroOutlineBtnClass
+                      )}
                     />
                     <ArrowBtn
                       text="Get Started"
                       linkToHome
                       hideArrow
-                      className="px-3 py-1.5"
+                      className={cn(
+                        "px-3 py-1.5",
+                        celebration && celebration.headerBtnClass
+                      )}
                     />
                   </div>
                 </>
@@ -255,14 +271,25 @@ const Header: React.FC = () => {
                   <OutlineBtn
                     text="Contact Sales"
                     href="/contact-sales"
-                    className="px-3 py-1.5"
+                    className={cn(
+                      "px-3 py-1.5",
+                      celebration && celebration.heroOutlineBtnClass
+                    )}
                   />
 
                   <ArrowBtn
                     text="Go to Dashboard"
                     linkToHome
+                    loggedInText={
+                      celebration
+                        ? `Go to Dashboard ${celebration.iconEmoji}`
+                        : "Go to Dashboard"
+                    }
                     hideArrow
-                    className="px-3 py-1.5"
+                    className={cn(
+                      "px-3 py-1.5",
+                      celebration && celebration.headerBtnClass
+                    )}
                   />
                 </>
               )}
@@ -363,9 +390,13 @@ const Header: React.FC = () => {
               {!loading && token ? (
                 <Link
                   href="/client"
-                  className="mx-4 flex items-center justify-center rounded-lg bg-white/20 py-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-white/30"
+                  className={`mx-4 flex items-center justify-center rounded-lg py-3 text-sm font-medium text-white transition-colors duration-200 ${
+                    celebration
+                      ? celebration.headerBtnClass
+                      : "bg-white/20 hover:bg-white/30"
+                  }`}
                 >
-                  Go to dashboard
+                  Go to dashboard {celebration ? celebration.iconEmoji : ""}
                 </Link>
               ) : (
                 <div className="mt-4 flex flex-col gap-3 px-4">
@@ -384,9 +415,13 @@ const Header: React.FC = () => {
                   </Link>
                   <Link
                     href="/auth/sign-up"
-                    className="flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-[#8860F8] to-[#7141F8] py-3 text-sm font-medium text-white transition-colors duration-200 hover:from-[#7141F8] hover:to-[#8860F8]"
+                    className={`flex w-full items-center justify-center rounded-lg py-3 text-sm font-medium text-white transition-colors duration-200 ${
+                      celebration
+                        ? celebration.headerBtnClass
+                        : "bg-gradient-to-r from-[#8860F8] to-[#7141F8] hover:from-[#7141F8] hover:to-[#8860F8]"
+                    }`}
                   >
-                    Get Started
+                    Get Started {celebration ? celebration.iconEmoji : ""}
                   </Link>
                 </div>
               )}
