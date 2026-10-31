@@ -19,9 +19,11 @@ export const PricingSection = ({
     "monthly"
   );
   const [calculatorOpen, setCalculatorOpen] = useState(false);
+  // Button outside the dialog that opened it, so focus can return there
   const externalOpenerRef = useRef<HTMLElement | null>(null);
   const plans = pricingCardsByCycle[billingCycle];
 
+  // Listen for the custom event dispatched by the "Calculate Your Savings" button
   useEffect(() => {
     const handler = (event: Event) => {
       const opener = (event as CustomEvent).detail;
@@ -60,6 +62,7 @@ export const PricingSection = ({
             </p>
           ) : null}
 
+          {/* Interactive Billing Toggle */}
           <div className="mt-2 inline-flex items-center rounded-full bg-neutral-100 p-1.5 shadow-inner">
             <button
               type="button"
@@ -88,6 +91,7 @@ export const PricingSection = ({
           </div>
         </div>
 
+        {/* Pricing Cards Grid */}
         <div className="grid w-full max-w-7xl grid-cols-1 mt-6 place-items-stretch justify-center gap-8 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-8">
           {plans.map((plan) => (
             <div key={plan.key} className="flex justify-center">
@@ -126,6 +130,7 @@ export const PricingSection = ({
           </span>
         </Link>
 
+        {/* New CTA: open Slack vs. Zedu comparison calculator */}
         <DialogTrigger asChild>
           <button
             type="button"
@@ -139,6 +144,7 @@ export const PricingSection = ({
         </DialogTrigger>
       </section>
 
+      {/* Calculator modal — rendered outside the section so it can use a portal-like overlay */}
       <SlackZeduCalculator onCloseAutoFocus={handleCalculatorCloseAutoFocus} />
     </Dialog>
   );
