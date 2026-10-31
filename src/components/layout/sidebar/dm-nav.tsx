@@ -139,7 +139,8 @@ export default function DMNav({
 
   const orgId =
     typeof window !== "undefined" ? localStorage.getItem("orgId") || "" : "";
-  const { hasMore, loadMore } = useOrganisationDms(orgId);
+  const { loading, hasMore, loadMore, failedPage, retry } =
+    useOrganisationDms(orgId);
 
   useEffect(() => {
     const savedScroll = sessionStorage.getItem("sidebar-scroll");
@@ -243,6 +244,24 @@ export default function DMNav({
     return searchData;
   }, [searchData, filter]);
 
+  useEffect(() => {
+    const scroller = sidebarScrollRef.current;
+    if (!scroller || !hasMore || loading || failedPage !== null) return;
+
+    const loadIfNearBottom = () => {
+      if (
+        scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight <
+        120
+      ) {
+        loadMore();
+      }
+    };
+
+    loadIfNearBottom();
+    window.addEventListener("resize", loadIfNearBottom);
+    return () => window.removeEventListener("resize", loadIfNearBottom);
+  }, [filteredData, hasMore, loading, failedPage, loadMore]);
+
   return (
     <>
       <div
@@ -255,7 +274,7 @@ export default function DMNav({
             : { width: `${sidebarWidth}px` }
         }
         className={cn(
-          `fixed top-[60px] lg:rounded-tl-[8px] lg:rounded-bl-[8px] bottom-[60px] left-0 lg:left-[85px] bg-blue-300 lg:translate-x-0  ${state?.openSidebar ? "translate-x-[85px]" : "-translate-x-full "}
+          `fixed top-[60px] lg:rounded-tl-[8px] lg:rounded-bl-[8px] bottom-0 left-0 lg:left-[85px] bg-blue-300 lg:translate-x-0  ${state?.openSidebar ? "translate-x-[85px]" : "-translate-x-full "}
       pt-4 flex flex-col gap-4 sm:w-[350px] transition-transform duration-300 ease-in-out z-30`,
           // DMs index on mobile: the list is the page, not a hidden drawer.
           fullPageOnMobile && "w-full sm:w-full lg:w-[var(--dm-sidebar-width)]",
@@ -365,9 +384,9 @@ export default function DMNav({
           }
         >
           <InfiniteScroll
-            dataLength={searchData?.length || 0}
+            dataLength={state?.dms?.length || 0}
             next={loadMore}
-            hasMore={hasMore && !searchInput}
+            hasMore={hasMore && failedPage === null}
             loader={
               <div className="flex justify-center p-4">
                 <Loader2 className="animate-spin text-white/70" size={20} />
@@ -427,7 +446,7 @@ export default function DMNav({
                 );
               })}
 
-              {filteredData?.length === 0 && (
+              {filteredData?.length === 0 && !hasMore && !loading && (
                 <p className="self-center mt-10 text-sm text-blue-100">
                   {filter === "unread"
                     ? "No unread messages"
@@ -438,6 +457,21 @@ export default function DMNav({
               )}
             </div>
           </InfiniteScroll>
+          {failedPage !== null && (
+            <div className="flex flex-col items-center gap-2 p-4 text-sm text-blue-100">
+              <span>Could not load conversations.</span>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  retry();
+                }}
+                className="underline"
+              >
+                Retry
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Sticky Footer Wrapper for Action Button (Does not overlap list items) */}
