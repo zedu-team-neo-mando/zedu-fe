@@ -135,7 +135,9 @@ const ChannelsPage = () => {
       mentions: state?.mentions,
     };
 
-    await PostRequest(`/threads/${id}`, payload);
+    const res = await PostRequest(`/threads/${id}`, payload);
+    // Tells the message box whether to keep the typed text as a draft.
+    return res?.status === 200 || res?.status === 201;
   };
 
   // reply messages
