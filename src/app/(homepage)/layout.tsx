@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import React, { Suspense } from "react";
-import { ogImageUrl, siteUrl } from "~/lib/env-urls";
+import { appStoreAppId, ogImageUrl, siteUrl } from "~/lib/env-urls";
 import { Toaster } from "~/components/ui/toaster";
 import { DataProvider } from "~/store/GlobalState";
 import Footer from "./_components/footer";
@@ -62,6 +62,9 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  // iOS Smart App Banner: Safari offers the Zedu app on every marketing page.
+  // Left out when the App Store link is not configured.
+  ...(appStoreAppId() ? { itunes: { appId: appStoreAppId() } } : {}),
 };
 
 export default function RootLayout({
