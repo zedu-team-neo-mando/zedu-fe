@@ -9,6 +9,8 @@ import {
   ChevronUp,
   Pin,
   CircleHelp,
+  ArrowLeft,
+  Search,
 } from "lucide-react";
 import { PinIcon } from "~/svgs/index";
 import { usePathname } from "next/navigation";
@@ -68,6 +70,11 @@ const Topbar = () => {
   const { firstChannel } = UseFirstChannel();
   const [isWorkspaceModalOpen, setIsWorkspaceModalOpen] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+
+  useEffect(() => {
+    setIsMobileSearchOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     const org_id = localStorage.getItem("orgId") || "";
@@ -525,6 +532,18 @@ const Topbar = () => {
       <div className="flex h-full min-w-0 lg:w-auto items-center lg:py-1 mr-2 lg:mr-0 lg:gap-6">
         <PillWidget />
         <MiniWidget />
+        {!pathname.includes(`/${orgSlug}/welcome`) && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Search"
+            onClick={() => setIsMobileSearchOpen(true)}
+            className="sm:hidden size-9 shrink-0 text-white hover:bg-blue-300 hover:text-white focus-visible:ring-white"
+          >
+            <Search className="size-5" />
+          </Button>
+        )}
         <Popover>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -568,6 +587,31 @@ const Topbar = () => {
           </PopoverContent>
         </Popover>
       </div>
+
+      {isMobileSearchOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-white dark:bg-neutral-950 sm:hidden">
+          <div className="h-[60px] bg-blue-500 px-3 flex items-center gap-2 text-white shrink-0">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Close search"
+              onClick={() => setIsMobileSearchOpen(false)}
+              className="size-9 shrink-0 text-white hover:bg-blue-300 hover:text-white focus-visible:ring-white"
+            >
+              <ArrowLeft className="size-5" />
+            </Button>
+            <div className="flex-1 min-w-0">
+              <SearchInput
+                name={name}
+                orgId={orgData?.id}
+                isMobile
+                onClose={() => setIsMobileSearchOpen(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
