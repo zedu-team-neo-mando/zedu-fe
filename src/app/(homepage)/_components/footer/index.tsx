@@ -60,7 +60,16 @@ const supportLinks: FooterLink[] = [
 
 const resourcesLinks: FooterLink[] = [
   { id: 0, label: "Resource Library", href: "/resources" },
-  { id: 1, label: "Templates", href: "/templates" },
+  {
+    id: 1,
+    label: "Slack Alternative",
+    href: "/alternatives/slack-for-education",
+  },
+  {
+    id: 4,
+    label: "Discord Alternative",
+    href: "/alternatives/discord-for-schools",
+  },
   { id: 2, label: "Privacy Policy", href: "/policy" },
   { id: 3, label: "Terms of Service", href: "/terms-of-service" },
 ];
