@@ -24,6 +24,16 @@ export const tabs: ResourceTab[] = [
 
 export const resources: ResourceItem[] = [
   {
+    id: 9,
+    tab: "guides",
+    category: "Guides",
+    title: "Running student office hours with Zedu Buzz",
+    description:
+      "Prepare student questions, follow a focused 30-minute agenda, and share a useful recap with practical templates.",
+    image: "/images/homepage/resources/image-2.png",
+    link: "/resources/guides/student-office-hours",
+  },
+  {
     id: 1,
     tab: "guides",
     category: "Guides",
