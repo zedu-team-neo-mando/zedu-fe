@@ -61,36 +61,11 @@ import { useAttachments } from "./use-attachments";
 import { useParams } from "next/navigation";
 import { uuidv7 } from "uuidv7";
 import { CHAT_FILE_ACCEPT } from "~/utils/document-files";
-
-const MESSAGE_DRAFTS_KEY = "zedu:message-drafts";
-
-function readMessageDrafts(): Record<string, string> {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = localStorage.getItem(MESSAGE_DRAFTS_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveMessageDraft(key: string, html: string, empty: boolean) {
-  if (!key || typeof window === "undefined") return;
-  const drafts = readMessageDrafts();
-  if (empty) {
-    if (!(key in drafts)) return;
-    delete drafts[key];
-  } else {
-    drafts[key] = html;
-  }
-  localStorage.setItem(MESSAGE_DRAFTS_KEY, JSON.stringify(drafts));
-}
-
-function loadMessageDraft(key: string) {
-  return readMessageDrafts()[key] || "";
-}
+import {
+  clearMessageDraft,
+  loadMessageDraft,
+  saveMessageDraft,
+} from "./message-drafts";
 
 const MessageBox = ({
   subscription,
@@ -236,11 +211,31 @@ const MessageBox = ({
     content = content.replace(plainTextContent, fullyConvertedText);
 
     if (subscription) {
+      // Keep what was typed so it can be put back if the send fails.
+      const sentHtml = editor.getHTML();
+
       editor.commands.clearContent();
       clear();
-
-      sendMessage(id, uuid, content, uploaded);
       dispatch({ type: ACTIONS.CLEAR_MENTIONS });
+
+      // clearContent() does not fire the editor's update event, so the saved
+      // draft still holds the sent text. It is removed only once the send has
+      // succeeded, so a failed send does not lose the message.
+      let sent = true;
+      try {
+        // Callers that report a result return false when the send failed.
+        sent = (await sendMessage(id, uuid, content, uploaded)) !== false;
+      } catch {
+        sent = false;
+      }
+
+      if (sent) {
+        // Leave the draft alone if the user has already started a new message.
+        if (editor.isEmpty) clearMessageDraft(storageKey);
+      } else if (editor.isEmpty) {
+        editor.commands.setContent(sentHtml);
+        editor.commands.focus("end");
+      }
     }
   };
 

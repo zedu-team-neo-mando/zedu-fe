@@ -77,7 +77,9 @@ const ChatPage = () => {
       media: medias,
       mentions: state?.mentions,
     };
-    await PostRequest(`/group-dms/channels/${id}/threads`, payload);
+    const res = await PostRequest(`/group-dms/channels/${id}/threads`, payload);
+    // Tells the message box whether to keep the typed text as a draft.
+    return res?.status === 200 || res?.status === 201;
   };
 
   const handleReplyMessage = async (

@@ -4,6 +4,16 @@ on:
   push:
     branches:
       - dev
+  # GitHub attributes a scheduled run to the account it ties to the schedule, so
+  # a restricted or flagged account silently takes the cron down with it and
+  # nothing notices. Ride workflows that already tick on schedule instead: the
+  # release needs a trigger, never a particular person's push.
+  workflow_run:
+    workflows:
+      - Update branch
+      - PR nudges
+    types:
+      - completed
   schedule:
     - cron: "*/15 * * * *"
   workflow_dispatch:
@@ -20,6 +30,8 @@ jobs:
     if: >-
       github.event_name == 'schedule' ||
       github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success') ||
       (github.event_name == 'push' &&
        !contains(github.event.head_commit.message, '[skip release]') &&
        !contains(github.event.head_commit.message, 'sync/'))

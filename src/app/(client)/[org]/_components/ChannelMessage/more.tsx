@@ -27,6 +27,7 @@ import PinMessageDialog from "../pin-message-modal";
 import { buildMessageLink, getMessageLinkContext } from "~/utils/message-link";
 import { orgSlugFromPathname } from "~/lib/reserved-paths";
 import { showInfo } from "~/components/toast/sonner";
+import { canEditMessage } from "~/utils/message-edit";
 
 const MessageContextMenu = ({ item }: any) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -234,20 +235,23 @@ const MessageContextMenu = ({ item }: any) => {
 
             {user?.user_id === item?.user_id && (
               <>
-                <div
-                  onClick={handleEdit}
-                  className="group flex items-center justify-between px-4 py-1 my-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white cursor-pointer"
-                >
-                  <div className="flex items-center gap-2">
-                    <Edit size={16} />
-                    <span>Edit message</span>
-                  </div>
-                  <span className="ml-4 text-xs text-gray-400 group-hover:text-white">
-                    E
-                  </span>
-                </div>
-                <hr />
-
+                {canEditMessage(user?.user_id, item) && (
+                  <>
+                    <div
+                      onClick={handleEdit}
+                      className="group flex items-center justify-between px-4 py-1 my-2 text-sm text-gray-700 hover:bg-blue-500 hover:text-white cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Edit size={16} />
+                        <span>Edit message</span>
+                      </div>
+                      <span className="ml-4 text-xs text-gray-400 group-hover:text-white">
+                        E
+                      </span>
+                    </div>
+                    <hr />
+                  </>
+                )}
                 <div
                   onClick={handleDelete}
                   className="group flex items-center justify-between px-4 py-1 my-2 text-sm text-red-500 hover:bg-red-500 hover:text-white cursor-pointer"
