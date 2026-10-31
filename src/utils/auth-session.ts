@@ -3,10 +3,14 @@ import axios from "axios";
 let isHandlingSessionExpiry = false;
 
 const REMEMBER_ME_KEY = "rememberMe";
-// The token the "not remembered" choice was made for. A login that does not
-// go through the Remember me checkbox (an invitation, a magic link, a buzz
-// recorder link) stores a different token, which makes an old flag stale.
-const REMEMBER_ME_TOKEN_KEY = "rememberMeToken";
+// The user the "not remembered" choice was made for, read from the token's
+// user_id claim. The token itself changes during a session (switching
+// workspace, creating an organisation and onboarding all issue a new one), so
+// the choice is bound to the user, not to a token. A login as a different user
+// (an invitation, a magic link, a buzz recorder link) makes an old flag stale.
+const REMEMBER_ME_USER_KEY = "rememberMeUser";
+// Earlier builds stored the token here; only read to migrate old flags.
+const LEGACY_REMEMBER_ME_TOKEN_KEY = "rememberMeToken";
 const LAST_ACTIVE_KEY = "rememberMeLastActive";
 // A cookie without an expiry date is deleted by the browser when it closes,
 // and unlike sessionStorage it is shared by every tab.
@@ -29,8 +33,27 @@ const SESSION_KEYS = [
 
 const clearRememberMeFlags = () => {
   localStorage.removeItem(REMEMBER_ME_KEY);
-  localStorage.removeItem(REMEMBER_ME_TOKEN_KEY);
+  localStorage.removeItem(REMEMBER_ME_USER_KEY);
+  localStorage.removeItem(LEGACY_REMEMBER_ME_TOKEN_KEY);
   localStorage.removeItem(LAST_ACTIVE_KEY);
+};
+
+// Reads the user_id claim from a JWT without verifying it. It is only used to
+// tell whether two tokens belong to the same user; the API still verifies
+// every request. Returns null for anything that is not a readable JWT.
+const tokenUserId = (token: string | null): string | null => {
+  if (!token) return null;
+  const payload = token.split(".")[1];
+  if (!payload) return null;
+  try {
+    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
+    const claims = JSON.parse(atob(padded));
+    const userId = claims?.user_id;
+    return typeof userId === "string" && userId ? userId : null;
+  } catch {
+    return null;
+  }
 };
 
 const hasBrowserSessionCookie = () =>
@@ -58,8 +81,8 @@ export const saveRememberMe = (remember: boolean) => {
   if (!remember) {
     localStorage.setItem(REMEMBER_ME_KEY, "false");
     localStorage.setItem(
-      REMEMBER_ME_TOKEN_KEY,
-      localStorage.getItem("token") ?? ""
+      REMEMBER_ME_USER_KEY,
+      tokenUserId(localStorage.getItem("token")) ?? ""
     );
     localStorage.setItem(LAST_ACTIVE_KEY, String(Date.now()));
   }
@@ -79,9 +102,20 @@ export const endSessionIfNotRemembered = (): boolean => {
   }
 
   const token = localStorage.getItem("token");
-  if (!token || token !== localStorage.getItem(REMEMBER_ME_TOKEN_KEY)) {
-    // The choice belongs to an earlier session; the current one was created
-    // another way and is not ended by it.
+  const userId = tokenUserId(token);
+
+  // Flags saved by an earlier build hold the token instead of the user.
+  const legacyToken = localStorage.getItem(LEGACY_REMEMBER_ME_TOKEN_KEY);
+  if (legacyToken !== null) {
+    localStorage.removeItem(LEGACY_REMEMBER_ME_TOKEN_KEY);
+    if (token && token === legacyToken && userId) {
+      localStorage.setItem(REMEMBER_ME_USER_KEY, userId);
+    }
+  }
+
+  if (!userId || userId !== localStorage.getItem(REMEMBER_ME_USER_KEY)) {
+    // The choice belongs to another user's session; the current one was
+    // created another way and is not ended by it.
     clearRememberMeFlags();
     return false;
   }

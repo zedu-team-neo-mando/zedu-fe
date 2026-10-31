@@ -12,6 +12,7 @@ import {
   redirectAfterOrgSwitch,
   resolveChannelIdForOrgSwitch,
 } from "~/utils/org-switch";
+import { validateOrganisationForm } from "~/utils/organisation-form";
 
 // initial states
 const initialState = {
@@ -43,31 +44,15 @@ const CreateOrganization: React.FC = () => {
   }, []);
 
   const validateForm = () => {
-    const trimmedName = values.organisationName.trim();
-    const trimmedType = values.organisationType.trim();
-
-    if (!trimmedName) {
-      showError("Please enter an organisation name.");
+    const error = validateOrganisationForm({
+      organisationName: values.organisationName,
+      organisationType: values.organisationType,
+      country: country?.value,
+    });
+    if (error) {
+      showError(error);
       return false;
     }
-
-    // Count characters, not UTF-16 units, so an emoji counts as one.
-    const nameLength = Array.from(trimmedName).length;
-    if (nameLength < 2 || nameLength > 255) {
-      showError("Organisation name must be between 2 and 255 characters.");
-      return false;
-    }
-
-    if (!trimmedType) {
-      showError("Please enter an organisation type.");
-      return false;
-    }
-
-    if (!country?.value) {
-      showError("Please select a country.");
-      return false;
-    }
-
     return true;
   };
 

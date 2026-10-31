@@ -208,6 +208,10 @@ const StatusModal = () => {
           <input
             type="text"
             value={statusText}
+            // Blocks typing past the limit, so a full field rejects the input
+            // instead of dropping the last character. The clamp still covers
+            // paste, IME composition and the save payload.
+            maxLength={STATUS_MAX_LENGTH}
             onChange={handleStatusTextChange}
             onCompositionStart={() => {
               isComposingRef.current = true;

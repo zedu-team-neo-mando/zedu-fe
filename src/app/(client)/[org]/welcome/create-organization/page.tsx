@@ -22,6 +22,7 @@ import {
 } from "~/utils/org-switch";
 
 import { isAutoCreatedOrg } from "~/utils/organisation";
+import { validateOrganisationForm } from "~/utils/organisation-form";
 
 const PENDING_TEMPLATE_ORG_STORAGE = "pending_org";
 
@@ -279,6 +280,20 @@ const CreateOrganization: React.FC = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
+    // A retry after the organisation was created only provisions templates,
+    // so the form is validated only before the organisation exists.
+    if (!createdOrg?.id) {
+      const error = validateOrganisationForm({
+        organisationName: values.organisationName,
+        organisationType: values.organisationType,
+        country: country?.value,
+      });
+      if (error) {
+        showError(error);
+        return;
+      }
+    }
+
     const token = localStorage.getItem("token") || "";
 
     setButtonloding(true);
@@ -328,8 +343,8 @@ const CreateOrganization: React.FC = () => {
     }
 
     const payload = {
-      name: values.organisationName,
-      type: values.organisationType,
+      name: values.organisationName.trim(),
+      type: values.organisationType.trim(),
       country: country?.value,
     };
 
@@ -460,9 +475,16 @@ const CreateOrganization: React.FC = () => {
 
                 <div className="flex flex-col sm:flex-row align-center justify-between gap-6">
                   <div className="form-box sm:mb-3 w-full">
-                    <label className="mb-2 block text-sm">Country</label>
+                    <label
+                      htmlFor="onboarding-organisation-country"
+                      className="mb-2 block text-sm"
+                    >
+                      Country
+                    </label>
 
                     <CustomSelect
+                      inputId="onboarding-organisation-country"
+                      required
                       options={countries}
                       placeholder="Select an option..."
                       onChange={setCountry}

@@ -29,6 +29,10 @@ const InviteForm = () => {
   const invitation_token = searchParams.get("invitation_token");
   const linkInvalid = !org_id || !invitation_token;
   const [loading, setLoading] = useState(true);
+  // The link has both parameters but the organisation could not be loaded
+  // for it (an unknown organisation or a bad or expired token).
+  const [orgLoadFailed, setOrgLoadFailed] = useState(false);
+  const showInvalidLink = linkInvalid || orgLoadFailed;
   const [pendingRedirect, setPendingRedirect] =
     useState<PendingRedirect | null>(null);
   const [redirectCountdown, setRedirectCountdown] = useState(REDIRECT_SECONDS);
@@ -105,6 +109,7 @@ const InviteForm = () => {
       );
 
       if (res?.status !== 200 && res?.status !== 201) {
+        setOrgLoadFailed(true);
         setLoading(false);
         return;
       }
@@ -174,7 +179,7 @@ const InviteForm = () => {
           <Image src="/Zedu.png" alt="Zedu home" width={86} height={31} />
         </Link>
 
-        {linkInvalid ? (
+        {showInvalidLink ? (
           <div
             role="alert"
             className="mt-14 flex w-full max-w-[36rem] flex-col items-center text-center"
@@ -238,7 +243,7 @@ const InviteForm = () => {
         )}
       </div>
 
-      {!loading && !linkInvalid && (
+      {!loading && !showInvalidLink && (
         <div className="mx-auto mt-10 w-full max-w-lg rounded-md bg-white text-center">
           <form
             onSubmit={handleAccept}

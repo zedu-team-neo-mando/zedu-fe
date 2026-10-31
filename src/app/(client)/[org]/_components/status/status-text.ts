@@ -3,9 +3,9 @@
  *
  * The limit is counted in UTF-16 code units, the same unit the desktop client
  * and the native `maxlength` attribute use: 100 ASCII characters, or 50 simple
- * emoji, fill the field. Trimming always removes a whole code point, so a value
- * can come back at 99 units when the 100th unit would have been the high half
- * of a surrogate pair.
+ * emoji, fill the field. Trimming removes whole characters (grapheme clusters
+ * where the browser supports Intl.Segmenter), so a value can come back
+ * shorter than 100 units when the next character would not fit whole.
  */
 export const STATUS_MAX_LENGTH = 100;
 
@@ -50,15 +50,52 @@ export const toWellFormedStatusText = (value: string): string => {
   return result;
 };
 
+type GraphemeSegmenter = {
+  segment: (input: string) => Iterable<{ segment: string }>;
+};
+
+const createGraphemeSegmenter = (): GraphemeSegmenter | null => {
+  const IntlWithSegmenter = Intl as typeof Intl & {
+    Segmenter?: new (
+      locale?: string,
+      options?: { granularity: "grapheme" }
+    ) => GraphemeSegmenter;
+  };
+  if (typeof IntlWithSegmenter.Segmenter !== "function") return null;
+  return new IntlWithSegmenter.Segmenter(undefined, {
+    granularity: "grapheme",
+  });
+};
+
+const graphemeSegmenter = createGraphemeSegmenter();
+
 /**
- * Returns a well-formed value that fits `STATUS_MAX_LENGTH` without ever
- * splitting a surrogate pair. Used for changes, paste, and the save payload,
- * so oversized or malformed text cannot reach the API.
+ * Returns a well-formed value that fits `STATUS_MAX_LENGTH` without splitting
+ * a character. Where `Intl.Segmenter` is available the cut lands on a grapheme
+ * boundary, so a family emoji (joined with U+200D) or a flag (two regional
+ * indicators) is kept whole or dropped whole. Older browsers fall back to
+ * never splitting a surrogate pair. Used for changes, paste, and the save
+ * payload, so oversized or malformed text cannot reach the API.
  */
 export const clampStatusText = (value: string): string => {
-  const wellFormed = toWellFormedStatusText(value);
+  // A native maxlength cut can leave the high half of a pair at the end;
+  // drop it rather than turning it into U+FFFD.
+  const trimmed =
+    value.length > 0 && isHighSurrogate(value.charCodeAt(value.length - 1))
+      ? value.slice(0, -1)
+      : value;
+  const wellFormed = toWellFormedStatusText(trimmed);
 
   if (wellFormed.length <= STATUS_MAX_LENGTH) return wellFormed;
+
+  if (graphemeSegmenter) {
+    let result = "";
+    for (const { segment } of graphemeSegmenter.segment(wellFormed)) {
+      if (result.length + segment.length > STATUS_MAX_LENGTH) break;
+      result += segment;
+    }
+    return result;
+  }
 
   let end = STATUS_MAX_LENGTH;
   // The cut would land between the halves of a surrogate pair: drop the high
