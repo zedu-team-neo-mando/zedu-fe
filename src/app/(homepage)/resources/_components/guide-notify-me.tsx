@@ -1,17 +1,13 @@
 "use client";
 import React, { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { PostRequest } from "~/utils/request";
-import { useToast } from "~/components/ui/use-toast";
+import { isValidEmail } from "~/lib/utils";
+import { showSuccess } from "~/components/toast/sonner";
+import { subscribeToNewsletter } from "~/lib/newsletter";
 
 interface GuideNotifyMeProps {
   title: string;
 }
-
-const validateEmail = (email: string) => {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(String(email).toLowerCase());
-};
 
 export const GuideNotifyMe = ({ title }: GuideNotifyMeProps) => {
   const [open, setOpen] = useState(false);
@@ -19,28 +15,32 @@ export const GuideNotifyMe = ({ title }: GuideNotifyMeProps) => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
-  const { toast } = useToast();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!validateEmail(email)) {
+    if (loading) return;
+
+    setError("");
+
+    if (!isValidEmail(email)) {
       setError("Please enter a valid email address.");
       return;
     }
 
-    setError("");
     setLoading(true);
-    const token = localStorage.getItem("token") || "";
-    const req = await PostRequest("/newsletter", { email }, token);
+    const result = await subscribeToNewsletter(email);
     setLoading(false);
 
-    if (req?.data?.status_code === 201) {
+    if (result.ok) {
       setDone(true);
       setEmail("");
-      toast({ description: "You're on the list!" });
+      showSuccess(
+        "You're on the list!",
+        `We'll email you when "${title}" is published.`
+      );
     } else {
-      setError(req?.data?.message || "Something went wrong. Please try again.");
+      setError(result.error);
     }
   };
 
@@ -69,6 +69,7 @@ export const GuideNotifyMe = ({ title }: GuideNotifyMeProps) => {
   }
 
   const inputId = `notify-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+  const errorId = `${inputId}-error`;
 
   return (
     <form
@@ -84,7 +85,12 @@ export const GuideNotifyMe = ({ title }: GuideNotifyMeProps) => {
           id={inputId}
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          aria-invalid={!!error}
+          aria-describedby={error ? errorId : undefined}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (error) setError("");
+          }}
           placeholder="johndoe@example.com"
           className="h-full min-w-0 flex-1 bg-transparent px-2 text-sm text-black placeholder:text-[#a0a0a0] focus:outline-none"
           autoFocus
@@ -101,7 +107,7 @@ export const GuideNotifyMe = ({ title }: GuideNotifyMeProps) => {
         </button>
       </div>
       {error && (
-        <p className="text-xs text-red-500" role="alert">
+        <p id={errorId} className="text-xs text-red-500" role="alert">
           {error}
         </p>
       )}
