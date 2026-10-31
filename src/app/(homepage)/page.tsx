@@ -19,9 +19,6 @@ export const metadata: Metadata = {
     title: "Zedu - Scale Your Cohorts Without Admin Overhead",
     description:
       "The All-in-One Cohort Workspace that Multiplies Student Completion Rates. Built for bootcamps, schools, and structured learning communities.",
-    url: "https://zedu.chat/",
-    images: ["/assets/og-preview-zedu.png"],
-      "Built for modern learning: structured channels, AI-powered support, flexible education pricing, and tools that help educators run better cohorts.",
     url: "/",
     siteName: "Zedu",
     images: [

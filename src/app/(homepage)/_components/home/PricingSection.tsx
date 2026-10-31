@@ -18,21 +18,10 @@ export const PricingSection = ({
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
     "monthly"
   );
-  const [currency, setCurrency] = useState<"USD" | "NGN">("USD");
-  const plans = pricingCardsByCycle[billingCycle];
-
-  const formatPrice = (amount: string, curr: "USD" | "NGN") => {
-    if (curr === "USD" || !amount.startsWith("$")) return amount;
-    const numeric = parseInt(amount.replace(/[^0-9]/g, ""), 10);
-    if (isNaN(numeric)) return amount;
-    const ngnValue = (numeric * 1500).toLocaleString();
-    return `₦${ngnValue}`;
   const [calculatorOpen, setCalculatorOpen] = useState(false);
-  // Button outside the dialog that opened it, so focus can return there
   const externalOpenerRef = useRef<HTMLElement | null>(null);
   const plans = pricingCardsByCycle[billingCycle];
 
-  // Listen for the custom event dispatched by the "Calculate Your Savings" button
   useEffect(() => {
     const handler = (event: Event) => {
       const opener = (event as CustomEvent).detail;
@@ -71,66 +60,6 @@ export const PricingSection = ({
             </p>
           ) : null}
 
-        <div className="mt-2 inline-flex items-center rounded-full bg-neutral-100 p-1">
-          <button
-            type="button"
-            onClick={() => setCurrency("USD")}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-              currency === "USD"
-                ? "bg-white text-neutral-900 shadow-sm"
-                : "text-neutral-600"
-            }`}
-          >
-            USD ($)
-          </button>
-          <button
-            type="button"
-            onClick={() => setCurrency("NGN")}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-              currency === "NGN"
-                ? "bg-white text-neutral-900 shadow-sm"
-                : "text-neutral-600"
-            }`}
-          >
-            NGN (₦)
-          </button>
-        </div>
-      </div>
-
-      {/* cards */}
-      <div className="grid w-full max-w-7xl grid-cols-1 mt-6 place-items-center gap-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
-        {plans.map((plan) => (
-          <PricingCard
-            key={plan.key}
-            title={plan.title}
-            description={plan.description}
-            amount={formatPrice(plan.amount, currency)}
-            periodLabel={plan.periodLabel}
-            footnote={plan.footnote}
-            features={plan.features}
-            ctaText={plan.ctaText}
-            ctaHref={plan.ctaHref}
-            ctaVariant={plan.ctaVariant}
-            variant={plan.variant}
-            badgeText={plan.badgeText}
-          />
-        ))}
-      </div>
-      <h1 className="text-xs sm:text-sm md:text-md font-medium text-neutral-700 ">
-        Launching a bootcamp? Let's build a pricing model that fits your cohort
-        size.
-      </h1>
-      <Link
-        href="/pricing#compare-plans"
-        className="group flex items-center gap-2 font-semibold text-primary-500"
-      >
-        Compare different plans
-        <span className="inline-flex transition-transform duration-300 ease-out group-hover:translate-x-1">
-          <PurpleArrowRight />
-        </span>
-      </Link>
-    </section>
-          {/* Interactive Billing Toggle */}
           <div className="mt-2 inline-flex items-center rounded-full bg-neutral-100 p-1.5 shadow-inner">
             <button
               type="button"
@@ -159,7 +88,6 @@ export const PricingSection = ({
           </div>
         </div>
 
-        {/* Pricing Cards Grid */}
         <div className="grid w-full max-w-7xl grid-cols-1 mt-6 place-items-stretch justify-center gap-8 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-8">
           {plans.map((plan) => (
             <div key={plan.key} className="flex justify-center">
@@ -198,7 +126,6 @@ export const PricingSection = ({
           </span>
         </Link>
 
-        {/* New CTA: open Slack vs. Zedu comparison calculator */}
         <DialogTrigger asChild>
           <button
             type="button"
@@ -212,7 +139,6 @@ export const PricingSection = ({
         </DialogTrigger>
       </section>
 
-      {/* Calculator modal — rendered outside the section so it can use a portal-like overlay */}
       <SlackZeduCalculator onCloseAutoFocus={handleCalculatorCloseAutoFocus} />
     </Dialog>
   );
