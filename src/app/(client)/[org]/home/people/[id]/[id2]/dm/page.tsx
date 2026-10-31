@@ -114,7 +114,9 @@ const DmPage = () => {
       media: medias,
     };
 
-    await PostRequest(`/dms/channels/${id}/threads`, secondPayload);
+    const res = await PostRequest(`/dms/channels/${id}/threads`, secondPayload);
+    // Tells the message box whether to keep the typed text as a draft.
+    return res?.status === 200 || res?.status === 201;
   };
 
   const handleReplyMessage = async (

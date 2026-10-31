@@ -1,0 +1,22 @@
+{
+  "iframeSrcdoc": "<iframe srcdoc=\"<script>alert(document.domain)</script>\"></iframe>",
+  "dangerousElements": [
+    "<script>alert(1)</script>",
+    "<style>body{display:none}</style>",
+    "<form action=\"https://evil.example\"><input name=\"p\"></form>",
+    "<object data=\"https://evil.example/x.swf\"></object>",
+    "<embed src=\"https://evil.example/x.swf\">",
+    "<meta http-equiv=\"refresh\" content=\"0;url=https://evil.example\">"
+  ],
+  "imgWithHandler": "<img src=\"https://cdn.example/a.png\" onerror=\"alert(1)\">",
+  "spanWithHandlers": "<span onclick=\"alert(1)\" onmouseover=\"alert(2)\">hi</span>",
+  "javascriptAnchor": "<a href=\"javascript:alert(1)\">click</a>",
+  "javascriptImage": "<img src=\"javascript:alert(1)\">",
+  "inlineStyleDiv": "<div style=\"position:fixed;inset:0;background:red\">overlay</div>",
+  "arbitraryClassSpan": "<span class=\"fixed inset-0 z-50\">x</span>",
+  "inlineCode": "<code class=\"slack-inline-code\">npm i</code>",
+  "codeBlock": "<pre class=\"slack-code-block\"><code class=\"language-ts\">const a = 1</code></pre>",
+  "mention": "<span class=\"mention\" data-type=\"mention\" data-id=\"u-1\" data-label=\"dean\">@dean</span>",
+  "docsHref": "https://zedu.chat/docs",
+  "emojiSrc": "https://cdn.example/1f600.png"
+}
