@@ -17,6 +17,7 @@ import {
 } from "~/lib/env-urls";
 import { Loader2, Star } from "lucide-react";
 import { ratingSummary, storeRatings } from "~/lib/store-ratings";
+
 import { ZeduRoundedWhiteLogo, ZeduWhiteLogo } from "../svgs";
 
 type FooterLink = {
