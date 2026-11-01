@@ -218,9 +218,9 @@ const SchoolsSolutionsPage = () => {
       </section>
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16 mt-5">
         <div>
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
             Built for Modern School Communication
-          </h1>
+          </h2>
         </div>
 
         <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -232,15 +232,16 @@ const SchoolsSolutionsPage = () => {
               showBadge
               showArrow
               className="h-full"
+              headingLevel="h3"
             />
           ))}
         </div>
       </section>
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div className="flex flex-col items-center text-center gap-4">
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
             Better Communication for Every Classroom
-          </h1>
+          </h2>
           <p className="max-w-[95%] text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
             Keep lessons organized and create an environment where students can
             actively participate
@@ -263,9 +264,9 @@ const SchoolsSolutionsPage = () => {
       </section>
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div className="flex flex-col items-center text-center gap-4">
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
             How Zedu Transforms Schools
-          </h1>
+          </h2>
         </div>
 
         <ComparisonShowcase
@@ -280,9 +281,9 @@ const SchoolsSolutionsPage = () => {
 
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div className="flex flex-col items-center text-center gap-4">
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
             Run Leaner. Move Faster. Teach Better.
-          </h1>
+          </h2>
           <p className="max-w-[95%] text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
             Schools often rely on multiple tools for communication and
             collaboration. Zedu brings everything together into one organized
@@ -299,9 +300,9 @@ const SchoolsSolutionsPage = () => {
                   index > 0 ? "border-neutral-300 border-l" : ""
                 }`}
               >
-                <h2 className="text-2xl font-bold text-neutral-900 sm:text-5xl">
+                <h3 className="text-2xl font-bold text-neutral-900 sm:text-5xl">
                   {metric.title}
-                </h2>
+                </h3>
                 <p className="text-[12px] leading-tight text-neutral-600 sm:text-sm">
                   {metric.description}
                 </p>
