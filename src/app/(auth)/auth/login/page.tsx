@@ -7,6 +7,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Toaster } from "~/components/ui/toaster";
+import { showError } from "~/components/toast/sonner";
 import { PostRequest } from "~/utils/request";
 import Loading from "~/components/ui/loading";
 import { LoginWebhookRequest } from "~/utils/webhook-request";
@@ -45,11 +46,16 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [googleloading, setGoogleloading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   useEffect(() => {
     const inviteEmail = searchParams.get("email");
     if (inviteEmail) {
       setEmail(inviteEmail.trim());
+    }
+    const savedRememberMe = localStorage.getItem("rememberMe");
+    if (savedRememberMe === "true") {
+      setRememberMe(true);
     }
   }, [searchParams]);
 
@@ -68,6 +74,11 @@ function Login() {
         localStorage.setItem("useremail", user?.email);
         localStorage.setItem("user", JSON.stringify(user));
         localStorage.setItem("orgId", user?.current_org);
+        if (rememberMe) {
+          localStorage.setItem("rememberMe", "true");
+        } else {
+          localStorage.removeItem("rememberMe");
+        }
         const orgSlug = res.data.data.user.current_organisation_slug;
         if (orgSlug) {
           localStorage.setItem("orgSlug", orgSlug);
@@ -143,6 +154,11 @@ function Login() {
         localStorage.setItem("useremail", res?.data?.data?.user?.email);
         localStorage.setItem("user", JSON.stringify(res?.data?.data?.user));
         localStorage.setItem("orgId", res?.data?.data?.user?.current_org);
+        if (rememberMe) {
+          localStorage.setItem("rememberMe", "true");
+        } else {
+          localStorage.removeItem("rememberMe");
+        }
 
         const orgSlug = res.data.data.user.current_organisation_slug;
         if (orgSlug) {
@@ -226,6 +242,11 @@ function Login() {
           localStorage.setItem("useremail", user?.email);
           localStorage.setItem("user", JSON.stringify(user));
           localStorage.setItem("orgId", user?.current_org);
+          if (rememberMe) {
+            localStorage.setItem("rememberMe", "true");
+          } else {
+            localStorage.removeItem("rememberMe");
+          }
           const orgSlug = res.data.data.user.current_organisation_slug;
           if (orgSlug) {
             localStorage.setItem("orgSlug", orgSlug);
@@ -256,8 +277,25 @@ function Login() {
         setGoogleloading(false);
       }
     },
-    onError: () => {
-      console.error("Login Failed");
+    onError: (error) => {
+      setGoogleloading(false);
+      console.error("Google Login Failed:", error);
+      if (error.error !== "access_denied") {
+        showError(
+          "Google sign-in failed",
+          "Try again, or use email and password instead."
+        );
+      }
+    },
+    onNonOAuthError: (error) => {
+      setGoogleloading(false);
+      console.error("Google Login Failed:", error);
+      if (error.type === "popup_failed_to_open") {
+        showError(
+          "Google sign-in failed",
+          "Allow pop-ups for this site, then try again."
+        );
+      }
     },
   });
 
@@ -268,12 +306,19 @@ function Login() {
       <Toaster />
       <main className="w-full min-h-screen flex flex-col  items-center ">
         <div className="flex items-center justify-between w-full py-6 max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Link href="/">
+          <Link
+            href="/"
+            aria-label="Zedu home"
+            className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2"
+          >
             <Image src="/Zedu.png" alt="Zedu home" width={86} height={31} />
           </Link>
           <div>
             Don't have an account?{" "}
-            <Link href={"/auth/sign-up"} className="text-[#7141F8]">
+            <Link
+              href={"/auth/sign-up"}
+              className="text-[#7141F8] hover:underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2"
+            >
               Sign up
             </Link>
           </div>
@@ -386,6 +431,7 @@ function Login() {
                 <div className="w-full flex flex-col gap-[2px]">
                   <input
                     id="email"
+                    name="email"
                     type="email"
                     autoComplete="email"
                     aria-invalid={Boolean(errors.email)}
@@ -396,12 +442,13 @@ function Login() {
                     placeholder="Enter your email"
                     className={`w-full text-[14px] text-[#667085] leading-[15.12px] font-[500] h-[48px] border ${
                       errors.email ? "border-[#F81404]" : "border-[#D0D0FD]"
-                    } outline-none rounded-md py-[13px] pl-[13px]`}
+                    } outline-none rounded-md py-[13px] pl-[13px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2`}
                   />
                   {errors.email && (
                     <small
                       id="email-error"
                       role="alert"
+                      aria-live="assertive"
                       className="text-[12px] text-[#F81404]"
                     >
                       {errors.email}
@@ -420,6 +467,7 @@ function Login() {
                   <div className="relative">
                     <input
                       id="password"
+                      name="password"
                       type={showPassword ? "text" : "password"}
                       autoComplete="current-password"
                       aria-invalid={Boolean(errors.password)}
@@ -433,15 +481,17 @@ function Login() {
                         errors.password
                           ? "border-[#F81404]"
                           : "border-[#D0D0FD]"
-                      } outline-none rounded-md py-[13px] pl-[13px] pr-[40px]`}
+                      } outline-none rounded-md py-[13px] pl-[13px] pr-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2`}
                     />
                     <button
                       type="button"
                       onClick={togglePasswordVisibility}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#667085] focus:outline-none"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#667085] hover:text-[#101828] rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-1"
                       aria-label={
                         showPassword ? "Hide password" : "Show password"
                       }
+                      aria-controls="password"
+                      aria-pressed={showPassword}
                     >
                       {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
@@ -450,6 +500,7 @@ function Login() {
                     <small
                       id="password-error"
                       role="alert"
+                      aria-live="assertive"
                       className="text-[12px] text-[#F81404]"
                     >
                       {errors.password}
@@ -458,24 +509,32 @@ function Login() {
                 </div>
               </div>
             </div>
-            <div className="mt-[10px] flex justify-between mb-[32px]">
-              <div className="flex flex-row gap-[4px] items-center">
-                <Checkbox
-                  id="remember-me"
-                  checked={rememberMe}
-                  onCheckedChange={(checked) => setRememberMe(checked === true)}
-                />
+            <div className="mt-[10px] flex justify-between items-center mb-[32px]">
+              <div className="flex items-center -ml-2">
+                <div className="relative flex items-center justify-center min-h-[44px] min-w-[44px]">
+                  <Checkbox
+                    id="remember-me"
+                    name="remember-me"
+                    aria-label="Remember me"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) =>
+                      setRememberMe(checked === true)
+                    }
+                    className="relative z-10 before:content-[''] before:absolute before:-inset-3 before:min-w-[44px] before:min-h-[44px] before:cursor-pointer border-[#D0D0FD] data-[state=checked]:bg-[#7141F8] data-[state=checked]:border-[#7141F8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2"
+                  />
+                </div>
                 <label
                   htmlFor="remember-me"
-                  className="text-[14px] font-[500] leading-[17.64px]"
+                  className="flex items-center min-h-[44px] text-[14px] font-[500] leading-[17.64px] text-[#344054] cursor-pointer select-none py-2"
                 >
                   Remember me
                 </label>
               </div>
-              <Link href="/auth/forgot-password">
-                <p className="text-[14px] font-[500] leading-[21px] hover:text-[#7141F8]">
-                  Forgot Password?
-                </p>
+              <Link
+                href="/auth/forgot-password"
+                className="text-[14px] font-[500] leading-[21px] text-[#101828] hover:text-[#7141F8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2 rounded"
+              >
+                Forgot Password?
               </Link>
             </div>
 
@@ -484,8 +543,10 @@ function Login() {
                 <Button
                   type="submit"
                   variant="default"
-                  className="py-6 bg-[#7141F8] hover:bg-[#8760f8] text-white"
-                  disabled={googleloading ? true : false}
+                  className="py-6 bg-[#7141F8] hover:bg-[#8760f8] text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2"
+                  disabled={googleloading || appleLoading || loading}
+                  aria-label="Log in"
+                  aria-busy={loading}
                 >
                   {loading ? (
                     <span className="flex items-center gap-x-2">
@@ -493,18 +554,18 @@ function Login() {
                       <Loading width="20" height="40" />
                     </span>
                   ) : (
-                    <span>Login</span>
+                    <span>Log in</span>
                   )}
                 </Button>
+                <div role="status" aria-live="polite" className="sr-only">
+                  {loading ? "Logging in..." : ""}
+                </div>
 
-                <Link href="/auth/magiclink">
-                  <Button
-                    type="submit"
-                    variant="ghost"
-                    className="w-fit text-startß !p-0 border-none border-[#8760f8] text-[#8760f8] bg-white h-2"
-                  >
-                    Log in with magic link
-                  </Button>
+                <Link
+                  href="/auth/magiclink"
+                  className="w-fit text-left text-[14px] font-[500] text-[#7141F8] hover:text-[#5a32c7] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2 rounded py-2"
+                >
+                  Log in with magic link
                 </Link>
               </div>
             </div>

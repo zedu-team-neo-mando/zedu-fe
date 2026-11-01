@@ -6,11 +6,12 @@ import Link from "next/link";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import axios from "axios";
 import { showSuccess } from "~/components/toast/sonner";
+import { usePathname } from "next/navigation";
 import {
-  appStoreUrl,
   facebookUrl,
   instagramUrl,
-  playStoreUrl,
+  pageCampaign,
+  storeLink,
   tiktokUrl,
   xUrl,
 } from "~/lib/env-urls";
@@ -61,13 +62,13 @@ const supportLinks: FooterLink[] = [
 const resourcesLinks: FooterLink[] = [
   { id: 0, label: "Resource Library", href: "/resources" },
   { id: 1, label: "Templates", href: "/templates" },
-  { id: 2, label: "Privacy Policy", href: "/policy" },
-  { id: 3, label: "Terms of Service", href: "/terms-of-service" },
   {
-    id: 4,
-    label: "Zedu vs Google Classroom",
+    id: 2,
+    label: "Google Classroom Alternative",
     href: "/alternatives/google-classroom",
   },
+  { id: 3, label: "Privacy Policy", href: "/policy" },
+  { id: 4, label: "Terms of Service", href: "/terms-of-service" },
 ];
 
 const footerSections = [
@@ -107,7 +108,7 @@ const socialLinks = [
 const appStoreLinks = [
   {
     id: 0,
-    href: appStoreUrl(),
+    store: "app" as const,
     icon: "/images/app-download/app-store-badge-2.png",
     label: "App Store",
     rating: "4.9",
@@ -115,7 +116,7 @@ const appStoreLinks = [
   },
   {
     id: 1,
-    href: playStoreUrl(),
+    store: "play" as const,
     icon: "/images/app-download/google-play-badge-2.png",
     label: "Play Store",
     rating: "4.7",
@@ -133,6 +134,12 @@ const newsletterClient = axios.create({
 });
 
 const Footer = () => {
+  // The footer is shared by every marketing page, so the store links name the
+  // page they were clicked on.
+  const storeLinkTags = {
+    campaign: pageCampaign(usePathname()),
+    content: "footer",
+  };
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -295,7 +302,11 @@ const Footer = () => {
               </p>
               <div className="mt-5 flex flex-wrap items-start gap-8 text-white">
                 {appStoreLinks.map((store) => (
-                  <Link key={store.id} href={store.href} className="space-y-1">
+                  <Link
+                    key={store.id}
+                    href={storeLink(store.store, storeLinkTags)}
+                    className="space-y-1"
+                  >
                     <div className="flex items-center gap-2">
                       <Image
                         src={store.icon}

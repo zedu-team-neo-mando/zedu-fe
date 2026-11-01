@@ -20,6 +20,7 @@ import images from "~/assets/images";
 import { GetRequest, PostRequest, PutRequest } from "~/utils/new-request";
 import { ACTIONS } from "~/store/Actions";
 import { useParams, usePathname } from "next/navigation";
+import { showError, showSuccess } from "~/components/toast/sonner";
 import { Badge } from "~/components/ui/badge";
 import { ArrowDownIcon, Pin } from "lucide-react";
 import { BookmarkFilledIcon } from "@radix-ui/react-icons";
@@ -100,14 +101,42 @@ const BuzzChat = () => {
   };
 
   const handleEditMessage = async (content: any) => {
-    const payload = {
-      content: content,
-    };
-    await PutRequest(`/threads/${thread?.thread_id}/channels/${id}`, payload);
-    dispatch({
-      type: ACTIONS.IS_EDIT,
-      payload: false,
-    });
+    try {
+      const payload = {
+        content: content,
+      };
+      const res = await PutRequest(
+        `/threads/${thread?.thread_id}/channels/${id}`,
+        payload
+      );
+      if (res?.status === 200 || res?.status === 201) {
+        const updatedMessages = (messages || []).map((msg: any) =>
+          msg.thread_id === thread?.thread_id
+            ? { ...msg, content: content }
+            : msg
+        );
+        dispatch({
+          type: ACTIONS.MESSAGES,
+          payload: {
+            newThreads: updatedMessages,
+            newPage: 1,
+          },
+        });
+        dispatch({
+          type: ACTIONS.IS_EDIT,
+          payload: false,
+        });
+        showSuccess("Message updated");
+      } else {
+        const errorMsg =
+          res?.response?.data?.message ||
+          res?.data?.message ||
+          "Failed to update message";
+        showError(errorMsg);
+      }
+    } catch (err: any) {
+      showError(err?.message || "Failed to update message");
+    }
   };
 
   useEffect(() => {

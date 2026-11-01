@@ -19,6 +19,7 @@ import {
   removeMessageHighlightClasses,
 } from "~/utils/message-highlight";
 import { shouldFetchSearchReply } from "~/lib/search/navigate";
+import { showError, showSuccess } from "~/components/toast/sonner";
 
 const ReplyMessage = ({ fetchMoreData, hasMore }: any) => {
   const { state, dispatch } = useContext(DataContext);
@@ -92,18 +93,42 @@ const ReplyMessage = ({ fetchMoreData, hasMore }: any) => {
 
   // edit message
   const handleEditMessage = async (content: any) => {
-    // payload
-    const payload = {
-      content: content,
-      message_id: threadReply?.id,
-      thread_id: threadReply?.thread_id,
-    };
+    try {
+      const payload = {
+        content: content,
+        message_id: threadReply?.id,
+        thread_id: threadReply?.thread_id,
+      };
 
-    await PutRequest(`/channels/${channelId}/messages`, payload);
-    dispatch({
-      type: ACTIONS.IS_EDIT_REPLY,
-      payload: false,
-    });
+      const res = await PutRequest(`/channels/${channelId}/messages`, payload);
+      if (res?.status === 200 || res?.status === 201) {
+        const updatedReplies = (replies || []).map((msg: any) =>
+          msg.id === threadReply?.id || msg.thread_id === threadReply?.thread_id
+            ? { ...msg, content: content }
+            : msg
+        );
+        dispatch({
+          type: ACTIONS.REPLIES,
+          payload: {
+            newThreads: updatedReplies,
+            newPage: 1,
+          },
+        });
+        dispatch({
+          type: ACTIONS.IS_EDIT_REPLY,
+          payload: false,
+        });
+        showSuccess("Message updated");
+      } else {
+        const errorMsg =
+          res?.response?.data?.message ||
+          res?.data?.message ||
+          "Failed to update message";
+        showError(errorMsg);
+      }
+    } catch (err: any) {
+      showError(err?.message || "Failed to update message");
+    }
   };
 
   // saved for later messages

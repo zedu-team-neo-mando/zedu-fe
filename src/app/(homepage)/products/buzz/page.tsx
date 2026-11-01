@@ -118,7 +118,7 @@ const BuzzProductsPage = () => {
           <div className="flex flex-col items-center gap-5 text-center lg:max-w-[470px] lg:items-start lg:text-left">
             <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
               <span className="text-primary-500">Start a Buzz</span> Talk
-              Instantly with Your Team .
+              Instantly with Your Team.
             </h1>
             <p className="max-w-[46ch] text-sm leading-relaxed text-[#5a6170] sm:text-base">
               Buzz lets students, educators, and teams jump into quick voice

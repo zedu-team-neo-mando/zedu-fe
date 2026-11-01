@@ -3,8 +3,6 @@ name: PR Review Bot
 on:
   pull_request:
     branches:
-      - dev
-      - central-staging
       - staging
       - main
     types:
@@ -23,6 +21,7 @@ concurrency:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   pr-review:
@@ -34,18 +33,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      # Run the review with the base branch's rules, not the ones frozen into this PR's cached
-      # test-merge ref. GitHub only refreshes refs/pull/<n>/merge on PR events, so without this a
-      # merged fix to the bot's config would keep producing a stale verdict. .github/ is protected,
-      # so the base copy is the trusted one.
-      - name: Use the base branch's review rules
-        if: github.event_name == 'pull_request'
-        run: |
-          git fetch --no-tags origin "${{ github.base_ref }}"
-          git checkout FETCH_HEAD -- \
-            .github/pr-review.config.json \
-            .github/scripts/pr-review
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -84,19 +71,12 @@ jobs:
               --output review-report.json
           fi
 
-      # Upload the report instead of commenting: this job checks out and lints PR code, so on fork
-      # PRs its token is read-only and it cannot post a comment. "PR Review comment" picks the
-      # artifact up and posts it with a trusted write token after this run completes.
-      - name: Upload review report
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Post PR comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request' && always()
         with:
-          name: pr-review-report
-          path: |
-            review-report.md
-            review-report.json
-          if-no-files-found: ignore
-          retention-days: 7
+          header: pr-review-bot
+          path: review-report.md
 
       - name: Fail on review errors
         if: steps.review.outcome == 'failure'

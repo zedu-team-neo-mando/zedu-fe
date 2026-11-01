@@ -10,7 +10,6 @@
       "src/components/rbac/",
       "src/app/(client)/[org]/_components/",
       "src/app/(homepage)/_components/",
-      "src/app/(homepage)/contributors/",
       "src/app/(client)/[org]/settings/",
       "src/app/(auth)/",
       "src/app/(accept_general_invitation)/",
@@ -57,11 +56,7 @@
     "deprecatedAlias": "@/"
   },
   "hardcodedUrls": {
-    "allowPatterns": [
-      "^https?://(www\\.)?w3\\.org(/|$)",
-      "^https?://avatars\\.githubusercontent\\.com/",
-      "^https?://(www\\.)?gstatic\\.com/firebasejs/"
-    ],
+    "allowPatterns": ["^https?://(www\\.)?w3\\.org(/|$)"],
     "excludePathPrefixes": ["cypress/", ".github/"],
     "scanExtensions": [".ts", ".tsx", ".js", ".jsx", ".mjs"]
   },

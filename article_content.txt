@@ -1,0 +1,116 @@
+Card title: Moving Your Class from WhatsApp/Telegram to Zedu
+
+Card description: Lost messages, buried files and no structure? Here is how to move your class from a chat group to organised channels, step by step.
+
+Page title (under 60 characters): Move Your Class from WhatsApp/Telegram to Zedu
+
+Meta description (under 160 characters): Is your class group a mess of lost messages and buried files? Learn how to move from WhatsApp or Telegram to organised channels on Zedu, step by step.
+
+Suggested URL: /resources/moving-your-class-from-whatsapp-telegram-to-zedu
+
+---
+
+MOVING YOUR CLASS FROM WHATSAPP/TELEGRAM TO ZEDU
+
+If you teach in Nigeria or anywhere else in Africa, there is a good chance your classroom lives in a WhatsApp or Telegram group. It makes sense. Everyone already has the app, data costs are manageable, and you can start a class in minutes without asking anyone to sign up for anything new.
+
+But if you have taught this way for more than a few weeks, you already know the problem. What starts as a convenient shortcut slowly turns into a source of stress for you and your students. This guide explains why chat apps get messy for classes, and how to move your class to organised channels on Zedu without losing your students along the way.
+
+WHY CHAT APPS GET MESSY FOR CLASSES
+
+Chat apps were built for conversations between friends, not for teaching. Here is where they start to break down.
+
+1. Messages get lost
+
+A student asks a question at 9 a.m. By noon, two hundred other messages have buried it. You never answer it, and the student stops asking. Important announcements, like a changed class time or a deadline, vanish just as quickly. Students then say, "I didn't see the message," and honestly, they may be right.
+
+2. Everything is in one stream
+
+In a single group, a homework question, a joke, a voice note, an assignment reminder and a link to a lecture all appear in the same scrolling list. There are no topics, no sections and no way to tell what matters. Students who join late have to scroll through weeks of chat to catch up, and most never do.
+
+3. Files get buried
+
+Slides, PDFs, past questions, recordings and reading lists are shared once and then disappear into the chat history. Every week someone asks, "Please can you resend the notes?" and you spend your evening scrolling and forwarding the same files. On top of that, files can expire or fail to download, and finding anything specific is a chore.
+
+4. No structure for learning
+
+A good class has a shape: modules, weeks, topics, resources, discussions. A chat group has none of that. You cannot separate one course from another, one cohort from another, or lectures from general chat. Everything competes for the same space.
+
+5. Distractions are everywhere
+
+Your students are in the same app as their family, friends and the rest of their daily noise. A lesson sits next to a family group chat, and a tiny notification can pull attention away in seconds. The app is built to keep people chatting, not to help them focus on learning.
+
+6. Hard to manage as you grow
+
+With five students, a chat group works fine. With fifty or five hundred, it becomes hard to manage. Controlling who sees what, welcoming newcomers properly and keeping discussions on topic all take more effort than the group tools allow.
+
+None of this means you did anything wrong by starting on WhatsApp or Telegram. It means your class has outgrown a tool that was never designed for it.
+
+WHAT CHANGES WITH ORGANISED CHANNELS
+
+On Zedu, your class is organised into channels, each one with a clear purpose. Instead of one long stream, you can have separate spaces for announcements, lessons, resources, questions and general discussion. Students always know where to look, and you always know where to post.
+
+When a question is asked in the questions channel, it stays there, easy to find and easy to answer. When you share notes in the resources channel, they stay put for everyone, including students who join next month. Your class stops being a pile of messages and becomes a learning space that is easy to follow.
+
+HOW TO MOVE YOUR CLASS, STEP BY STEP
+
+You do not have to move everything in one day, and you do not have to abandon your chat group overnight. A gentle, planned move works best.
+
+Step 1: Create your Zedu account
+
+Sign up for free and set up your space. It only takes a few minutes, and you do not need any technical skills.
+
+Step 2: Plan your channels before you create them
+
+Think about how your class actually works. A simple starting point might be:
+- Announcements, for deadlines, schedule changes and important news
+- Lessons, for each topic or week
+- Resources, for slides, notes, past questions and links
+- Questions, so students can ask and get answers in one place
+- General discussion, for everything else
+
+Start small. You can always add more channels later.
+
+Step 3: Add your existing materials
+
+Take the files you have been resending again and again and place them in the right channels. This is the moment you stop being the class's personal file search engine. Once a file is in the right place, nobody has to ask you for it again.
+
+Step 4: Invite your students
+
+Share your invitation with your class, and post it in your existing WhatsApp or Telegram group. Keep the message simple and clear: tell students what Zedu is, why you are moving, and that it is free to join.
+
+Step 5: Explain why you are moving
+
+Students are more willing to switch when they understand the benefit to them. You can say something like: "From now on, all notes, announcements and assignments will be in one organised place, so you will never miss anything or have to ask me to resend files."
+
+Step 6: Run both for a short transition period
+
+For one or two weeks, keep your old group open but use it only to point students to Zedu. Post every important update in Zedu first, then share a short reminder with the link in the chat group. Gently redirect questions: "Please ask this in the Questions channel on Zedu so everyone can see the answer."
+
+Step 7: Close the old group, or switch it to announcements only
+
+Once most of your students have moved, either archive the chat group or leave it only as a place for reminders. Keep one clear rule: learning happens on Zedu.
+
+TIPS FOR A SMOOTH TRANSITION
+
+- Pick a start date, such as the beginning of a new week, module or month, and tell everyone in advance.
+- Help students who are less comfortable with technology. A short voice note or a simple screenshot guide can go a long way.
+- Be consistent. If you keep answering questions in the old chat, students will keep using it.
+- Give students a reason to move: the notes, recordings and answers they need will be waiting for them in one place.
+- Ask for feedback after the first week and adjust your channels based on what your students tell you.
+
+A NOTE ON ACCESS
+
+Education should not be a privilege. That is why moving to Zedu is free to start, and why we care about tools that work for teachers and learners everywhere, whether you are teaching ten students from your living room or an entire cohort across several countries. Good organisation should not cost more than the chat app you already use.
+
+READY TO GIVE YOUR CLASS A BETTER HOME?
+
+You do not have to keep digging through message history to find a file or answer the same question for the tenth time. With organised channels, your students can focus on learning and you can focus on teaching.
+
+Button: Get started for free
+
+---
+
+Notes for implementation:
+- Card: use the card title and card description above, with a "Read article" button linking to the new page.
+- Page: use the page title and meta description above, and place the "Get started for free" button at the end of the guide. Consider repeating it after Step 1 for visitors who are ready early.

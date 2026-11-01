@@ -26,6 +26,7 @@ import { isUserDeactivated } from "~/utils/user-deactivation";
 import { useMessageHighlight } from "~/hooks/use-message-highlight";
 import { useMessageDeepLink } from "~/hooks/use-message-deep-link";
 import { ScrollToLatestButton } from "~/components/ui/scroll-to-latest-button";
+import { showError, showSuccess } from "~/components/toast/sonner";
 
 const PeopleMessage = ({ participant }: any) => {
   const { fetchMoreData, hasMore, loading } = UsePeopleMessage();
@@ -102,19 +103,43 @@ const PeopleMessage = ({ participant }: any) => {
 
   // edit message
   const handleEditMessage = async (content: any) => {
-    // payload
-    const payload = {
-      content: content,
-    };
+    try {
+      const payload = {
+        content: content,
+      };
 
-    await PutRequest(
-      `/dms/thread/${thread?.thread_id}/channels/${id}`,
-      payload
-    );
-    dispatch({
-      type: ACTIONS.IS_EDIT,
-      payload: false,
-    });
+      const res = await PutRequest(
+        `/dms/thread/${thread?.thread_id}/channels/${id}`,
+        payload
+      );
+      if (res?.status === 200 || res?.status === 201) {
+        const updatedChats = (chats || []).map((msg: any) =>
+          msg.thread_id === thread?.thread_id
+            ? { ...msg, content: content }
+            : msg
+        );
+        dispatch({
+          type: ACTIONS.CHATS,
+          payload: {
+            newThreads: updatedChats,
+            newPage: 1,
+          },
+        });
+        dispatch({
+          type: ACTIONS.IS_EDIT,
+          payload: false,
+        });
+        showSuccess("Message updated");
+      } else {
+        const errorMsg =
+          res?.response?.data?.message ||
+          res?.data?.message ||
+          "Failed to update message";
+        showError(errorMsg);
+      }
+    } catch (err: any) {
+      showError(err?.message || "Failed to update message");
+    }
   };
 
   useMessageDeepLink({
