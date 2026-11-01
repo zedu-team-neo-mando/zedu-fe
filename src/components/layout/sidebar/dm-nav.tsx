@@ -21,7 +21,15 @@ import { cn } from "~/lib/utils";
 import UserAvatar from "~/components/layout/user-avatar";
 import { isUserDeactivated } from "~/utils/user-deactivation";
 import { useOrganisationDms } from "~/hooks/useOrganisationDms";
-import { PostRequest } from "~/utils/new-request";
+import { isDmOnline, useOpenDm } from "~/hooks/use-open-dm";
+
+type DmListFilter = "all" | "online" | "unread";
+
+const LIST_FILTERS: { value: DmListFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "online", label: "Online" },
+  { value: "unread", label: "Unread" },
+];
 
 const dedupeDmList = (dms: any[] | undefined) => {
   const seen = new Set<string>();
@@ -131,7 +139,9 @@ export default function DMNav({
 }: any) {
   const { state, dispatch } = useContext(DataContext);
   const [searchInput, setSearchInput] = useState("");
+  const [listFilter, setListFilter] = useState<DmListFilter>("all");
   const router = useRouter();
+  const openDm = useOpenDm();
   const params = useParams();
   const id = params.id as string;
   const { orgSlug } = state;
@@ -157,59 +167,18 @@ export default function DMNav({
     }
   };
 
-  const handleRoute = (data: any) => {
-    dispatch({
-      type: ACTIONS.CHATS,
-      payload: { newThreads: data?.preview_thread || [], newPage: 1 },
-    });
-
-    localStorage.setItem("channelName", data?.username);
-
-    // Clear Nav unread highlight immediately on open
-    if (data?.channel_id) {
-      dispatch({
-        type: ACTIONS.UPDATE_DM_COUNT,
-        payload: {
-          channel_id: data.channel_id,
-          thread_count: 0,
-        },
-      });
-      dispatch({ type: ACTIONS.DM_COUNT, payload: 0 });
-    }
-
-    if (data?.channel_type === "dm") {
-      const participant = data?.participants?.[0];
-      dispatch({ type: ACTIONS.PARTICIPANT, payload: participant });
-      router.push(`/${orgSlug}/dm/${data?.channel_id}/${data?.participant_id}`);
-    } else {
-      dispatch({ type: ACTIONS.PARTICIPANTS, payload: data?.participants });
-      router.push(`/${orgSlug}/dm/${data?.channel_id}/dms`);
-    }
-  };
-
-  const handleSuggestedRoute = async (data: any) => {
-    const payload = {
-      chat_type: "user",
-      participant_id: data?.participant_id,
-    };
-
-    const res = await PostRequest(`/organisations/${orgId}/dms`, payload);
-
-    if (res?.status === 200 || res?.status === 201) {
-      router.push(
-        `/${orgSlug}/dm/${res?.data?.data?.channel_id}/${res?.data?.data?.participant_id}`
-      );
-    }
-  };
-
   const handleNewChat = () => {
     router.push(`/${orgSlug}/home/people/new-chat`);
   };
 
-  const searchData = useMemo(
-    () => filterDmList(state?.dms, searchInput),
-    [state?.dms, searchInput]
-  );
+  const searchData = useMemo(() => {
+    const list = filterDmList(state?.dms, searchInput);
+    if (listFilter === "online") return list.filter(isDmOnline);
+    if (listFilter === "unread") {
+      return list.filter((dm: any) => dm?.thread_count > 0);
+    }
+    return list;
+  }, [state?.dms, searchInput, listFilter]);
 
   return (
     <>
@@ -264,6 +233,29 @@ export default function DMNav({
           )}
         </div>
 
+        <div
+          role="group"
+          aria-label="Filter conversations"
+          className="flex gap-2 px-3"
+        >
+          {LIST_FILTERS.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={listFilter === value}
+              onClick={() => setListFilter(value)}
+              className={cn(
+                "rounded-full px-4 py-1.5 text-[13px] font-semibold transition-colors",
+                listFilter === value
+                  ? "bg-white text-blue-500"
+                  : "bg-blue-100 text-white hover:bg-blue-200"
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         {/* Must be a bounded flex child so overflow-auto scrolls here (InfiniteScroll target). */}
         <div
           id="dmScrollableDiv"
@@ -291,17 +283,13 @@ export default function DMNav({
                   <Fragment key={String(dm.channel_id || dm.channels_id)}>
                     <div
                       className={`flex items-start gap-3 px-3 py-4 hover:bg-[#4B4BB4] ${dm?.channel_id === id || dm?.channels_id === id ? "bg-[#4B4BB4]" : ""}`}
-                      onClick={() =>
-                        dm?.is_suggested
-                          ? handleSuggestedRoute(dm)
-                          : handleRoute(dm)
-                      }
+                      onClick={() => openDm(dm)}
                     >
                       <div className="relative">
                         <UserAvatar item={dm} size="2xs" alt="avatar" />
                         {!isUserDeactivated(dm) && (
                           <span
-                            className={`absolute -right-1 -bottom-1 ${dm?.participants?.some((p: any) => p.online) ? "bg-[#00AD51]" : "bg-[#F97316]"} w-[8px] h-[8px] rounded-full border border-white`}
+                            className={`absolute -right-1 -bottom-1 ${isDmOnline(dm) ? "bg-[#00AD51]" : "bg-[#F97316]"} w-[8px] h-[8px] rounded-full border border-white`}
                           />
                         )}
                       </div>
@@ -326,6 +314,12 @@ export default function DMNav({
                             </span>
                           </div>
                         </div>
+                        {dm?.channel_type === "dm" &&
+                          !isUserDeactivated(dm) && (
+                            <p className="-mt-1 mb-1 text-[12px] text-[#BABAFB]">
+                              {isDmOnline(dm) ? "Online" : "Away"}
+                            </p>
+                          )}
                         <p className="text-[14px] text-[#D0D0FD] break-words max-w-[200px] line-clamp-2">
                           {stripHtmlTags(dm.preview_message)}
                         </p>
@@ -339,7 +333,13 @@ export default function DMNav({
               })}
 
               {searchData?.length === 0 && (
-                <p className="self-center mt-10">No recent messages</p>
+                <p className="self-center mt-10">
+                  {listFilter === "online"
+                    ? "No one is online right now"
+                    : listFilter === "unread"
+                      ? "You're all caught up"
+                      : "No recent messages"}
+                </p>
               )}
             </div>
           </InfiniteScroll>

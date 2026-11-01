@@ -14,6 +14,7 @@ import {
 } from "~/components/ui/popover";
 import Image from "next/image";
 import { X } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { DataContext } from "~/store/GlobalState";
 import images from "~/assets/images";
 import { useOrganisationUsers } from "~/hooks/useOrganisationUsers";
@@ -78,6 +79,10 @@ const NewChatHeader = ({ onUsersSelected }: any) => {
   const [open, setOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+  // Opened as a group (?type=group), or more than one person picked
+  const searchParams = useSearchParams();
+  const isGroupChat =
+    searchParams.get("type") === "group" || selectedUsers.length > 1;
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(0);
   // Key repeat can outrun React renders; the ref keeps every press counted
@@ -254,7 +259,9 @@ const NewChatHeader = ({ onUsersSelected }: any) => {
   return (
     <div className="p-5 border-b border-[#E6EAEF] shadow-[0px_3px_6px_0px_#DFDFDF]">
       <div className="flex items-center gap-3 mb-5">
-        <h2 className="text-lg text-[#1D2939] font-black">New Group Chat</h2>
+        <h2 className="text-lg text-[#1D2939] font-black">
+          {isGroupChat ? "New Group Chat" : "New Message"}
+        </h2>
       </div>
 
       <div className="flex items-center gap-1">
