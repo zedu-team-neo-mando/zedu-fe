@@ -29,6 +29,29 @@ type PricingComparisonTableProps = {
   className?: string;
 };
 
+const NotIncludedCell = () => {
+  return (
+    <span className="inline-flex justify-center">
+      <svg
+        width="11"
+        height="11"
+        viewBox="0 0 12 12"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <path
+          d="M10.5 1.5L1.5 10.5M1.5 1.5L10.5 10.5"
+          stroke="#98A2B3"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
+      </svg>
+      <span className="sr-only">Not included</span>
+    </span>
+  );
+};
+
 const renderCellValue = (value: PricingComparisonCellValue) => {
   if (typeof value === "boolean") {
     if (value) {
@@ -39,11 +62,11 @@ const renderCellValue = (value: PricingComparisonCellValue) => {
       );
     }
 
-    return <span aria-hidden="true">&nbsp;</span>;
+    return <NotIncludedCell />;
   }
 
   if (value === null || value === undefined || value === "") {
-    return <span aria-hidden="true">&nbsp;</span>;
+    return <NotIncludedCell />;
   }
 
   return <span className="text-sm text-neutral-700">{value}</span>;

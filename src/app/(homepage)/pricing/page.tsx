@@ -11,6 +11,7 @@ import {
   pricingComparisonPlans,
 } from "../_lib/pricingComparisonData";
 import { CircleHelp } from "lucide-react";
+import { getPricingStructuredData } from "../_lib/pricingStructuredData";
 
 export const metadata: Metadata = {
   title: "Pricing - Flexible Plans for Modern Learning Teams",
@@ -105,55 +106,68 @@ const pricingFAQs: HomeFAQ[] = [
 ];
 
 const PricingPage = () => {
+  const structuredData = JSON.stringify(getPricingStructuredData()).replace(
+    /</g,
+    "\\u003c"
+  );
+
   return (
     <div className="space-y-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: structuredData }}
+      />
       <PricingSection showSubtitle />
 
       <div
         id="compare-plans"
-        className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 sm:px-8 lg:px-12 space-y-6 relative"
+        className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 sm:px-8 lg:px-12 relative overflow-x-auto"
       >
-        <div className="no-scrollbar">
-          <Table className="min-w-[680px] table-fixed sm:min-w-[760px] no-scrollbar">
-            <colgroup>
-              <col className="w-[40%]" />
-              {pricingComparisonPlans.map((plan) => (
-                <col
-                  key={plan.key}
-                  style={{ width: `${60 / pricingComparisonPlans.length}%` }}
-                />
-              ))}
-            </colgroup>
-
-            <TableHeader>
-              <TableRow className="border-b border-neutral-200 hover:bg-transparent no-scrollbar">
-                <TableHead className="border-r border-neutral-200 px-4 py-3 text-left text-sm font-semibold text-neutral-700">
-                  Plan Features
-                </TableHead>
+        {/* Single horizontal scroll region for the header and every section so
+            the plan columns cannot drift apart on mobile (issue #1107). */}
+        <div className="min-w-[680px] space-y-6 sm:min-w-[760px]">
+          <div className="no-scrollbar">
+            <Table className="min-w-[680px] table-fixed sm:min-w-[760px] no-scrollbar">
+              <colgroup>
+                <col className="w-[40%]" />
                 {pricingComparisonPlans.map((plan) => (
-                  <TableHead
+                  <col
                     key={plan.key}
-                    className="border-r border-neutral-200 px-4 py-3 text-center text-sm font-semibold text-neutral-900 last:border-r-0"
-                  >
-                    {plan.label}
-                  </TableHead>
+                    style={{ width: `${60 / pricingComparisonPlans.length}%` }}
+                  />
                 ))}
-              </TableRow>
-            </TableHeader>
-          </Table>
-        </div>
+              </colgroup>
 
-        {pricingComparisonDemoSections.map((section) => (
-          <PricingComparisonTable
-            key={section.key}
-            plans={pricingComparisonPlans}
-            section={section}
-            rowInfoIcon={
-              <CircleHelp className="h-3.5 w-3.5 text-neutral-400" />
-            }
-            className="mb-8 last:mb-0"
-          />
-        ))}
+              <TableHeader>
+                <TableRow className="border-b border-neutral-200 hover:bg-transparent no-scrollbar">
+                  <TableHead className="border-r border-neutral-200 px-4 py-3 text-left text-sm font-semibold text-neutral-700">
+                    Plan Features
+                  </TableHead>
+                  {pricingComparisonPlans.map((plan) => (
+                    <TableHead
+                      key={plan.key}
+                      className="border-r border-neutral-200 px-4 py-3 text-center text-sm font-semibold text-neutral-900 last:border-r-0"
+                    >
+                      {plan.label}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+            </Table>
+          </div>
+
+          {pricingComparisonDemoSections.map((section) => (
+            <PricingComparisonTable
+              key={section.key}
+              plans={pricingComparisonPlans}
+              section={section}
+              rowInfoIcon={
+                <CircleHelp className="h-3.5 w-3.5 text-neutral-400" />
+              }
+              className="mb-8 last:mb-0"
+            />
+          ))}
+        </div>
       </div>
 
       <div id="help-center">

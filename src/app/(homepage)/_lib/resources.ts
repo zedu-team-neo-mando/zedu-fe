@@ -72,7 +72,8 @@ export const resources: ResourceItem[] = [
       "Lost messages, buried files and no structure? Here is how to move your class from a chat group to organised channels, step by step.",
     image: "/images/homepage/resources/image-5.jfif",
     link: "/resources/moving-your-class-from-whatsapp-telegram-to-zedu",
-  },
+      },
+
   {
     id: 6,
     tab: "webinars",

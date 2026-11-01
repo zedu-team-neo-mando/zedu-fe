@@ -15,6 +15,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import AppleSignin from "react-apple-signin-auth";
 import { Separator } from "~/components/ui/separator";
 import { Eye, EyeOff } from "lucide-react";
+import { saveRememberMe } from "~/utils/auth-session";
 import { getLoggedInRedirectPath } from "~/app/(auth)/layout";
 
 function resolvePostLoginRedirect(orgSlug?: string, user?: any): string {
@@ -38,6 +39,7 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState({ email: "", password: "" });
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -68,6 +70,7 @@ function Login() {
         const user = res?.data?.data?.user;
         const redirectUrl = searchParams.get("redirect") || "";
         localStorage.setItem("token", res?.data?.data?.access_token);
+        saveRememberMe(rememberMe);
         localStorage.setItem("useremail", user?.email);
         localStorage.setItem("user", JSON.stringify(user));
         localStorage.setItem("orgId", user?.current_org);
@@ -147,6 +150,7 @@ function Login() {
 
       if (res?.status === 200 || res?.status === 201) {
         localStorage.setItem("token", res?.data?.data?.access_token);
+        saveRememberMe(rememberMe);
         localStorage.setItem("useremail", res?.data?.data?.user?.email);
         localStorage.setItem("user", JSON.stringify(res?.data?.data?.user));
         localStorage.setItem("orgId", res?.data?.data?.user?.current_org);
@@ -234,6 +238,7 @@ function Login() {
           const redirectUrl = searchParams.get("redirect") || "";
 
           localStorage.setItem("token", res?.data?.data?.access_token);
+          saveRememberMe(rememberMe);
           localStorage.setItem("useremail", user?.email);
           localStorage.setItem("user", JSON.stringify(user));
           localStorage.setItem("orgId", user?.current_org);
