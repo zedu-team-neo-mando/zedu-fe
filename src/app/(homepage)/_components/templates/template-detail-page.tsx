@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, Hash, Layers } from "lucide-react";
 import { getTemplateBySlug, TEMPLATES } from "~/data/templates";
 import type { Metadata } from "next";
-import { ogImageUrl } from "~/lib/env-urls";
+import { ogImageUrl, siteUrl } from "~/lib/env-urls";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
@@ -36,6 +36,9 @@ export async function generateMetadata({
           alt: "Zedu learning platform for educators and cohorts",
         },
       ],
+    },
+    alternates: {
+      canonical: siteUrl(`/templates/${template.slug}`),
     },
   };
 }

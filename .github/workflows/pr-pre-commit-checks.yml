@@ -3,8 +3,6 @@ name: PR pre-commit checks
 on:
   pull_request:
     branches:
-      - dev
-      - central-staging
       - staging
       - main
     types:
@@ -56,6 +54,9 @@ jobs:
 
       - name: ESLint (check-lint)
         run: pnpm run check-lint
+
+      - name: Message delivery regression tests
+        run: node 'src/app/(client)/[org]/_components/message-box/message-delivery.test.mjs'
 
       - name: TypeScript (check-types)
         run: pnpm run check-types

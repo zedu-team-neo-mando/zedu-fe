@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { JSX, useEffect, useState } from "react";
 import { cn } from "~/lib/utils";
-import { GooglePlayStoreOutlineIcon, AppleStoreOutlineIcon } from "../svgs";
+import { GooglePlayColorIcon, AppleLogoIcon } from "../svgs";
 
 export const OutlineBtn = ({
   text,
@@ -35,6 +35,8 @@ export const OutlineBtn = ({
   return button;
 };
 
+const SIGN_UP_HREF = "/auth/sign-up";
+
 export const ArrowBtn = ({
   text,
   className,
@@ -54,15 +56,18 @@ export const ArrowBtn = ({
   loggedInText?: string;
   inverted?: boolean;
 }) => {
-  const [token, setToken] = useState<string | null>(null);
-  const [orgSlug, setOrgSlug] = useState<string | null>(null);
+  // Server render and first client render use the signed-out destination, so
+  // the link works before hydration. Returning users with an org are switched
+  // to their dashboard after mount.
+  const [dashboardHref, setDashboardHref] = useState<string | null>(null);
 
   useEffect(() => {
-    setToken(window.localStorage.getItem("token"));
-    setOrgSlug(window.localStorage.getItem("orgSlug"));
+    const token = window.localStorage.getItem("token");
+    const orgSlug = window.localStorage.getItem("orgSlug");
+    if (token && orgSlug) setDashboardHref(`/${orgSlug}`);
   }, []);
 
-  if (linkToHome) href = token ? `/${orgSlug}` : "/auth/sign-up";
+  if (linkToHome) href = dashboardHref ?? SIGN_UP_HREF;
 
   return (
     <Link href={href || "#"}>
@@ -73,7 +78,7 @@ export const ArrowBtn = ({
           className
         )}
       >
-        {token && loggedInText ? loggedInText : text}
+        {dashboardHref && loggedInText ? loggedInText : text}
         {!hideArrow && (
           <div
             className={cn(
@@ -126,11 +131,11 @@ export const DownloadAppBtn = ({
   inverted?: boolean;
 }) => {
   const iconMap: Record<string, (props?: { color?: string }) => JSX.Element> = {
-    google: GooglePlayStoreOutlineIcon,
-    apple: AppleStoreOutlineIcon,
+    google: GooglePlayColorIcon,
+    apple: AppleLogoIcon,
   };
 
-  const LeftIcon = iconMap[leftIcon as string] || GooglePlayStoreOutlineIcon;
+  const LeftIcon = iconMap[leftIcon as string] || GooglePlayColorIcon;
 
   return (
     <Link

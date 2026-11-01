@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { ogImageUrl, siteUrl } from "~/lib/env-urls";
+import { siteUrl } from "~/lib/env-urls";
 import Image from "next/image";
 import { ArrowBtn, OutlineBtn } from "../../_components/ui/Button";
 import { BuzzPageHeroSVG } from "../../_components/svgs";
@@ -28,14 +28,6 @@ export const metadata: Metadata = {
       "Launch live voice discussions directly in channels and keep every session useful with AI-powered recap summaries.",
     url: siteUrl("/products/buzz"),
     siteName: "Zedu",
-    images: [
-      {
-        url: ogImageUrl("og-image-5.png"),
-        width: 1200,
-        height: 630,
-        alt: "Zedu Buzz live voice collaboration for education",
-      },
-    ],
     type: "website",
   },
   twitter: {
@@ -43,7 +35,6 @@ export const metadata: Metadata = {
     title: "Zedu Buzz - Real-Time Voice Collaboration",
     description:
       "Start instant voice sessions in your learning channels and keep everyone aligned with AI-generated summaries.",
-    images: [ogImageUrl("og-image-5.png")],
   },
   alternates: {
     canonical: siteUrl("/products/buzz"),
@@ -118,7 +109,7 @@ const BuzzProductsPage = () => {
           <div className="flex flex-col items-center gap-5 text-center lg:max-w-[470px] lg:items-start lg:text-left">
             <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
               <span className="text-primary-500">Start a Buzz</span> Talk
-              Instantly with Your Team .
+              Instantly with Your Class.
             </h1>
             <p className="max-w-[46ch] text-sm leading-relaxed text-[#5a6170] sm:text-base">
               Buzz lets students, educators, and teams jump into quick voice

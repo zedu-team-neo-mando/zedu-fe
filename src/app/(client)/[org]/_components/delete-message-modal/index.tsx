@@ -39,6 +39,11 @@ const DeleteMessageDialog = ({ open, setOpen }: MessageProps) => {
     );
 
     if (res?.status === 200 || res?.status === 201) {
+      // Remove it from the list now instead of waiting on the realtime event
+      dispatch({
+        type: ACTIONS.DELETE_CHANNEL_MESSAGE,
+        payload: { threadId: thread?.thread_id },
+      });
       dispatch({ type: ACTIONS.DELETE_CALLBACK });
       setOpen(false);
     }

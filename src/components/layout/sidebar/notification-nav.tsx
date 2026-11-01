@@ -17,8 +17,17 @@ import OrganisationMenu from "~/app/(client)/[org]/_components/org-dropdown";
 import { cn } from "~/lib/utils";
 import UserAvatar from "~/components/layout/user-avatar";
 import { GetRequest } from "~/utils/new-request";
+import { getShowMessagePreviews } from "~/lib/notification-preview";
 
 const LIMIT = 20;
+
+// Hidden-preview text; keeps the sender name for "(name): ..." messages.
+const hiddenPreviewText = (message?: string) => {
+  const match = /^\(([^)]+)\):/.exec(message ?? "");
+  return match
+    ? match[1] + " sent a message. Click to view."
+    : "Sent a message. Click to view.";
+};
 
 export default function NotificationNav() {
   const { state, dispatch } = useContext(DataContext);
@@ -28,6 +37,11 @@ export default function NotificationNav() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [showPreviews, setShowPreviews] = useState(true);
+
+  useEffect(() => {
+    setShowPreviews(getShowMessagePreviews());
+  }, []);
 
   const resolvedOrgId =
     orgId ||
@@ -76,6 +90,30 @@ export default function NotificationNav() {
     setHasMore(true);
     fetchNotifications(1);
   }, [fetchNotifications]);
+
+  useEffect(() => {
+    if (!state.notifications?.length) return;
+    const latest = state.notifications[state.notifications.length - 1];
+    if (!latest) return;
+    const id =
+      latest.id ||
+      latest.message_id ||
+      latest.messages_id ||
+      `notif-${Date.now()}`;
+    const newEntry = {
+      id,
+      title: latest.title || latest.sender_name || "New Notification",
+      message: latest.message || latest.body || "",
+      avatar_url: latest.avatar_url || latest.default_avatar_url,
+      sent_at: latest.sent_at || latest.created_at || new Date().toISOString(),
+      created_at: latest.created_at || new Date().toISOString(),
+      payload: latest.payload || latest,
+    };
+    setNotifications((prev) => {
+      if (prev.some((item) => String(item.id) === String(id))) return prev;
+      return [newEntry, ...prev];
+    });
+  }, [state.notifications]);
 
   const loadMore = () => {
     if (loading || !hasMore) return;
@@ -135,12 +173,16 @@ export default function NotificationNav() {
               <Fragment key={item.id}>
                 <button
                   type="button"
-                  onClick={() =>
+                  onClick={() => {
                     dispatch({
                       type: ACTIONS.NOTIFICATION_DETAIL,
                       payload: item,
-                    })
-                  }
+                    });
+                    dispatch({
+                      type: ACTIONS.DECREMENT_NOTIFICATION_BADGE,
+                      payload: 1,
+                    });
+                  }}
                   className={cn(
                     "flex w-full items-start gap-3 px-3 py-4 text-left hover:bg-[#4B4BB4]",
                     notificationDetail?.id === item.id && "bg-[#4B4BB4]"
@@ -172,7 +214,13 @@ export default function NotificationNav() {
                       </span>
                     </div>
                     <p className="line-clamp-2 max-w-[220px] break-words text-[14px] text-[#D0D0FD]">
-                      {item.message}
+                      {showPreviews ? (
+                        item.message
+                      ) : (
+                        <span className="italic">
+                          {hiddenPreviewText(item.message)}
+                        </span>
+                      )}
                     </p>
                   </div>
                 </button>

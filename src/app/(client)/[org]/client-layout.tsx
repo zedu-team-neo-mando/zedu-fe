@@ -4,6 +4,7 @@ import { ACTIONS } from "~/store/Actions";
 import { bootstrapOrganisationAccess } from "~/utils/org-access-api";
 import { DataContext } from "~/store/GlobalState";
 import { GetRequest } from "~/utils/new-request";
+import { showError } from "~/components/toast/sonner";
 import { usePathname, useRouter } from "next/navigation";
 import Topbar from "~/components/layout/topbar";
 import { ChannelBuzzProvider } from "~/hooks/buzz/ChannelBuzzContext";
@@ -32,6 +33,7 @@ import {
   resolveChannelIdForOrgSwitch,
 } from "~/utils/org-switch";
 import { useOrganisationUsers } from "~/hooks/useOrganisationUsers";
+import { useLoadSavedMessages } from "~/hooks/useSavedMessages";
 import { isReservedPathSegment } from "~/lib/reserved-paths";
 import ErrorState, {
   ErrorStateVariant,
@@ -59,6 +61,7 @@ const ClientLayout = ({
     (typeof window !== "undefined" ? localStorage.getItem("orgId") || "" : "");
 
   useOrganisationUsers(orgId, { enabled: isInitialized && !!orgId });
+  useLoadSavedMessages(orgId, { enabled: isInitialized && !!orgId });
 
   useEffect(() => {
     if (
@@ -66,6 +69,7 @@ const ClientLayout = ({
       prevPathnameRef.current !== pathname
     ) {
       dispatch({ type: ACTIONS.REPLY, payload: false });
+      dispatch({ type: ACTIONS.IS_EDIT, payload: false });
       dispatch({ type: ACTIONS.IS_EDIT_REPLY, payload: false });
       dispatch({ type: ACTIONS.HOVER_PROFILE, payload: false });
       dispatch({ type: ACTIONS.SHOW_USER_PROFILE, payload: false });
@@ -272,6 +276,7 @@ const ClientLayout = ({
         dispatch({ type: ACTIONS.ORG_ROLES, payload: roles });
       } catch (error) {
         console.error("Failed to load organisation access data:", error);
+        showError("Failed to load organisation access data");
       } finally {
         dispatch({ type: ACTIONS.ORG_ACCESS_LOADING, payload: false });
       }
@@ -339,7 +344,11 @@ const ClientLayout = ({
           <Topbar />
           <div className="w-full flex relative">
             <SideBar />
-            <div className={`w-full relative`}>
+            <div
+              className={`w-full relative ${
+                state.showUserProfile ? "sm:mr-[408px]" : ""
+              }`}
+            >
               {children}
               <UserSidebar />
             </div>

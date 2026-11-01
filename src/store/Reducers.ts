@@ -373,11 +373,48 @@ const reducers = (state: any, action: any) => {
           count: (state.notificationBadgeState?.count ?? 0) + 1,
         },
       };
+    case ACTIONS.DECREMENT_NOTIFICATION_BADGE:
+      return {
+        ...state,
+        notificationBadgeState: {
+          count: Math.max(
+            0,
+            (state.notificationBadgeState?.count ?? 0) -
+              (typeof payload === "number" ? payload : 1)
+          ),
+        },
+      };
+    case ACTIONS.SET_NOTIFICATION_BADGE:
+      return {
+        ...state,
+        notificationBadgeState: {
+          count: Math.max(
+            0,
+            typeof payload === "number" ? payload : (payload?.count ?? 0)
+          ),
+        },
+      };
     case ACTIONS.CLEAR_NOTIFICATION_BADGE:
       return {
         ...state,
         notificationBadgeState: { count: 0 },
       };
+    case ACTIONS.MESSAGE_DELIVERY: {
+      const update = (messages: any[] = []) =>
+        messages.map((message) =>
+          message.isOptimistic &&
+          (message.id === action.payload.id ||
+            message.thread_id === action.payload.id)
+            ? { ...message, status: action.payload.status }
+            : message
+        );
+      return {
+        ...state,
+        messages: update(state.messages),
+        chats: update(state.chats),
+        replies: update(state.replies),
+      };
+    }
     case ACTIONS.MESSAGES:
       if (action.payload?.newMessage?.isOptimistic) {
         return {
@@ -1390,6 +1427,7 @@ const reducers = (state: any, action: any) => {
           threadMentions: null,
           threadMentionsHasMore: false,
           unseenThreadCount: 0,
+          unseenThreadCountRevision: (state.unseenThreadCountRevision || 0) + 1,
         };
       }
       if (action.payload?.isRealTime) {
@@ -1430,17 +1468,38 @@ const reducers = (state: any, action: any) => {
         threadMentionsHasMore: hasMore,
         ...(action.payload.newPage === 1 &&
         typeof action.payload.unseenThreadCount === "number"
-          ? { unseenThreadCount: action.payload.unseenThreadCount }
+          ? {
+              unseenThreadCount: action.payload.unseenThreadCount,
+              unseenThreadCountRevision:
+                (state.unseenThreadCountRevision || 0) + 1,
+            }
           : {}),
       };
     }
 
     case ACTIONS.UNSEEN_THREAD_COUNT:
+      if (typeof payload !== "number") return state;
       return {
         ...state,
-        unseenThreadCount:
-          typeof payload === "number" ? payload : state.unseenThreadCount,
+        unseenThreadCount: payload,
+        unseenThreadCountRevision: (state.unseenThreadCountRevision || 0) + 1,
       };
+
+    case ACTIONS.SYNC_UNSEEN_THREAD_COUNT: {
+      const { unseenThreadCount, expectedRevision } = action.payload || {};
+      if (
+        typeof unseenThreadCount !== "number" ||
+        expectedRevision !== (state.unseenThreadCountRevision || 0)
+      ) {
+        return state;
+      }
+
+      return {
+        ...state,
+        unseenThreadCount,
+        unseenThreadCountRevision: (state.unseenThreadCountRevision || 0) + 1,
+      };
+    }
 
     case ACTIONS.MUTE_PARTICIPANT:
       return {

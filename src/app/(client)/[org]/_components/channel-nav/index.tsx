@@ -289,6 +289,7 @@ const ChannelHeader = () => {
                 <Tooltips side="bottom" text="More actions">
                   <Button
                     variant="outline"
+                    aria-label="More actions"
                     className={`p-2 border-[#E6EAEF] h-9 ${
                       isMenuDropdownOpen ? "bg-[#F6F7F9]" : ""
                     }`}

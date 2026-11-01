@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { campaignPayload } from "~/lib/campaign-attribution";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { Button } from "~/components/ui/button";
@@ -8,6 +9,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Checkbox } from "~/components/ui/checkbox";
 import Loading from "~/components/ui/loading";
 import { PostRequest } from "~/utils/request";
+import { showError } from "~/components/toast/sonner";
 import { useGoogleLogin } from "@react-oauth/google";
 import { RegisterWebhookRequest } from "~/utils/webhook-request";
 import { Separator } from "~/components/ui/separator";
@@ -20,6 +22,7 @@ import {
 } from "~/lib/password";
 
 import { isAutoCreatedOrg } from "~/utils/organisation";
+import { getSafeRedirect } from "~/utils/safe-redirect";
 
 /**
  * User registration page supporting email/password, Google, Apple auth, and template onboarding.
@@ -62,10 +65,13 @@ function SignUp() {
     try {
       const id_token = response?.authorization?.id_token;
       if (!id_token) throw new Error("No id_token from Apple");
-      const res = await PostRequest("/auth/apple", { id_token });
+      const res = await PostRequest("/auth/apple", {
+        id_token,
+        ...campaignPayload(),
+      });
       if (res?.status === 200 || res?.status === 201) {
         const user = res?.data?.data?.user;
-        const redirectUrl = searchParams.get("redirect") || "";
+        const redirectUrl = getSafeRedirect(searchParams.get("redirect"));
         localStorage.setItem("token", res?.data?.data?.access_token);
         localStorage.setItem("useremail", user?.email);
         localStorage.setItem("user", JSON.stringify(user));
@@ -195,11 +201,12 @@ function SignUp() {
     if (validateForm()) {
       setLoading(true);
       const payload = {
+        ...campaignPayload(),
         email: trimmedEmail,
         password,
       };
 
-      const redirectUrl = searchParams.get("redirect") || "";
+      const redirectUrl = getSafeRedirect(searchParams.get("redirect"));
       const res = await PostRequest("/auth/register", payload);
 
       if (res?.status === 200 || res?.status === 201) {
@@ -258,11 +265,12 @@ function SignUp() {
       try {
         const res = await PostRequest("/auth/google", {
           grant_code: code,
+          ...campaignPayload(),
         });
 
         if (res?.status === 200 || res?.status === 201) {
           const user = res?.data?.data?.user;
-          const redirectUrl = searchParams.get("redirect") || "";
+          const redirectUrl = getSafeRedirect(searchParams.get("redirect"));
 
           localStorage.setItem("token", res?.data?.data?.access_token);
           localStorage.setItem("useremail", user?.email);
@@ -304,8 +312,25 @@ function SignUp() {
         setGoogleloading(false);
       }
     },
-    onError: () => {
-      console.error("Login Failed");
+    onError: (error) => {
+      setGoogleloading(false);
+      console.error("Google Sign-up Failed:", error);
+      if (error.error !== "access_denied") {
+        showError(
+          "Google sign-up failed",
+          "Try again, or sign up with email and password instead."
+        );
+      }
+    },
+    onNonOAuthError: (error) => {
+      setGoogleloading(false);
+      console.error("Google Sign-up Failed:", error);
+      if (error.type === "popup_failed_to_open") {
+        showError(
+          "Google sign-up failed",
+          "Allow pop-ups for this site, then try again."
+        );
+      }
     },
   });
 

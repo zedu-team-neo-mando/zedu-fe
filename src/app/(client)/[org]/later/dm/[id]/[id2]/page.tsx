@@ -54,7 +54,8 @@ const DmPage = () => {
       media: medias,
     };
 
-    await PostRequest(`/dms/channels/${id}/threads`, secondPayload);
+    const res = await PostRequest(`/dms/channels/${id}/threads`, secondPayload);
+    return res?.status === 200 || res?.status === 201;
   };
 
   const handleReplyMessage = async (
@@ -70,7 +71,8 @@ const DmPage = () => {
     };
 
     // save the data to the database
-    await PostRequest(`/dms/messages/${id}`, payload);
+    const res = await PostRequest(`/dms/messages/${id}`, payload);
+    return res?.status === 200 || res?.status === 201;
   };
 
   //

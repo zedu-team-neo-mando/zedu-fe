@@ -3,10 +3,18 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { GetRequest, InviteRequest } from "~/utils/new-request";
+import { AlertCircle } from "lucide-react";
+import {
+  GetRequest,
+  InviteRequest,
+  SaveMessage as PostOptInRequest,
+} from "~/utils/new-request";
+import { showWarning } from "~/components/toast/sonner";
 import Loading from "~/components/ui/loading";
+import { Button } from "~/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DataContext } from "~/store/GlobalState";
+import PoweredByZedu from "~/components/powered-by-zedu";
 
 const REDIRECT_SECONDS = 10;
 
@@ -24,6 +32,7 @@ const InviteForm = () => {
   const searchParams = useSearchParams();
   const org_id = searchParams.get("org_id");
   const invitation_token = searchParams.get("invitation_token");
+  const linkInvalid = !org_id || !invitation_token;
   const [loading, setLoading] = useState(true);
   const [pendingRedirect, setPendingRedirect] =
     useState<PendingRedirect | null>(null);
@@ -72,22 +81,52 @@ const InviteForm = () => {
         localStorage.setItem("orgSlug", orgSlug);
       }
 
-      router.push(`/${orgSlug}/invited`);
+      // Unchecked preserves existing consent; explicit opt-outs need API support.
+      if (marketingOptIn) {
+        try {
+          const user = res.data.data.user;
+          // Use the silent POST helper so an existing opt-in shows no error toast.
+          const optInRes = await PostOptInRequest("/optin", {
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+          });
+          const status = optInRes?.response?.status ?? optInRes?.status;
+
+          if (status !== 200 && status !== 201 && status !== 409) {
+            throw new Error("Marketing opt-in was not saved");
+          }
+        } catch {
+          showWarning(
+            "Invitation accepted, but your marketing preference could not be saved."
+          );
+        }
+      }
+
+      // The welcome page reads org_id to load the organisation's name.
+      router.push(
+        `/${orgSlug}/invited?org_id=${encodeURIComponent(res.data.data.user.current_org)}`
+      );
       return true;
     }
 
     setButtonLoading(false);
     setLoading(false);
     return false;
-  }, [invitation_token, router]);
+  }, [invitation_token, marketingOptIn, router]);
 
   useEffect(() => {
-    if (!org_id || !invitation_token || hasInitialized.current) return;
+    if (linkInvalid) {
+      setLoading(false);
+      return;
+    }
+    if (hasInitialized.current) return;
 
     hasInitialized.current = true;
     localStorage.setItem("orgId", org_id);
 
     const getOrgDetails = async () => {
+      setLoading(true);
       const res = await GetRequest(
         `/organisations/${org_id}/load-org-info?invitation_token=${invitation_token}`
       );
@@ -123,7 +162,13 @@ const InviteForm = () => {
     };
 
     getOrgDetails();
-  }, [org_id, invitation_token, buildAuthRedirectUrl, isUserLoggedIn]);
+  }, [
+    org_id,
+    invitation_token,
+    linkInvalid,
+    buildAuthRedirectUrl,
+    isUserLoggedIn,
+  ]);
 
   useEffect(() => {
     if (!pendingRedirect) return;
@@ -156,7 +201,32 @@ const InviteForm = () => {
           <Image src="/Zedu.png" alt="Zedu home" width={86} height={31} />
         </Link>
 
-        {loading ? (
+        {linkInvalid ? (
+          <div
+            role="alert"
+            className="mt-14 flex w-full max-w-[36rem] flex-col items-center text-center"
+          >
+            <span className="flex size-14 items-center justify-center rounded-full bg-red-50">
+              <AlertCircle className="size-7 text-red-500" aria-hidden="true" />
+            </span>
+            <h1 className="mt-5 text-3xl font-bold leading-tight sm:text-4xl">
+              Invalid invitation link
+            </h1>
+            <p className="mt-3 text-base text-gray-700">
+              The invitation link is invalid or has expired. It may have been
+              truncated by your email or messaging app. Ask the person who
+              invited you to send a new link.
+            </p>
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+              <Button asChild>
+                <Link href="/">Back to home</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <a href="mailto:support@zedu.chat">Contact support</a>
+              </Button>
+            </div>
+          </div>
+        ) : loading ? (
           <div className="mx-auto flex h-[30vh] w-full max-w-[48rem] items-center justify-center py-[2rem]">
             <Loading height="50" width="50" color="#7141F8" />
           </div>
@@ -195,7 +265,7 @@ const InviteForm = () => {
         )}
       </div>
 
-      {!loading && (
+      {!loading && !linkInvalid && (
         <div className="mx-auto mt-10 w-full max-w-lg rounded-md bg-white text-center">
           <form
             onSubmit={handleAccept}
@@ -226,6 +296,7 @@ const InviteForm = () => {
                   id="marketing"
                   type="checkbox"
                   checked={marketingOptIn}
+                  disabled={buttonLoading}
                   onChange={(e) => setMarketingOptIn(e.target.checked)}
                   className="mt-1"
                 />
@@ -256,6 +327,10 @@ const InviteForm = () => {
               .
             </p>
           </form>
+
+          <div className="mt-6 flex justify-center px-8 sm:justify-end">
+            <PoweredByZedu />
+          </div>
         </div>
       )}
     </div>

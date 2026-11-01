@@ -12,6 +12,12 @@ export const homeFAQs: HomeFAQ[] = [
       "Zedu is a communication and learning platform built for schools, bootcamps, and training programs. It combines structured channels, learning workflows, and AI-powered support to help educators teach and learners stay engaged.",
   },
   {
+    id: "what-is-a-cohort",
+    question: "What is a cohort?",
+    answer:
+      "A cohort is a group of learners who take a course or programme together, often following the same schedule. On Zedu, educators can organise the group’s discussions, announcements and learning resources in dedicated channels.",
+  },
+  {
     id: "item-2",
     question: "How does Zedu support students and learners?",
     answer:

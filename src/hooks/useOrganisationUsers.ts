@@ -5,7 +5,7 @@ import { ACTIONS } from "~/store/Actions";
 import { GetRequest } from "~/utils/new-request";
 
 const PAGE_LIMIT = 50;
-const SEARCH_DEBOUNCE_MS = 2000;
+const SEARCH_DEBOUNCE_MS = 300;
 
 type OrgUsersPagination = {
   loadedPage: number;
@@ -123,6 +123,9 @@ export const useOrganisationUsers = (
   const [searchTotalItems, setSearchTotalItems] = useState(0);
   const searchPageRef = useRef(0);
   const searchInflightRef = useRef<Set<number>>(new Set());
+  // The query whose results the UI is waiting for; responses for any other
+  // query arrived late and are dropped.
+  const activeSearchQueryRef = useRef("");
 
   const orgMembersRef = useRef(state.orgMembers);
   const prevOrgIdRef = useRef(orgId);
@@ -217,6 +220,8 @@ export const useOrganisationUsers = (
           buildUsersUrl(orgId, pageNumber, query)
         );
 
+        if (activeSearchQueryRef.current !== query) return;
+
         if (response?.status === 200 || response?.status === 201) {
           const newUsers = response?.data?.data || [];
           const pagination = normalizePagination(response?.data?.pagination);
@@ -240,8 +245,11 @@ export const useOrganisationUsers = (
           );
         }
       } finally {
-        searchInflightRef.current.delete(pageNumber);
-        setSearchLoading(false);
+        // A newer query owns the in-flight set and loading flag now
+        if (activeSearchQueryRef.current === query) {
+          searchInflightRef.current.delete(pageNumber);
+          setSearchLoading(false);
+        }
       }
     },
     [orgId]
@@ -279,7 +287,10 @@ export const useOrganisationUsers = (
   useEffect(() => {
     if (!enabled || !orgId) return;
 
+    activeSearchQueryRef.current = isSearching ? debouncedSearch.trim() : "";
+
     if (!isSearching) {
+      setSearchLoading(false);
       setSearchUsers([]);
       setSearchHasMore(false);
       setSearchTotalItems(0);

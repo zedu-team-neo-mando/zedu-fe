@@ -9,8 +9,8 @@ import { showInfo } from "~/components/toast/sonner";
 import { playBuzzParticipantJoinSound } from "~/lib/buzz/play-join-sound";
 import {
   registerNotificationBadge,
-  isHomeRoute,
   isNotificationsRoute,
+  TRIGGER_NOTIFICATION_EVENT,
 } from "~/lib/notifications/notification-badge";
 import {
   getSharedCentrifuge,
@@ -57,6 +57,27 @@ export default function GeneralNotificationConnection() {
     }
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleTestNotification = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const data = customEvent.detail;
+      dispatch({ type: ACTIONS.NOTIFICATIONS, payload: data });
+      if (!isNotificationsRoute(pathnameRef.current)) {
+        dispatch({ type: ACTIONS.INCREMENT_NOTIFICATION_BADGE });
+      }
+    };
+
+    window.addEventListener(TRIGGER_NOTIFICATION_EVENT, handleTestNotification);
+    return () => {
+      window.removeEventListener(
+        TRIGGER_NOTIFICATION_EVENT,
+        handleTestNotification
+      );
+    };
+  }, [dispatch]);
+
   // centrifugo connection for notification
   useEffect(() => {
     let user: { id?: string; user_id?: string } | null = null;
@@ -78,7 +99,6 @@ export default function GeneralNotificationConnection() {
       dispatch({ type: ACTIONS.NOTIFY, payload: ctx?.data?.data });
 
       if (
-        !isHomeRoute(pathnameRef.current) &&
         !isNotificationsRoute(pathnameRef.current) &&
         registerNotificationBadge(ctx?.data)
       ) {

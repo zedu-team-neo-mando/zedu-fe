@@ -57,15 +57,33 @@ export const shouldIncrementNotificationBadge = (
 ): boolean => {
   if (!payload) return false;
 
-  const notificationType =
-    getString(payload.notification_type) || getString(payload.event);
-  const section = getString(payload.section);
+  const nested =
+    payload.data &&
+    typeof payload.data === "object" &&
+    !Array.isArray(payload.data)
+      ? (payload.data as Record<string, unknown>)
+      : {};
 
-  if (notificationType === "new_message") return true;
-  if (notificationType === "dm") return true;
-  if (notificationType === "mention") return true;
-  if (notificationType === "direct_call_initiated") return true;
-  if (notificationType === "direct_call_initialized") return true;
+  const notificationType =
+    getString(payload.notification_type) ||
+    getString(payload.event) ||
+    getString(nested.notification_type) ||
+    getString(nested.event);
+  const section = getString(payload.section) || getString(nested.section);
+
+  if (Boolean(payload.isTest || payload.test || nested.isTest)) return true;
+
+  if (
+    notificationType === "new_message" ||
+    notificationType === "dm" ||
+    notificationType === "mention" ||
+    notificationType === "direct_call_initiated" ||
+    notificationType === "direct_call_initialized" ||
+    notificationType === "notification" ||
+    notificationType === "announcement"
+  ) {
+    return true;
+  }
 
   if (
     section === "thread_message" &&
@@ -74,8 +92,48 @@ export const shouldIncrementNotificationBadge = (
     return true;
   }
 
+  // Any payload carrying a title or message is a user-facing notification
+  if (
+    getString(payload.title) ||
+    getString(payload.message) ||
+    getString(nested.title) ||
+    getString(nested.message)
+  ) {
+    return true;
+  }
+
   return false;
 };
+
+export const TRIGGER_NOTIFICATION_EVENT = "zedu:trigger-notification";
+
+export const triggerLocalTestNotification = (
+  payload?: NotificationLike
+): void => {
+  if (typeof window === "undefined") return;
+  const data = {
+    id: `test-${Date.now()}`,
+    title: "New Notification",
+    message: "You have an unread notification",
+    notification_type: "new_message",
+    isTest: true,
+    created_at: new Date().toISOString(),
+    ...(payload || {}),
+  };
+  window.dispatchEvent(
+    new CustomEvent(TRIGGER_NOTIFICATION_EVENT, { detail: data })
+  );
+};
+
+declare global {
+  interface Window {
+    triggerTestNotification?: (payload?: NotificationLike) => void;
+  }
+}
+
+if (typeof window !== "undefined") {
+  window.triggerTestNotification = triggerLocalTestNotification;
+}
 
 export const registerNotificationBadge = (
   payload: NotificationLike

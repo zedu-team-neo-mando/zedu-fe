@@ -59,38 +59,16 @@ import { emoticonMap } from "./emoticon-map";
 import { AttachmentList } from "./attachment-list";
 import { useAttachments } from "./use-attachments";
 import { useParams } from "next/navigation";
+import { MessageDelivery, type DeliveryAttempt } from "./message-delivery";
 import { uuidv7 } from "uuidv7";
 import { CHAT_FILE_ACCEPT } from "~/utils/document-files";
-
-const MESSAGE_DRAFTS_KEY = "zedu:message-drafts";
-
-function readMessageDrafts(): Record<string, string> {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = localStorage.getItem(MESSAGE_DRAFTS_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveMessageDraft(key: string, html: string, empty: boolean) {
-  if (!key || typeof window === "undefined") return;
-  const drafts = readMessageDrafts();
-  if (empty) {
-    if (!(key in drafts)) return;
-    delete drafts[key];
-  } else {
-    drafts[key] = html;
-  }
-  localStorage.setItem(MESSAGE_DRAFTS_KEY, JSON.stringify(drafts));
-}
-
-function loadMessageDraft(key: string) {
-  return readMessageDrafts()[key] || "";
-}
+import {
+  clearMessageDraft,
+  finishMessageDraftSend,
+  loadMessageDraft,
+  messageDraftKey,
+  saveMessageDraft,
+} from "./message-drafts";
 
 const MessageBox = ({
   subscription,
@@ -104,7 +82,15 @@ const MessageBox = ({
   const { state, dispatch } = useContext(DataContext);
   const params = useParams();
   const id = params.id as string;
-  const uuid = uuidv7();
+  const delivery = useRef(new MessageDelivery());
+  const [, refreshDelivery] = useState(0);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
@@ -113,7 +99,7 @@ const MessageBox = ({
   const [isGifPickerOpen, setIsGifPickerOpen] = useState(false);
   const [showFormatting, setShowformatting] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
-  const { attachments, uploaded, readyToSend, add, remove, retry, clear } =
+  const { attachments, uploaded, readyToSend, add, remove, retry } =
     useAttachments();
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -145,18 +131,71 @@ const MessageBox = ({
     handleImagePaste,
     handleTyping
   );
-  const storageKey = draftKey || (id ? `conversation:${id}` : "");
-  const draftKeyRef = useRef(storageKey);
+  const storageKey = messageDraftKey(
+    state.user?.user_id ?? state.user?.id ?? "",
+    String(params.org ?? ""),
+    draftKey || (id ? `conversation:${id}` : "")
+  );
+  const activeScope = useRef(storageKey);
+  activeScope.current = storageKey;
+  const attachmentScope = useRef(storageKey);
+  useEffect(() => {
+    if (attachmentScope.current !== storageKey) {
+      // The retry closure retains uploaded media, but previews must not leak
+      // into a different conversation's composer.
+      attachments.forEach((attachment) => remove(attachment.id));
+      attachmentScope.current = storageKey;
+    }
+  }, [storageKey, attachments, remove]);
+  const failedDelivery = delivery.current.get(storageKey);
+  const sending = delivery.current.busy;
+
+  const runDelivery = async (attempt: DeliveryAttempt, isRetry = false) => {
+    if (delivery.current.busy || channelLoading || !subscription) return;
+    if (
+      isRetry &&
+      (delivery.current.get(attempt.scope) !== attempt ||
+        attempt.status !== "failed")
+    )
+      return;
+    const result = delivery.current.deliver(attempt, isRetry);
+    dispatch({
+      type: ACTIONS.MESSAGE_DELIVERY,
+      payload: { id: attempt.id, status: "pending" },
+    });
+    refreshDelivery((value) => value + 1);
+    const sent = await result;
+    dispatch({
+      type: ACTIONS.MESSAGE_DELIVERY,
+      payload: { id: attempt.id, status: sent ? "sent" : "failed" },
+    });
+    // Preserve staging's late-send draft reconciliation without touching the
+    // editor belonging to a different conversation (or an unmounted composer).
+    if (
+      !mounted.current ||
+      activeScope.current !== attempt.scope ||
+      editor?.isDestroyed
+    ) {
+      finishMessageDraftSend(attempt.scope, attempt.html, sent);
+    }
+    if (!mounted.current) return;
+    if (sent && activeScope.current === attempt.scope && !editor?.isDestroyed) {
+      // Keep anything composed while the request was in flight.
+      if (editor?.getHTML() === attempt.html) {
+        editor.commands.clearContent();
+        clearMessageDraft(attempt.scope);
+        dispatch({ type: ACTIONS.CLEAR_MENTIONS });
+      }
+      attempt.attachmentIds.forEach(remove);
+    }
+    refreshDelivery((value) => value + 1);
+  };
 
   useEffect(() => {
     if (!editor || !storageKey) return;
 
-    draftKeyRef.current = storageKey;
-
     const persist = () => {
-      const key = draftKeyRef.current;
-      if (!key) return;
-      saveMessageDraft(key, editor.getHTML(), editor.isEmpty);
+      saveMessageDraft(storageKey, editor.getHTML(), editor.isEmpty);
     };
 
     const saved = loadMessageDraft(storageKey);
@@ -211,7 +250,7 @@ const MessageBox = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (channelLoading || !editor) return;
+    if (channelLoading || !editor || delivery.current.busy) return;
 
     // Get full HTML content from editor (keeps links, mentions, etc.)
     const editorText = editor.getText();
@@ -223,6 +262,19 @@ const MessageBox = ({
 
     if (!hasTextContent && attachments.length === 0) return;
     if (!readyToSend()) return;
+
+    // Enter/Send on an unchanged failed message is the same retry action.
+    if (
+      failedDelivery?.status === "failed" &&
+      failedDelivery.html === editor.getHTML() &&
+      attachments.length === failedDelivery.attachmentIds.length &&
+      attachments.every((attachment) =>
+        failedDelivery.attachmentIds.includes(attachment.id)
+      )
+    ) {
+      await runDelivery(failedDelivery, true);
+      return;
+    }
 
     handleTyping(false);
 
@@ -236,11 +288,21 @@ const MessageBox = ({
     content = content.replace(plainTextContent, fullyConvertedText);
 
     if (subscription) {
-      editor.commands.clearContent();
-      clear();
-
-      sendMessage(id, uuid, content, uploaded);
-      dispatch({ type: ACTIONS.CLEAR_MENTIONS });
+      const attemptId = uuidv7();
+      const media = structuredClone(uploaded);
+      const mentions = structuredClone(state?.mentions);
+      const attempt: DeliveryAttempt = {
+        scope: storageKey,
+        id: attemptId,
+        html: editor.getHTML(),
+        preview: editorText,
+        attachmentIds: attachments.map((attachment) => attachment.id),
+        status: "sending",
+        // Capture the callback too: a later render may point at another thread.
+        send: (isRetry) =>
+          sendMessage(id, attemptId, content, media, mentions, isRetry),
+      };
+      await runDelivery(attempt);
     }
   };
 
@@ -358,6 +420,34 @@ const MessageBox = ({
       )}
 
       <div className="relative mx-3 md:mx-5 pb-3">
+        {failedDelivery?.status === "failed" && (
+          <div
+            role="alert"
+            className="mb-2 flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+          >
+            <div className="min-w-0">
+              <p>Message failed to send.</p>
+              <p className="truncate text-xs">
+                {failedDelivery.preview || "Attached message"}
+                {failedDelivery.attachmentIds.length > 0 &&
+                  ` (${failedDelivery.attachmentIds.length} attachments)`}
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={sending || channelLoading || !subscription}
+              className="font-semibold underline disabled:opacity-50"
+              onClick={() => void runDelivery(failedDelivery, true)}
+            >
+              Retry message
+            </button>
+          </div>
+        )}
+        {sending && (
+          <p role="status" className="mb-2 text-sm text-gray-600">
+            Sending message…
+          </p>
+        )}
         <div
           onClick={() => !channelLoading && editor && editor.commands.focus()}
           onDragOver={handleDragOver}
@@ -368,6 +458,8 @@ const MessageBox = ({
           {showFormatting && (
             <div className="border-b border-[#E6EAEF] flex items-center gap-2 bg-[#F9FAFB] pl-3 pr-4 py-[5px]">
               <button
+                aria-label="Bold"
+                aria-pressed={editor?.isActive("bold") ?? false}
                 onClick={() => editor?.chain().focus().toggleBold().run()}
                 className={`p-1.5 hover:bg-gray-100 rounded ${
                   editor?.isActive("bold")
@@ -382,6 +474,8 @@ const MessageBox = ({
               </button>
 
               <button
+                aria-label="Italic"
+                aria-pressed={editor?.isActive("italic") ?? false}
                 onClick={() => editor?.chain().focus().toggleItalic().run()}
                 className={`p-1.5 hover:bg-gray-100 rounded ${
                   editor?.isActive("italic")
@@ -396,6 +490,8 @@ const MessageBox = ({
               </button>
 
               <button
+                aria-label="Strikethrough"
+                aria-pressed={editor?.isActive("strike") ?? false}
                 onClick={() => editor?.chain().focus().toggleStrike().run()}
                 className={`p-1.5 hover:bg-gray-100 rounded ${
                   editor?.isActive("strike")
@@ -414,6 +510,7 @@ const MessageBox = ({
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                   <button
+                    aria-label="Add link"
                     onClick={() => setOpen(true)}
                     className={`p-1.5 hover:bg-gray-100 rounded ${editor?.isActive("link") ? "bg-gray-200 font-semibold text-black" : ""}`}
                   >
@@ -464,6 +561,8 @@ const MessageBox = ({
               </Dialog>
 
               <button
+                aria-label="Numbered list"
+                aria-pressed={editor?.isActive("orderedList") ?? false}
                 type="button"
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() =>
@@ -484,6 +583,8 @@ const MessageBox = ({
               </button>
 
               <button
+                aria-label="Bulleted list"
+                aria-pressed={editor?.isActive("bulletList") ?? false}
                 type="button"
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => editor?.chain().focus().toggleBulletList().run()}
@@ -502,6 +603,8 @@ const MessageBox = ({
               <div className="w-px h-5 bg-[#E6EAEF]" />
 
               <button
+                aria-label="Inline code"
+                aria-pressed={editor?.isActive("code") ?? false}
                 type="button"
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => editor?.chain().focus().toggleCode().run()}
@@ -519,6 +622,8 @@ const MessageBox = ({
               </button>
 
               <button
+                aria-label="Code block"
+                aria-pressed={editor?.isActive("codeBlock") ?? false}
                 type="button"
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
@@ -555,6 +660,7 @@ const MessageBox = ({
             <div className="flex items-center gap-2 py-2 pl-3 pr-4">
               <Tooltips text="Upload from your computer">
                 <button
+                  aria-label="Upload from your computer"
                   onClick={() => fileInputRef.current?.click()}
                   className="p-1.5 hover:bg-gray-100 rounded-full bg-[#F2F4F7]"
                 >
@@ -575,6 +681,9 @@ const MessageBox = ({
                 text={!showFormatting ? "Show formatting" : "Hide formatting"}
               >
                 <button
+                  aria-label={
+                    showFormatting ? "Hide formatting" : "Show formatting"
+                  }
                   onClick={() => setShowformatting((prev) => !prev)}
                   className="p-1.5 hover:bg-gray-100 rounded text-[#606060] underline"
                 >
@@ -593,6 +702,7 @@ const MessageBox = ({
                   >
                     <PopoverTrigger asChild>
                       <button
+                        aria-label="Emoji"
                         onClick={(e) => {
                           e.stopPropagation();
                           setIsEmojiPickerOpen((prev) => !prev);
@@ -651,6 +761,7 @@ const MessageBox = ({
 
               <Tooltips text="Mention someone">
                 <button
+                  aria-label="Mention someone"
                   onClick={handleMentionClick}
                   className="p-1.5 hover:bg-gray-100 rounded"
                 >
@@ -660,6 +771,7 @@ const MessageBox = ({
 
               <Tooltips text="Mention a channel">
                 <button
+                  aria-label="Mention a channel"
                   onClick={handleChannelMentionClick}
                   className="p-1.5 hover:bg-gray-100 rounded"
                 >
@@ -669,6 +781,7 @@ const MessageBox = ({
 
               <Tooltips text="Slash commands">
                 <button
+                  aria-label="Slash commands"
                   onClick={handleSlashCommandClick}
                   className="p-1.5 hover:bg-gray-100 rounded"
                 >
@@ -688,6 +801,7 @@ const MessageBox = ({
 
                   <Tooltips text="Record audio">
                     <button
+                      aria-label="Record audio"
                       className="p-1.5 hover:bg-gray-100 rounded hidden sm:flex"
                       onClick={() => setIsRecording(true)}
                       disabled={isRecording}
@@ -701,11 +815,15 @@ const MessageBox = ({
 
             <div className="flex items-center gap-1 py-2 pl-3 pr-4">
               <button
+                aria-label="Send message"
                 type="submit"
+                aria-label="Send message"
                 className="p-1.5 hover:bg-gray-100 rounded size-8 flex items-center justify-center"
                 onClick={handleSubmit}
                 disabled={
-                  channelLoading || (isEmpty && attachments.length === 0)
+                  channelLoading ||
+                  sending ||
+                  (isEmpty && attachments.length === 0)
                 }
               >
                 <SendHorizonal

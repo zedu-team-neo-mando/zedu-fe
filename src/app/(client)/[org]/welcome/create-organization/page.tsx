@@ -12,6 +12,10 @@ import CustomSelect from "~/components/ui/custom-select";
 import useFirstChannel from "../../home/channels/hooks/first-channel";
 import StepIndicator from "~/components/ui/step-indicator";
 import { RegisterWebhookRequest } from "~/utils/webhook-request";
+import {
+  HEARD_ABOUT_OPTIONS,
+  heardAboutLine,
+} from "~/utils/acquisition-source";
 import { provisionTemplateChannels } from "~/data/templates";
 // Direct sonner toast import because our toast wrapper does not support action buttons (e.g. "Skip template")
 import { toast } from "sonner";
@@ -43,6 +47,7 @@ const CreateOrganization: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [countries, setCountries] = useState<any>([]);
   const [country, setCountry] = useState<any>(null);
+  const [heardAbout, setHeardAbout] = useState<any>(null);
   const { firstChannel } = useFirstChannel();
   const { org } = useParams<{ org: string }>();
   const [createdOrg, setCreatedOrg] = useState<any>(() => {
@@ -228,7 +233,8 @@ const CreateOrganization: React.FC = () => {
     const webhookData = `
       Organisation Name: ${values.organisationName} \n
       Organisation Type: ${values.organisationType} \n
-      Country: ${country?.value || ""}
+      Country: ${country?.value || ""} \n
+      ${heardAboutLine(heardAbout?.value)}
       `;
     RegisterWebhookRequest(
       webhookData,
@@ -470,6 +476,19 @@ const CreateOrganization: React.FC = () => {
                       isDisabled={false}
                     />
                   </div>
+                </div>
+
+                <div className="form-box mb-3">
+                  <label className="mb-2 block text-sm">
+                    How did you hear about Zedu? (optional)
+                  </label>
+                  <CustomSelect
+                    options={HEARD_ABOUT_OPTIONS}
+                    placeholder="Select an option..."
+                    onChange={setHeardAbout}
+                    defaultValue={heardAbout}
+                    isDisabled={false}
+                  />
                 </div>
 
                 {templateProvisionFailed && (

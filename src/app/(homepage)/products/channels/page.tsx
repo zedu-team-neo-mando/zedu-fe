@@ -1,7 +1,7 @@
 import { Metadata } from "next";
-import { ogImageUrl, siteUrl } from "~/lib/env-urls";
+import { siteUrl } from "~/lib/env-urls";
 import Image from "next/image";
-import { ArrowBtn } from "../../_components/ui/Button";
+import { ArrowBtn, OutlineBtn } from "../../_components/ui/Button";
 import {
   FilesIcon,
   MessagesQuestionIcon,
@@ -32,14 +32,6 @@ export const metadata: Metadata = {
       "Keep learning conversations structured with channels built for schools, universities, and cohort-based programs.",
     url: siteUrl("/products/channels"),
     siteName: "Zedu",
-    images: [
-      {
-        url: ogImageUrl("og-image-5.png"),
-        width: 1200,
-        height: 630,
-        alt: "Zedu channels for organized learning communication",
-      },
-    ],
     type: "website",
   },
   twitter: {
@@ -47,7 +39,6 @@ export const metadata: Metadata = {
     title: "Zedu Channels - Structured Class Communication",
     description:
       "Create focused discussions, announcements, and threaded conversations with channels designed for modern education teams.",
-    images: [ogImageUrl("og-image-5.png")],
   },
   alternates: {
     canonical: siteUrl("/products/channels"),
@@ -156,6 +147,7 @@ const ChannelProductPage = () => {
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3 lg:justify-start">
               <ArrowBtn text="Start using channels" linkToHome />
+              <OutlineBtn text="Request a Demo" href="/contact-sales" />
             </div>
           </div>
 
@@ -175,9 +167,9 @@ const ChannelProductPage = () => {
       </section>
       <section className="relative isolate overflow-visible space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16 mt-5">
         <div>
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
             Organized Communication for Learning{" "}
-          </h1>
+          </h2>
         </div>
         <div className="mx-auto grid w-full place-items-center max-w-7xl grid-cols-1 gap-5 sm:gap-6 lg:grid-cols-2 lg:gap-8">
           {featuresData.map((feature) => {
@@ -220,10 +212,10 @@ const ChannelProductPage = () => {
       </section>
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16 mt-5">
         <div className="flex flex-col items-center gap-4">
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
             Channels that <span className="text-primary-500">Scale</span> with
             Your Institution
-          </h1>
+          </h2>
           <p className="max-w-[95%] text-center text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
             Whether you're managing a classroom or an entire university
             community, Zedu channels help structure conversations across large
@@ -247,9 +239,9 @@ const ChannelProductPage = () => {
       </section>
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16 mt-5 bg-blue-50/30">
         <div className="flex flex-col items-center gap-4">
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
             More Than Just <span className="text-primary-500">Channels</span>
-          </h1>
+          </h2>
           <p className="max-w-[95%] text-center text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
             Channels work together with the rest of the Zedu platform.
           </p>

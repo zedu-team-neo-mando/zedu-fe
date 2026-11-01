@@ -6,18 +6,21 @@ const mockArticles = [
     desc: "Run each cohort with clear channels, weekly goals, assignment checkpoints, and mentor feedback loops so learners stay accountable from onboarding to graduation.",
     tag: "Modern Bootcamp",
     image: "/images/homepage/articles/article-1.png",
+    href: "/solutions/bootcamps",
   },
   {
     title: "A Better Campus Communication Layer for Institutions",
     desc: "Coordinate departments, faculty, and students in one structured workspace with role-based permissions, academic announcements, and reliable resource sharing.",
     tag: "Educational Institution",
     image: "/images/homepage/articles/article-2.png",
+    href: "/solutions/universities",
   },
   {
     title: "Keeping K-12 Classrooms Organized, Safe, and Engaging",
     desc: "Create teacher-managed class spaces where students can ask questions, access lesson materials, submit work, and collaborate in a focused learning environment.",
     tag: "K-12 Platform",
     image: "/images/homepage/articles/article-3.png",
+    href: "/solutions/schools",
   },
 ];
 
@@ -47,6 +50,7 @@ export const ArticlesSection = () => {
               desc={article.desc}
               tag={article.tag}
               image={article.image}
+              href={article.href}
             />
           </div>
         ))}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ogImageUrl, siteUrl } from "~/lib/env-urls";
+import { siteUrl } from "~/lib/env-urls";
 import Image from "next/image";
 import { Star, Settings, Shield, Lock } from "lucide-react";
 import { ArrowBtn, OutlineBtn } from "~/app/(homepage)/_components/ui/Button";
@@ -9,7 +9,9 @@ import { ComparisonShowcase } from "~/app/(homepage)/_components/ui/ComparisonSh
 import { DynamicFooter } from "../../_components/footer/dynamic-footer";
 
 export const metadata: Metadata = {
-  title: "Universities Solutions",
+  title: {
+    absolute: "Zedu for Universities - Structured Communication at Scale",
+  },
   description:
     "Power higher education communication with Zedu. Connect departments, professors, and students with structured channels, searchable discussions, and AI-assisted learning workflows.",
   keywords: [
@@ -28,14 +30,6 @@ export const metadata: Metadata = {
       "Unify academic communication across faculties and courses with dedicated channels, collaborative learning spaces, and AI-powered assistance.",
     url: siteUrl("/solutions/universities"),
     siteName: "Zedu",
-    images: [
-      {
-        url: ogImageUrl("og-image-5.png"),
-        width: 1200,
-        height: 630,
-        alt: "Zedu universities solution page preview",
-      },
-    ],
     type: "website",
     locale: "en_US",
   },
@@ -44,7 +38,6 @@ export const metadata: Metadata = {
     title: "Zedu for Universities - Academic Collaboration Platform",
     description:
       "Help departments and students communicate clearly, coordinate courses faster, and keep academic discussions organized in one workspace.",
-    images: [ogImageUrl("og-image-5.png")],
   },
   alternates: {
     canonical: siteUrl("/solutions/universities"),
@@ -184,7 +177,7 @@ const UniversitiesSolutionsPage = () => {
           <div className="relative w-full overflow-hidden rounded-3xl">
             <div className="relative aspect-[16/11] w-full sm:aspect-[4/3] lg:aspect-[16/10]">
               <Image
-                src="/images/homepage/solutions/univerisities-hero.png"
+                src="/images/homepage/solutions/univerisities-hero.jpg"
                 alt="Students seated together while collaborating in the Zedu university workspace"
                 fill
                 priority
@@ -197,9 +190,9 @@ const UniversitiesSolutionsPage = () => {
       </section>
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16 mt-5">
         <div>
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
             Built for Higher Education Environments
-          </h1>
+          </h2>
         </div>
 
         <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -211,15 +204,16 @@ const UniversitiesSolutionsPage = () => {
               showBadge
               showArrow
               className="h-full"
+              headingLevel="h3"
             />
           ))}
         </div>
       </section>
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div className="flex flex-col items-center text-center gap-4">
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
             Structured Communication Across the University
-          </h1>
+          </h2>
           <p className="max-w-[95%] text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
             Connect departments, support large student communities, and enhance
             learning with intelligent tools
@@ -242,9 +236,9 @@ const UniversitiesSolutionsPage = () => {
       </section>
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div className="flex flex-col items-center text-center gap-4">
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
             Institution Control and Security
-          </h1>
+          </h2>
         </div>
 
         <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -273,9 +267,9 @@ const UniversitiesSolutionsPage = () => {
       </section>
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div className="flex flex-col items-center text-center gap-4">
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
             How Zedu Transforms Universities
-          </h1>
+          </h2>
         </div>
 
         <ComparisonShowcase
@@ -290,9 +284,9 @@ const UniversitiesSolutionsPage = () => {
 
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div className="flex flex-col items-center text-center gap-4">
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
             Run Leaner. Move Faster. Teach Better.
-          </h1>
+          </h2>
           <p className="max-w-[95%] text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
             Zedu brings communication, collaboration, and course management into
             one structured workspace, reducing complexity, improving
@@ -309,9 +303,9 @@ const UniversitiesSolutionsPage = () => {
                   index > 0 ? "border-neutral-300 border-l" : ""
                 }`}
               >
-                <h2 className="text-2xl font-bold text-neutral-900 sm:text-5xl">
+                <h3 className="text-2xl font-bold text-neutral-900 sm:text-5xl">
                   {metric.title}
-                </h2>
+                </h3>
                 <p className="text-[12px] leading-tight text-neutral-600 sm:text-sm">
                   {metric.description}
                 </p>

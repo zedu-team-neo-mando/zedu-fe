@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { campaignPayload } from "~/lib/campaign-attribution";
 import { Loader2, Mail } from "lucide-react";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
@@ -173,6 +174,7 @@ export const ContactSalesForm = () => {
       ? `Organization type: ${orgType}\n\n${rawMessage}`
       : rawMessage;
     const contactData = {
+      ...campaignPayload(),
       name: formData.name.trim(),
       email: formData.email.trim(),
       phone_number: normalizedPhone,
@@ -189,7 +191,12 @@ export const ContactSalesForm = () => {
         body: JSON.stringify(contactData),
       });
 
-      if (!response.ok) {
+      // Only the API's JSON reply counts: an HTML page that answers 200 means
+      // the request never reached the API.
+      const isApiReply = response.headers
+        .get("content-type")
+        ?.includes("application/json");
+      if (!response.ok || !isApiReply) {
         throw new Error("Failed to send message");
       }
 

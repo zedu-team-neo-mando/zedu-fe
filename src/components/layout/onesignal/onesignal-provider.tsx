@@ -11,7 +11,7 @@ import {
 } from "~/lib/onesignal/notification-route";
 import {
   registerNotificationBadge,
-  isHomeRoute,
+  isNotificationsRoute,
 } from "~/lib/notifications/notification-badge";
 import { DataContext } from "~/store/GlobalState";
 import { ACTIONS } from "~/store/Actions";
@@ -120,7 +120,7 @@ export default function OneSignalProvider() {
   }, [pathname]);
 
   const incrementBadgeFromNotification = (notification: any) => {
-    if (!dispatch || isHomeRoute(pathnameRef.current)) return;
+    if (!dispatch || isNotificationsRoute(pathnameRef.current)) return;
 
     const payload = getNotificationData(notification);
     if (!registerNotificationBadge(payload)) return;

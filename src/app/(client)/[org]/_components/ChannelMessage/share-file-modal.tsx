@@ -249,6 +249,7 @@ const ShareFileModal = ({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search for channel or person"
+            aria-label="Search for channel or person"
             className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:border-[#7141f8] focus:ring-2 focus:ring-[#7141f8]/20"
           />
 
@@ -262,6 +263,7 @@ const ShareFileModal = ({
                 <button
                   key={recipient.key}
                   type="button"
+                  aria-pressed={selected?.key === recipient.key}
                   onClick={() => setSelected(recipient)}
                   className={`flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-gray-50 ${
                     selected?.key === recipient.key ? "bg-blue-50" : ""

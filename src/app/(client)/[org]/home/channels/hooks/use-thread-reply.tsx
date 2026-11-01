@@ -4,7 +4,7 @@ import { DataContext } from "~/store/GlobalState";
 import { GetRequest } from "~/utils/new-request";
 import { prefetchAvatars } from "~/utils/prefetch-avatars";
 
-const UseThreadReply = () => {
+const UseThreadReply = (onRead?: () => void) => {
   const { state, dispatch } = useContext(DataContext);
   const channelId = state?.thread?.channels_id;
   const threadId = state?.thread?.thread_id;
@@ -33,6 +33,10 @@ const UseThreadReply = () => {
           },
         });
 
+        if (newPage === 1 && state?.reply) {
+          onRead?.();
+        }
+
         prefetchAvatars(newThreads);
 
         setHasMore(newThreads.length >= 30);
@@ -55,7 +59,7 @@ const UseThreadReply = () => {
         dispatch({ type: ACTIONS.MESSAGE_LOADING, payload: false })
       );
     }
-  }, [state?.reply, threadId, channelId, token, dispatch]);
+  }, [state?.reply, threadId, channelId, token, dispatch, onRead]);
 
   const fetchMoreData = () => {
     if (hasMore && !loading) {

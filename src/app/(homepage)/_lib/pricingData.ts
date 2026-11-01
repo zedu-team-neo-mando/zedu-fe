@@ -2,6 +2,9 @@ export type BillingCycle = "monthly" | "yearly";
 export type CtaVariant = "outline" | "filled";
 export type PricingVariant = "starter" | "popular" | "enterprise";
 
+/** Resolved at render time to the viewer's org billing page, or sign-up. */
+export const PLAN_CTA = "plan";
+
 export type PricingFeature = {
   text: string;
   enabled: boolean;
@@ -12,6 +15,7 @@ export type PricingCardData = {
   title: string;
   description: string;
   amount: string;
+  monthlyPrice?: number;
   periodLabel?: string;
   footnote?: string;
   features: PricingFeature[];
@@ -25,6 +29,7 @@ export type PricingCardData = {
 const monthlyCards: PricingCardData[] = [
   {
     key: "starter",
+    monthlyPrice: 0,
     title: "Starter",
     description: "Best for small classes and educators starting with Zedu.",
     amount: "₦0",
@@ -47,6 +52,7 @@ const monthlyCards: PricingCardData[] = [
   },
   {
     key: "pro",
+    monthlyPrice: 20000,
     title: "Pro",
     description: "Best for bootcamps and structured programs.",
     amount: "₦20,000",
@@ -63,7 +69,7 @@ const monthlyCards: PricingCardData[] = [
       { text: "Admin moderation tools", enabled: true },
     ],
     ctaText: "Start Pro Plan",
-    ctaHref: "/client/settings/organisation/billing/all-plans",
+    ctaHref: PLAN_CTA,
     ctaVariant: "filled",
     variant: "popular",
     badgeText: "Most Popular",

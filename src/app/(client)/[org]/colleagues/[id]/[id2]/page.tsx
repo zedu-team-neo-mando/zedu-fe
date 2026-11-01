@@ -38,15 +38,17 @@ const Page = () => {
     id: string,
     uuid: string,
     content: string,
-    medias: any
+    medias: any,
+    mentions: any = state?.mentions
   ) => {
     const secondPayload = {
       content: content,
       media: medias,
-      mentions: state?.mentions,
+      mentions: mentions,
     };
 
-    await PostRequest(`/dms/channels/${id}/threads`, secondPayload);
+    const res = await PostRequest(`/dms/channels/${id}/threads`, secondPayload);
+    return res?.status === 200 || res?.status === 201;
   };
 
   //

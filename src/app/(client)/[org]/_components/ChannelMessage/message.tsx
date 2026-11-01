@@ -25,12 +25,8 @@ import data from "@emoji-mart/data";
 import More from "./more";
 import ShareFileModal from "./share-file-modal";
 import UserHoverCard from "../hover-card/user";
-import {
-  DeleteSavedMessage,
-  GetRequest,
-  PostRequest,
-  SaveMessage,
-} from "~/utils/new-request";
+import { GetRequest, PostRequest } from "~/utils/new-request";
+import { useSavedMessageActions } from "~/hooks/useSavedMessages";
 import {
   Tooltip,
   TooltipContent,
@@ -56,13 +52,14 @@ const Message = ({
   popupId,
 }: MessageProps) => {
   const { state, dispatch } = useContext(DataContext);
-  const { bookmarks, user, orgMembers } = state;
+  const { user, orgMembers } = state;
   const pathname = usePathname();
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const params = useParams();
   const id = params.id as string;
-  const isSaved = bookmarks?.some((b: any) => b.thread_id === item.thread_id);
+  const { isThreadSaved, saveThread, removeThread } = useSavedMessageActions();
+  const isSaved = isThreadSaved(item.thread_id);
   const [usernames, setUsernames] = useState<any>([]);
   const [showMobileActions, setShowMobileActions] = useState(false);
   const [isForwardOpen, setIsForwardOpen] = useState(false);
@@ -116,38 +113,9 @@ const Message = ({
     dispatch({ type: ACTIONS.HOVER_PROFILE, payload: true });
   };
 
-  const toggleSave = async () => {
-    const updatedIds = [
-      ...bookmarks,
-      { id: item.id, thread_id: item.thread_id },
-    ];
+  const toggleSave = () => saveThread(item);
 
-    dispatch({ type: ACTIONS.BOOKMARKS, payload: updatedIds });
-
-    const orgId = localStorage.getItem("orgId") || "";
-
-    const payload = {
-      channels_id: item?.channels_id,
-      thread_id: item.thread_id,
-      type: "message",
-    };
-
-    await SaveMessage(`/organisations/${orgId}/thread/save`, payload);
-  };
-
-  const toggleRemove = async () => {
-    const updatedIds = bookmarks.filter(
-      (bookmark: any) => bookmark.thread_id !== item.thread_id
-    );
-
-    dispatch({ type: ACTIONS.BOOKMARKS, payload: updatedIds });
-
-    const orgId = localStorage.getItem("orgId") || "";
-
-    await DeleteSavedMessage(
-      `/organisations/${orgId}/saved/message/${item.thread_id}`
-    );
-  };
+  const toggleRemove = () => removeThread(item.thread_id);
 
   // get reactions users
   const reactionUsers = async (reactionId: string) => {

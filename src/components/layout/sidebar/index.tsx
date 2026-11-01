@@ -20,7 +20,6 @@ import UseHomeChannel from "~/app/(client)/[org]/home/channels/hooks/home-channe
 import SidebarPopouts from "./popouts/sidebar-popouts";
 import {
   clearNotificationBadgeRegistry,
-  isHomeRoute,
   isNotificationsRoute,
 } from "~/lib/notifications/notification-badge";
 
@@ -32,7 +31,7 @@ const SideBar: React.FC = () => {
   const notificationBadgeCount = notificationBadgeState?.count ?? 0;
 
   useEffect(() => {
-    if (!isHomeRoute(pathname) && !isNotificationsRoute(pathname)) return;
+    if (!isNotificationsRoute(pathname)) return;
 
     clearNotificationBadgeRegistry();
     dispatch({ type: ACTIONS.CLEAR_NOTIFICATION_BADGE });

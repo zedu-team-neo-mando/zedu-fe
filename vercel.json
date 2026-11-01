@@ -1,3 +1,0 @@
-{
-  "rewrites": [{ "source": "/mainapp/:path*", "destination": "/:path*" }]
-}

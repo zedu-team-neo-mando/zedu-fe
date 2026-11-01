@@ -25,8 +25,14 @@ const Welcome = () => {
 
         <div className="mt-[50px]">
           <h1 className="text-[#1D2939] text-[2rem] font-semibold leading-[130%]">
-            Welcome to{" "}
-            <span className="text-primary-500">{organization?.orgName}</span>
+            {organization?.orgName ? (
+              <>
+                Welcome to{" "}
+                <span className="text-primary-500">{organization.orgName}</span>
+              </>
+            ) : (
+              "Welcome"
+            )}
           </h1>
           <p className="w-full max-w-[37.7rem] text-[#344054] text-base md:text-lg font-normal leading-normal mb-4 md:mb-6">
             Whether you’re managing classrooms, running bootcamp cohorts, or

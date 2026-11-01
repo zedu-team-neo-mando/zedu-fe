@@ -9,7 +9,7 @@ import { Button } from "~/components/ui/button";
 import { DataContext } from "~/store/GlobalState";
 import UserAvatar from "~/components/layout/user-avatar";
 import { isUserDeactivated } from "~/utils/user-deactivation";
-import MenuDropdown from "../channel-nav/menu-dropdown";
+import DmMenuDropdown from "./menu-dropdown";
 import Tooltips from "../tooltip";
 import { cn } from "~/lib/utils";
 import Loading from "~/components/ui/loading";
@@ -144,6 +144,7 @@ const PeopleHeader = ({ user }: { user: any }) => {
             )}
           </button>
         )}
+        <DmMenuDropdown key={id} />
       </div>
 
       <StartBuzzConfirmModal

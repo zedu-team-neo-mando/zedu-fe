@@ -1,5 +1,11 @@
 "use client";
-import React, { useContext, useEffect, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import PeopleHeader from "../../../../../_components/people-nav";
 import ProfileSidebar from "../../../../../_components/profile-sidebar";
 import ChatConnection from "~/components/layout/centrifugo/chat-connection";
@@ -22,6 +28,7 @@ import ConversationSearchSidebar, {
   CONVERSATION_SEARCH_PANEL_TRANSITION,
   getConversationSearchSidebarWidth,
 } from "~/app/(client)/[org]/_components/conversation-search/conversation-search-sidebar";
+import { loadOrganisationThreadsPage } from "~/utils/org-threads";
 
 // Global `participant` is whoever was opened last, so only trust it when it is
 // the person this DM is with.
@@ -44,6 +51,30 @@ const DmPage = () => {
   const activeParticipant = isParticipantOf(previewParticipant, id2)
     ? previewParticipant
     : participant;
+  const refreshRequestId = useRef(0);
+  const unseenThreadCountRevisionRef = useRef(
+    state?.unseenThreadCountRevision ?? 0
+  );
+  unseenThreadCountRevisionRef.current = state?.unseenThreadCountRevision ?? 0;
+
+  const refreshUnseenThreadCount = useCallback(async () => {
+    const currentOrgId = state?.orgId || localStorage.getItem("orgId") || "";
+    if (!currentOrgId) return;
+
+    const requestId = ++refreshRequestId.current;
+    const expectedRevision = unseenThreadCountRevisionRef.current;
+    const { success, unseenThreadCount } = await loadOrganisationThreadsPage(
+      currentOrgId,
+      1
+    );
+
+    if (success && requestId === refreshRequestId.current) {
+      dispatch({
+        type: ACTIONS.SYNC_UNSEEN_THREAD_COUNT,
+        payload: { unseenThreadCount, expectedRevision },
+      });
+    }
+  }, [dispatch, state?.orgId]);
 
   // get the participant infor
   useEffect(() => {
@@ -81,7 +112,9 @@ const DmPage = () => {
     id: string,
     uuid: string,
     content: string,
-    medias: any
+    medias: any,
+    _mentions: unknown,
+    isRetry = false
   ) => {
     // send client side update
     const optimisticMessage = {
@@ -93,16 +126,18 @@ const DmPage = () => {
       created_at: new Date().toISOString(),
       status: "pending",
       type: "message",
-      media: state.media,
+      media: medias,
       user_id: user?.user_id,
       reactions: null,
       isOptimistic: true,
     };
 
-    dispatch({
-      type: ACTIONS.CHATS,
-      payload: { newMessage: optimisticMessage },
-    });
+    if (!isRetry) {
+      dispatch({
+        type: ACTIONS.CHATS,
+        payload: { newMessage: optimisticMessage },
+      });
+    }
     dispatch({
       type: ACTIONS.UPDATE_DM_PREVIEW,
       payload: { channelId: id, message: content },
@@ -114,14 +149,18 @@ const DmPage = () => {
       media: medias,
     };
 
-    await PostRequest(`/dms/channels/${id}/threads`, secondPayload);
+    const res = await PostRequest(`/dms/channels/${id}/threads`, secondPayload);
+    // Tells the message box whether to keep the typed text as a draft.
+    return res?.status === 200 || res?.status === 201;
   };
 
   const handleReplyMessage = async (
     id: string,
     uuid: string,
     content: string,
-    medias: any
+    medias: any,
+    _mentions: unknown,
+    isRetry = false
   ) => {
     const optimisticMessage = {
       id: uuid,
@@ -133,16 +172,18 @@ const DmPage = () => {
       created_at: new Date().toISOString(),
       status: "pending",
       type: "message",
-      media: state.media,
+      media: medias,
       user_id: user?.user_id,
       reactions: null,
       isOptimistic: true,
     };
 
-    dispatch({
-      type: ACTIONS.REPLIES,
-      payload: { newMessage: optimisticMessage },
-    });
+    if (!isRetry) {
+      dispatch({
+        type: ACTIONS.REPLIES,
+        payload: { newMessage: optimisticMessage },
+      });
+    }
 
     const payload = {
       content: content,
@@ -150,7 +191,8 @@ const DmPage = () => {
       media: medias,
     };
 
-    await PostRequest(`/dms/messages/${id}`, payload);
+    const res = await PostRequest(`/dms/messages/${id}`, payload);
+    return res?.status === 200 || res?.status === 201;
   };
 
   // Calculate combined width of open side panels
@@ -185,6 +227,7 @@ const DmPage = () => {
 
         <PeopleMessage
           participant={activeParticipant}
+          onRead={refreshUnseenThreadCount}
           setShowProfile={setShowProfile}
           showProfile={showProfile}
         />

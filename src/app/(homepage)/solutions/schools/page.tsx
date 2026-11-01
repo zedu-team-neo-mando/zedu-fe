@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ogImageUrl, siteUrl } from "~/lib/env-urls";
+import { siteUrl } from "~/lib/env-urls";
 import Image from "next/image";
 import { Star } from "lucide-react";
 import { ArrowBtn, OutlineBtn } from "~/app/(homepage)/_components/ui/Button";
@@ -9,7 +9,9 @@ import { ComparisonShowcase } from "~/app/(homepage)/_components/ui/ComparisonSh
 import { DynamicFooter } from "../../_components/footer/dynamic-footer";
 
 export const metadata: Metadata = {
-  title: "Schools Solutions",
+  title: {
+    absolute: "Zedu for Schools - Structured Communication for Classrooms",
+  },
   description:
     "Improve classroom communication with Zedu. Give teachers and students structured channels for lessons, assignments, discussions, and school-wide updates in one platform.",
   keywords: [
@@ -28,14 +30,6 @@ export const metadata: Metadata = {
       "Bring teachers, students, and school staff into one organized workspace for announcements, assignments, and focused classroom discussions.",
     url: siteUrl("/solutions/schools"),
     siteName: "Zedu",
-    images: [
-      {
-        url: ogImageUrl("og-image-5.png"),
-        width: 1200,
-        height: 630,
-        alt: "Zedu schools solution page preview",
-      },
-    ],
     type: "website",
     locale: "en_US",
   },
@@ -44,7 +38,6 @@ export const metadata: Metadata = {
     title: "Zedu for Schools - Structured Classroom Communication",
     description:
       "Create organized school communication where class discussions, updates, and assignments stay easy to follow for everyone.",
-    images: [ogImageUrl("og-image-5.png")],
   },
   alternates: {
     canonical: siteUrl("/solutions/schools"),
@@ -77,7 +70,7 @@ const higherEducationCards = [
 const structuredCommunicationCards = [
   {
     title: "Organised Classroom Communication",
-    desc: "Structure lessons, announcements, and discussions for easy access of information",
+    desc: "Structure lessons, announcements, and discussions for easy access to information",
     image:
       "/images/homepage/solutions/schools/organised-classroom-communication.png",
   },
@@ -205,7 +198,7 @@ const SchoolsSolutionsPage = () => {
           <div className="relative w-full overflow-hidden rounded-3xl">
             <div className="relative aspect-[16/11] w-full sm:aspect-[4/3] lg:aspect-[16/10]">
               <Image
-                src="/images/homepage/solutions/schools-hero.png"
+                src="/images/homepage/solutions/schools-hero.jpg"
                 alt="A student wearing a backpack and holding a binder outside a school building"
                 fill
                 priority
@@ -218,9 +211,9 @@ const SchoolsSolutionsPage = () => {
       </section>
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16 mt-5">
         <div>
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
             Built for Modern School Communication
-          </h1>
+          </h2>
         </div>
 
         <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -232,15 +225,16 @@ const SchoolsSolutionsPage = () => {
               showBadge
               showArrow
               className="h-full"
+              headingLevel="h3"
             />
           ))}
         </div>
       </section>
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div className="flex flex-col items-center text-center gap-4">
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
             Better Communication for Every Classroom
-          </h1>
+          </h2>
           <p className="max-w-[95%] text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
             Keep lessons organized and create an environment where students can
             actively participate
@@ -263,9 +257,9 @@ const SchoolsSolutionsPage = () => {
       </section>
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div className="flex flex-col items-center text-center gap-4">
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
             How Zedu Transforms Schools
-          </h1>
+          </h2>
         </div>
 
         <ComparisonShowcase
@@ -280,9 +274,9 @@ const SchoolsSolutionsPage = () => {
 
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div className="flex flex-col items-center text-center gap-4">
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
             Run Leaner. Move Faster. Teach Better.
-          </h1>
+          </h2>
           <p className="max-w-[95%] text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
             Schools often rely on multiple tools for communication and
             collaboration. Zedu brings everything together into one organized
@@ -299,9 +293,9 @@ const SchoolsSolutionsPage = () => {
                   index > 0 ? "border-neutral-300 border-l" : ""
                 }`}
               >
-                <h2 className="text-2xl font-bold text-neutral-900 sm:text-5xl">
+                <h3 className="text-2xl font-bold text-neutral-900 sm:text-5xl">
                   {metric.title}
-                </h2>
+                </h3>
                 <p className="text-[12px] leading-tight text-neutral-600 sm:text-sm">
                   {metric.description}
                 </p>

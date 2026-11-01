@@ -1,4 +1,9 @@
 import { NextResponse } from "next/server";
+import {
+  HIDDEN_PREVIEW_TEXT,
+  PREVIEW_CACHE_KEY,
+  PREVIEW_CACHE_NAME,
+} from "~/lib/notification-preview";
 
 export const dynamic = "force-dynamic";
 
@@ -30,9 +35,29 @@ firebase.initializeApp(${JSON.stringify(config)});
 
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage((payload) => {
+const PREVIEW_CACHE_NAME = ${JSON.stringify(PREVIEW_CACHE_NAME)};
+const PREVIEW_CACHE_KEY = ${JSON.stringify(PREVIEW_CACHE_KEY)};
+const HIDDEN_PREVIEW_TEXT = ${JSON.stringify(HIDDEN_PREVIEW_TEXT)};
+
+// Reads the "Show message previews" setting saved by the page.
+// Defaults to showing previews if nothing is saved.
+async function showMessagePreviews() {
+  try {
+    const cache = await caches.open(PREVIEW_CACHE_NAME);
+    const response = await cache.match(PREVIEW_CACHE_KEY);
+    if (!response) return true;
+    const data = await response.json();
+    return data.showPreviews !== false;
+  } catch (error) {
+    return true;
+  }
+}
+
+messaging.onBackgroundMessage(async (payload) => {
   const title = payload.notification?.title || payload.data?.title || "Zedu";
-  const body = payload.notification?.body || payload.data?.body || "";
+  const rawBody = payload.notification?.body || payload.data?.body || "";
+  const body =
+    rawBody && !(await showMessagePreviews()) ? HIDDEN_PREVIEW_TEXT : rawBody;
 
   return self.registration.showNotification(title, {
     body,

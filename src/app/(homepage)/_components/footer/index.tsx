@@ -1,16 +1,17 @@
 "use client";
 import { isValidEmail } from "~/lib/utils";
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import axios from "axios";
 import { showSuccess } from "~/components/toast/sonner";
+import { subscribeToNewsletter } from "~/lib/newsletter";
+import { usePathname } from "next/navigation";
 import {
-  appStoreUrl,
   facebookUrl,
   instagramUrl,
-  playStoreUrl,
+  pageCampaign,
+  storeLink,
   tiktokUrl,
   xUrl,
 } from "~/lib/env-urls";
@@ -22,13 +23,12 @@ type FooterLink = {
   label: string;
   href: string;
 };
-
 const productLinks: FooterLink[] = [
   { id: 0, label: "Buzz", href: "/products/buzz" },
   { id: 1, label: "Channels", href: "/products/channels" },
   { id: 2, label: "File Management", href: "/products/file-management" },
+  { id: 3, label: "AI Assistant", href: "/products/ai" },
 ];
-
 const solutionLinks: FooterLink[] = [
   { id: 0, label: "Bootcamps", href: "/solutions/bootcamps" },
   { id: 1, label: "Schools", href: "/solutions/schools" },
@@ -56,13 +56,26 @@ const supportLinks: FooterLink[] = [
     label: "Contact Us",
     href: "/contact-sales",
   },
+  {
+    id: 4,
+    label: "Ambassadors",
+    href: "/ambassadors",
+  },
 ];
 
 const resourcesLinks: FooterLink[] = [
   { id: 0, label: "Resource Library", href: "/resources" },
   { id: 1, label: "Templates", href: "/templates" },
-  { id: 2, label: "Privacy Policy", href: "/policy" },
-  { id: 3, label: "Terms of Service", href: "/terms-of-service" },
+  {
+    id: 2,
+    label: "Google Classroom Alternative",
+    href: "/alternatives/google-classroom",
+  },
+  { id: 3, label: "Compare Zedu", href: "/compare" },
+  { id: 4, label: "Zedu vs Discord", href: "/compare/zedu-vs-discord" },
+  { id: 5, label: "Zedu vs Slack", href: "/compare/zedu-vs-slack" },
+  { id: 6, label: "Privacy Policy", href: "/policy" },
+  { id: 7, label: "Terms of Service", href: "/terms-of-service" },
 ];
 
 const footerSections = [
@@ -101,35 +114,33 @@ const socialLinks = [
 
 const appStoreLinks = [
   {
-    id: 0,
-    href: appStoreUrl(),
-    icon: "/images/app-download/app-store-badge-2.png",
-    label: "App Store",
-    rating: "4.9",
-    starKey: "app",
-  },
-  {
-    id: 1,
-    href: playStoreUrl(),
-    icon: "/images/app-download/google-play-badge-2.png",
-    label: "Play Store",
-    rating: "4.7",
-    starKey: "play",
-  },
+  id: 0,
+  store: "app" as const,
+  icon: "/images/app-download/app-store-badge-2.png",
+  label: "App Store",
+},
+{
+  id: 1,
+  store: "play" as const,
+  icon: "/images/app-download/google-play-badge-2.png",
+  label: "Google Play",
+},
 ];
 
 const plusJakartaSans = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
-// Isolated Axios client for public newsletter subscription.
-// Kept separate from the global HTTP client to avoid global interceptor side effects
-// (such as authentication-expiry redirects or token attachment) and global toast dismissals.
-const newsletterClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BASE_URL,
-});
-
 const Footer = () => {
+  // The footer is shared by every marketing page, so the store links name the
+  // page they were clicked on.
+  const storeLinkTags = {
+    campaign: pageCampaign(usePathname()),
+    content: "footer",
+  };
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  // #1407: ties the visible label and any error message to the email field.
+  const newsletterId = useId();
+  const newsletterErrorId = `${newsletterId}-error`;
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -145,38 +156,18 @@ const Footer = () => {
     }
 
     setLoading(true);
+    const result = await subscribeToNewsletter(email);
+    setLoading(false);
 
-    try {
-      const res = await newsletterClient.post("/newsletter", { email });
-
-      if (res.status === 200 || res.status === 201) {
-        setEmail("");
-        setError("");
-        showSuccess(
-          "You're subscribed!",
-          "Thanks for joining us. Stay tuned for the latest updates from Zedu."
-        );
-      }
-    } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        const status = err.response?.status;
-        const body = err.response?.data;
-        const isAlreadySubscribed = status === 409 || body?.status_code === 409;
-
-        if (isAlreadySubscribed) {
-          setError("This email is already subscribed to our newsletter.");
-        } else {
-          setError(
-            body?.message ||
-              err.message ||
-              "Something went wrong. Please try again."
-          );
-        }
-      } else {
-        setError("Something went wrong. Please try again.");
-      }
-    } finally {
-      setLoading(false);
+    if (result.ok) {
+      setEmail("");
+      setError("");
+      showSuccess(
+        "You're subscribed!",
+        "Thanks for joining us. Stay tuned for the latest updates from Zedu."
+      );
+    } else {
+      setError(result.error);
     }
   };
 
@@ -206,7 +197,7 @@ const Footer = () => {
             >
               <div className="flex flex-col gap-1">
                 <label
-                  htmlFor="newsletter-email"
+                  htmlFor={newsletterId}
                   className="text-base font-bold tracking-tight text-white"
                 >
                   Sign up to our Newsletter
@@ -232,11 +223,13 @@ const Footer = () => {
                     />
                   </svg>
                   <input
-                    id="newsletter-email"
+                    id={newsletterId}
                     type="email"
                     name="newsletter"
-                    aria-invalid={!!error}
-                    aria-describedby={error ? "newsletter-error" : undefined}
+                    required
+                    autoComplete="email"
+                    aria-invalid={error ? true : undefined}
+                    aria-describedby={error ? newsletterErrorId : undefined}
                     placeholder="Your email address"
                     value={email}
                     onChange={(e) => {
@@ -272,7 +265,7 @@ const Footer = () => {
 
               {error && (
                 <p
-                  id="newsletter-error"
+                  id={newsletterErrorId}
                   className="text-xs font-medium text-red-300"
                   role="alert"
                 >
@@ -290,7 +283,11 @@ const Footer = () => {
               </p>
               <div className="mt-5 flex flex-wrap items-start gap-8 text-white">
                 {appStoreLinks.map((store) => (
-                  <Link key={store.id} href={store.href} className="space-y-1">
+                  <Link
+                    key={store.id}
+                    href={storeLink(store.store, storeLinkTags)}
+                    className="space-y-1"
+                  >
                     <div className="flex items-center gap-2">
                       <Image
                         src={store.icon}

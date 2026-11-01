@@ -78,11 +78,26 @@ const imageHostnames = [
   "i.imgur.com",
 ].filter(Boolean);
 
+// Camera, microphone and screen capture stay allowed for Zedu itself (Buzz
+// calls, voice notes, screen share). No CSP here: that needs a separate pass.
+const securityHeaders = [
+  { key: "Strict-Transport-Security", value: "max-age=31536000" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  {
+    key: "Permissions-Policy",
+    value:
+      "camera=(self), microphone=(self), display-capture=(self), geolocation=()",
+  },
+];
+
 const nextConfig = {
   env: {
     NEXT_PUBLIC_HOMEPAGE_ROUTE_SEGMENTS: homepageRouteSegments.join(","),
   },
   reactStrictMode: false,
+  poweredByHeader: false,
   output: process.env.VERCEL ? undefined : "standalone",
   typescript: {
     ignoreBuildErrors: true,
@@ -100,6 +115,9 @@ const nextConfig = {
   assetPrefix: isDev ? undefined : "/mainapp",
   compiler: {
     removeConsole: isDev ? false : true,
+  },
+  async headers() {
+    return [{ source: "/:path*", headers: securityHeaders }];
   },
   async rewrites() {
     return [
