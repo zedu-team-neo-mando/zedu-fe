@@ -69,6 +69,11 @@ const supportLinks: FooterLink[] = [
     label: "Refer a program",
     href: "/refer",
   },
+  {
+    id: 6,
+    label: "What's new",
+    href: "/changelog",
+  },
 ];
 
 const resourcesLinks: FooterLink[] = [
