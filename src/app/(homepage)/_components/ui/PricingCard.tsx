@@ -3,6 +3,8 @@
 import { ArrowBtn, OutlineBtn } from "./Button";
 import { cn } from "~/lib/utils";
 import { useRouter } from "next/navigation";
+import { PLAN_CTA } from "../../_lib/pricingData";
+import { usePlanHref } from "../../_lib/usePlanHref";
 
 export type PricingFeature = {
   text: string;
@@ -53,6 +55,7 @@ export const PricingCard = ({
   badgeText,
 }: PricingCardProps) => {
   const isPopular = variant === "popular";
+  const planHref = usePlanHref();
   const router = useRouter();
 
   return (
@@ -101,7 +104,7 @@ export const PricingCard = ({
           {ctaVariant === "filled" ? (
             <ArrowBtn
               text={ctaText}
-              href={ctaHref}
+              href={ctaHref === PLAN_CTA ? planHref : ctaHref}
               className="w-full justify-center py-2.5 shadow-sm"
               hideArrow
             />
