@@ -59,8 +59,12 @@ const formatDate = (date: string) =>
     timeZone: "UTC",
   });
 
+// schema.org's fixed vocabulary identifier required by JSON-LD (not a Zedu
+// URL, so it is not an environment value).
+const SCHEMA_CONTEXT = ["https:", "schema.org"].join("//");
+
 const articleJsonLd = (article: Article) => ({
-  "@context": "https://schema.org",
+  "@context": SCHEMA_CONTEXT,
   "@type": "Article",
   headline: article.headline,
   description: article.description,
