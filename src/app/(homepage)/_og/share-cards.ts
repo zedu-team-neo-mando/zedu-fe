@@ -182,4 +182,17 @@ export const shareCards = {
     ],
     alt: "Zedu for Universities: structured communication at scale",
   },
+  studyGroups: {
+    path: "/solutions/study-groups",
+    eyebrow: "Zedu for Study Groups",
+    headline: [{ accent: "Study together" }, " in one organized workspace."],
+    subtitle:
+      "Group chat, live sessions, shared files and course discussions in one place.",
+    highlights: [
+      { title: "Organized Channels" },
+      { title: "Live Buzz Sessions" },
+      { title: "Shared Study Files" },
+    ],
+    alt: "Zedu for Study Groups: study together in one organized workspace",
+  },
 } satisfies Record<string, ShareCardContent>;
