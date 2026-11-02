@@ -28,29 +28,24 @@ export const TcoCalculator: React.FC<TcoCalculatorProps> = ({ config }) => {
   const calculations = useMemo(() => {
     const isSlack = config.key === "slack";
 
-    // Slack Pro is $8.75/user/month (standard) or $7.25 billed annually. Let's calculate standard Slack Pro at $8.75/user/month.
-    const monthlyPerSeatRate = isSlack ? 8.75 : 0;
-    const annualPerSeatRate = monthlyPerSeatRate * 12; // $105.00/year
+    // Prices are in Nigerian Naira (₦), consistent with the public pricing page.
+    const monthlyPerSeatRate = isSlack ? 13500 : 2000;
+    const annualPerSeatRate = monthlyPerSeatRate * 12;
 
-    // Extra tools required on competitor platform:
-    // Slack: Miro/Whiteboard add-on ($10/seat or at least for 5-10 instructors = $600/yr), Zoom add-on ($200/yr)
-    // Discord: Server Boosts Level 3 ($100/mo = $1,200/yr) + Whiteboard tool ($300/yr)
-    const annualCompetitorAddons = isSlack ? 800 : 1500;
+    // Extra tools required on the competitor platform (fixed annual cost).
+    const annualCompetitorAddons = isSlack ? 800000 : 1500000;
     const monthlyCompetitorAddons = annualCompetitorAddons / 12;
 
-    const competitorMonthlyTotal = isSlack
-      ? headcount * monthlyPerSeatRate + monthlyCompetitorAddons
-      : monthlyCompetitorAddons;
+    const competitorMonthlyTotal =
+      headcount * monthlyPerSeatRate + monthlyCompetitorAddons;
+    const competitorAnnualTotal =
+      headcount * annualPerSeatRate + annualCompetitorAddons;
 
-    const competitorAnnualTotal = isSlack
-      ? headcount * annualPerSeatRate + annualCompetitorAddons
-      : annualCompetitorAddons;
+    // Zedu Flat Cohort Pricing (from the public pricing page):
+    // Starter: ₦0 (small cohorts <= 30)  Pro: ₦20,000/month, flat, no per-seat fees.
+    const zeduMonthly = headcount <= 30 ? 0 : 20000;
+    const zeduAnnual = headcount <= 30 ? 0 : 20000 * 12;
 
-    // Zedu Flat Cohort Pricing:
-    // Starter: $0 (small classes <= 30)
-    // Pro Flat Cohort: ~$40/month ($480/year flat, no per-seat student penalties!)
-    const zeduMonthly = headcount <= 30 ? 0 : 40;
-    const zeduAnnual = headcount <= 30 ? 0 : 480;
 
     const displayedCompetitor =
       billingCycle === "annual"
@@ -224,7 +219,7 @@ export const TcoCalculator: React.FC<TcoCalculatorProps> = ({ config }) => {
                 </span>
                 <div className="mt-1 flex items-baseline gap-2">
                   <span className="text-4xl sm:text-5xl font-black text-emerald-400">
-                    ${calculations.displayedSavings.toLocaleString()}
+                    ₦{calculations.displayedSavings.toLocaleString()}
                   </span>
                   <span className="text-neutral-400 text-sm">
                     {billingCycle === "annual" ? "/ year" : "/ month"}
@@ -244,7 +239,7 @@ export const TcoCalculator: React.FC<TcoCalculatorProps> = ({ config }) => {
                       {config.name} Total Cost:
                     </span>
                     <span className="text-lg font-bold text-rose-400">
-                      ${calculations.competitorCost.toLocaleString()}
+                      ₦{calculations.competitorCost.toLocaleString()}
                     </span>
                     <span className="text-xs text-neutral-500">
                       {billingCycle === "annual" ? " / yr" : " / mo"}
@@ -253,8 +248,8 @@ export const TcoCalculator: React.FC<TcoCalculatorProps> = ({ config }) => {
                   <div className="text-right text-xs text-neutral-400">
                     <span className="text-neutral-300 font-semibold block">
                       {config.key === "slack"
-                        ? `$8.75 × ${headcount} seats`
-                        : "Server Boosts + Whiteboard"}
+                        ? `₦13,500 × ${headcount} seats`
+                        : `₦2,000 × ${headcount} seats`}
                     </span>
                     <span>+ add-on licenses</span>
                   </div>
@@ -266,7 +261,7 @@ export const TcoCalculator: React.FC<TcoCalculatorProps> = ({ config }) => {
                       Zedu Total Cost:
                     </span>
                     <span className="text-2xl font-black text-white">
-                      ${calculations.zeduCost.toLocaleString()}
+                      ₦{calculations.zeduCost.toLocaleString()}
                     </span>
                     <span className="text-xs text-neutral-400">
                       {billingCycle === "annual" ? " / yr" : " / mo"}
