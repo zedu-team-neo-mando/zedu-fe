@@ -14,7 +14,7 @@ import {
 interface RenameFolderModalProps {
   isOpen: boolean;
   onClose: () => void;
-
+  // eslint-disable-next-line no-unused-vars
   onRename: (newName: string) => void;
   oldName: string;
 }

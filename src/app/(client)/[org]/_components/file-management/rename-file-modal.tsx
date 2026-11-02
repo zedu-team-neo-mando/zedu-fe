@@ -13,7 +13,7 @@ import {
 interface RenameFileModalProps {
   isOpen: boolean;
   onClose: () => void;
-
+  // eslint-disable-next-line no-unused-vars
   onRename: (value: string) => void;
   oldName: string;
 }
