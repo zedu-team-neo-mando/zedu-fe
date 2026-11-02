@@ -20,15 +20,15 @@ const h1Tags = (source) => source.match(/<h1[\s>]/g) || [];
 
 test("the homepage renders exactly one h1, the hero heading", () => {
   const h1Files = sectionFiles.filter(
-    (file) => h1Tags(fs.readFileSync(file, "utf8")).length > 0,
+    (file) => h1Tags(fs.readFileSync(file, "utf8")).length > 0
   );
   assert.deepEqual(
     h1Files.map((file) => path.basename(file)),
-    ["Herosection.tsx"],
+    ["Herosection.tsx"]
   );
   const hero = fs.readFileSync(
     path.join(homepageDir, "_components", "home", "Herosection.tsx"),
-    "utf8",
+    "utf8"
   );
   assert.equal(h1Tags(hero).length, 1);
 });
@@ -36,11 +36,11 @@ test("the homepage renders exactly one h1, the hero heading", () => {
 test("the articles section heading is a level-2 heading with its styles", () => {
   const articles = fs.readFileSync(
     path.join(homepageDir, "_components", "home", "ArticlesSection.tsx"),
-    "utf8",
+    "utf8"
   );
   assert.equal(h1Tags(articles).length, 0);
   assert.match(
     articles,
-    /<h2 className="[^"]*text-2xl font-semibold[^"]*">\s*The Platform for Every Type of Learning\s*<\/h2>/,
+    /<h2 className="[^"]*text-2xl font-semibold[^"]*">\s*The Platform for Every Type of Learning\s*<\/h2>/
   );
 });

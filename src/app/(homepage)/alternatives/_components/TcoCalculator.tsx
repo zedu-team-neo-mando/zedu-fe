@@ -46,7 +46,6 @@ export const TcoCalculator: React.FC<TcoCalculatorProps> = ({ config }) => {
     const zeduMonthly = headcount <= 30 ? 0 : 20000;
     const zeduAnnual = headcount <= 30 ? 0 : 20000 * 12;
 
-
     const displayedCompetitor =
       billingCycle === "annual"
         ? competitorAnnualTotal
