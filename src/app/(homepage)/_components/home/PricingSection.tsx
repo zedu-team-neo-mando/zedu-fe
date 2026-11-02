@@ -12,11 +12,14 @@ import { CelebrationThemeIcon } from "./CelebrationBanner";
 
 type PricingSectionProps = {
   showSubtitle?: boolean;
+  headingLevel?: "h1" | "h2";
 };
 
 export const PricingSection = ({
   showSubtitle = true,
+  headingLevel = "h2",
 }: PricingSectionProps) => {
+  const Heading = headingLevel;
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
     "monthly"
   );
@@ -66,9 +69,9 @@ export const PricingSection = ({
             showSubtitle ? "gap-4 sm:gap-6" : "gap-3"
           }`}
         >
-          <h2 className="text-2xl font-bold leading-tight text-neutral-900 sm:text-3xl md:text-4xl text-center">
+          <Heading className="text-2xl font-bold leading-tight text-neutral-900 sm:text-3xl md:text-4xl text-center">
             Simple, Flexible Pricing for Education
-          </h2>
+          </Heading>
           {showSubtitle ? (
             <p className="max-w-2xl text-sm text-neutral-600 sm:text-base">
               Flexible plans for educators, bootcamps, and institutions building
