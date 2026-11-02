@@ -1,5 +1,6 @@
 import { SolutionResources } from "~/app/(homepage)/_components/ui/SolutionResources";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { siteUrl } from "~/lib/env-urls";
 import Image from "next/image";
 import { Star } from "lucide-react";
@@ -50,6 +51,24 @@ export const metadata: Metadata = {
   applicationName: "Zedu",
   creator: "Zedu",
   publisher: "Zedu",
+};
+const breadcrumbStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: siteUrl("/"),
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "Bootcamps",
+      item: siteUrl("/solutions/bootcamps"),
+    },
+  ],
 };
 
 const higherEducationCards = [
@@ -119,6 +138,12 @@ const featureMetrics = [
 const BootCampsSolutionsPage = () => {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbStructuredData),
+        }}
+      />
       <section className="relative isolate overflow-hidden px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div
           aria-hidden="true"
@@ -126,6 +151,21 @@ const BootCampsSolutionsPage = () => {
         />
         <div className="relative mx-auto grid w-full max-w-7xl items-center gap-10 rounded-[28px] px-5 py-8 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:gap-14 lg:px-12 lg:py-14 min-h-[85dvh]">
           <div className="flex flex-col items-center gap-5 text-center lg:max-w-[470px] lg:items-start lg:text-left">
+            <nav
+              aria-label="Breadcrumb"
+              className="flex flex-wrap items-center justify-center gap-x-2 text-sm text-[#5a6170] lg:justify-start"
+            >
+              <Link
+                href="/"
+                className="rounded-sm underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+              >
+                Home
+              </Link>
+              <span aria-hidden="true">→</span>
+              <span aria-current="page" className="font-medium text-[#1f2530]">
+                Bootcamps
+              </span>
+            </nav>
             <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
               <span className="text-primary-500">Run faster cohorts </span>{" "}
               Build Stronger Communities

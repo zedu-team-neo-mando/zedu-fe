@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
+import DOMPurify from "dompurify";
 import { Code2, Copy } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { showError, showSuccess } from "~/components/toast/sonner";
@@ -79,12 +80,17 @@ const SignaturePage = ({ siteBase }: SignaturePageProps) => {
   });
   const values = useWatch({ control: form.control }) as SignatureValues;
   const [status, setStatus] = useState("");
+  const [safeSignatureHtml, setSafeSignatureHtml] = useState("");
 
   const creditUrl = siteBase ? `${siteBase}/?${CREDIT_UTM}` : "";
   const signature = useMemo(
     () => buildSignature({ ...DEFAULT_VALUES, ...values }, creditUrl),
     [values, creditUrl]
   );
+
+  useEffect(() => {
+    setSafeSignatureHtml(DOMPurify.sanitize(signature.html));
+  }, [signature.html]);
 
   const guardValid = async (): Promise<boolean> => {
     const ok = await form.trigger();
@@ -205,8 +211,7 @@ const SignaturePage = ({ siteBase }: SignaturePageProps) => {
                 {/* nosemgrep: typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml */}
                 <div
                   className="overflow-x-auto"
-                  // nosemgrep: typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml
-                  dangerouslySetInnerHTML={{ __html: signature.html }}
+                  dangerouslySetInnerHTML={{ __html: safeSignatureHtml }}
                 />
               </div>
             </div>
