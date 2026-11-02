@@ -155,7 +155,7 @@ export const PricingSection = ({
             type="button"
             className="group flex items-center -mt-4 gap-1.5 text-sm font-semibold text-primary-500 hover:text-primary-400 transition-colors duration-150 focus:outline-none focus-visible:underline"
           >
-            Compare Zedu with other platform
+            Compare Zedu with other platforms
             <span className="inline-flex transition-transform duration-300 ease-out group-hover:translate-x-1">
               <PurpleArrowRight />
             </span>
