@@ -44,9 +44,6 @@ export const zeduVsWhatsappTelegramMetadata: Metadata = {
     "bootcamp cohort management platform",
     "cohort communication platform",
   ],
-  icons: {
-    icon: "/TelexIcon.svg",
-  },
   openGraph: {
     title: "Zedu vs WhatsApp and Telegram for Bootcamps",
     description: pageDescription,
