@@ -115,7 +115,7 @@ export const resources: ResourceItem[] = [
     id: 8,
     tab: "webinars",
     category: "Webinar",
-    title: "Using AI assistants in Simplifying Education",
+    title: "Using AI Assistants to Simplify Education",
     image: "/images/homepage/resources/webinar-3.png",
     duration: "30 min",
     link: "#",
