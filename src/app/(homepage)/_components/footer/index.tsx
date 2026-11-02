@@ -189,8 +189,8 @@ const Footer = () => {
       setEmail("");
       setError("");
       showSuccess(
-        "You're subscribed!",
-        "Thanks for joining us. Stay tuned for the latest updates from Zedu."
+        "Check your inbox",
+        "We sent you a link to confirm your subscription to the Zedu newsletter."
       );
     } else {
       setError(result.error);
