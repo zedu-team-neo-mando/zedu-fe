@@ -36,8 +36,8 @@ export const GuideNotifyMe = ({ title }: GuideNotifyMeProps) => {
       setDone(true);
       setEmail("");
       showSuccess(
-        "You're on the list!",
-        `We'll email you when "${title}" is published.`
+        "Check your inbox",
+        `Confirm your email and we'll tell you when "${title}" is published.`
       );
     } else {
       setError(result.error);
@@ -47,7 +47,8 @@ export const GuideNotifyMe = ({ title }: GuideNotifyMeProps) => {
   if (done) {
     return (
       <p className="mt-3 text-sm font-medium text-green-600" role="status">
-        Thanks! We&apos;ll email you when this guide is live.
+        Check your inbox to confirm your email. After that, we&apos;ll tell you
+        when this guide is live.
       </p>
     );
   }
