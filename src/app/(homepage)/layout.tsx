@@ -10,6 +10,7 @@ import { ForceLightTheme } from "~/components/theme/force-light-theme";
 import { CelebrationThemeProvider } from "./_components/home/CelebrationThemeContext";
 import { CelebrationBanner } from "./_components/home/CelebrationBanner";
 import { CelebrationAtmosphere } from "./_components/home/CelebrationAtmosphere";
+import { ReferralOnboardingBanner } from "./_components/home/ReferralOnboardingBanner";
 
 export const metadata: Metadata = {
   ...createPageMetadata({
@@ -45,6 +46,7 @@ export default function RootLayout({
               className="pt-20 min-w-screen overflow-x-hidden flex-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
             >
               <CelebrationBanner />
+              <ReferralOnboardingBanner />
               {children}
             </div>
             <Footer />
