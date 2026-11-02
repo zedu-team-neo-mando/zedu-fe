@@ -66,6 +66,25 @@ export const metadata: Metadata = {
   publisher: "Zedu",
 };
 
+const breadcrumbStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: siteUrl("/"),
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "Tutors",
+      item: siteUrl("/solutions/tutors"),
+    },
+  ],
+};
+
 const problemCards = [
   {
     icon: MessagesSquare,
@@ -427,6 +446,12 @@ const featureCards = [
 const TutorsSolutionsPage = () => {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbStructuredData),
+        }}
+      />
       {/* Hero */}
       <section className="bg-[linear-gradient(180deg,#FFFFFF_0%,#FFFFFF_55%,#EFEEFC_100%)] px-4 pb-[72px] pt-10 sm:px-6 lg:pb-[104px] lg:pt-20">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-12 lg:gap-[72px]">
