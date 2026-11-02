@@ -108,7 +108,7 @@ const PricingPage = () => {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: structuredData }}
       />
-      <PricingSection showSubtitle />
+      <PricingSection showSubtitle headingLevel="h1" />
 
       <div
         id="compare-plans"
