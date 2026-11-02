@@ -14,7 +14,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import { RegisterWebhookRequest } from "~/utils/webhook-request";
 import { Separator } from "~/components/ui/separator";
 import AppleSignin from "react-apple-signin-auth";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Sparkles } from "lucide-react";
 import {
   PASSWORD_HINT,
   PASSWORD_TOO_SHORT_MESSAGE,
@@ -44,6 +44,26 @@ function SignUp() {
   const [loading, setLoading] = useState(false);
   const [googleloading, setGoogleloading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
+  const [refParam, setRefParam] = useState<string | null>(null);
+
+  useEffect(() => {
+    const rawRef = searchParams.get("ref") || searchParams.get("referral");
+    if (rawRef) {
+      setRefParam(rawRef);
+      try {
+        localStorage.setItem("zedu:incoming_ref:v1", rawRef);
+      } catch {
+        /* ignore */
+      }
+    } else {
+      try {
+        const stored = localStorage.getItem("zedu:incoming_ref:v1");
+        if (stored) setRefParam(stored);
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [searchParams]);
   /**
    * Constructs destination route to the welcome flow preserving any template param.
    * @param slug Organization slug identifier.
@@ -204,6 +224,7 @@ function SignUp() {
         ...campaignPayload(),
         email: trimmedEmail,
         password,
+        ...(refParam ? { referral_code: refParam } : {}),
       };
 
       const redirectUrl = getSafeRedirect(searchParams.get("redirect"));
@@ -358,6 +379,19 @@ function SignUp() {
             </span>{" "}
           </h1>
         </div>
+
+        {refParam && (
+          <div
+            data-testid="signup-referral-banner"
+            className="w-full mb-5 flex items-center gap-2.5 rounded-xl bg-primary-50 border border-primary-200/80 px-4 py-3 text-xs text-primary-900 shadow-xs"
+          >
+            <Sparkles className="h-4 w-4 text-primary-600 shrink-0" />
+            <span>
+              Invited by <strong>@{refParam}</strong>! Complete sign-up to
+              unlock your 100 starter point bonus.
+            </span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="w-full pb-[40px]">
           <div className="flex flex-col gap-[16px] mb-[16px]">

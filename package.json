@@ -22,6 +22,7 @@
     "security:audit": "pnpm audit --audit-level high",
     "security:files": "bash .github/scripts/verify-changed-files.sh origin/main HEAD",
     "security:malware": "node .github/scripts/scan-malware.mjs",
+    "test:unit": "node --test src/lib/__tests__/**/*.test.*",
     "email": "email dev --dir src/emails",
     "cypress": "cypress open"
   },
