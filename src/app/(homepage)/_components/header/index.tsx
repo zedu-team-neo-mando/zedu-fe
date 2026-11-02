@@ -17,7 +17,7 @@ import {
   AccordionTrigger,
 } from "~/components/ui/accordion";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { DataContext } from "~/store/GlobalState";
 import { WidgetIcon } from "../svgs";
 import { ArrowBtn, OutlineBtn } from "../ui/Button";
@@ -77,6 +77,7 @@ const Header: React.FC = () => {
   const [token, setToken] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
   const { state } = useContext(DataContext);
   const { celebration } = useCelebration();
 
@@ -98,6 +99,15 @@ const Header: React.FC = () => {
     setToken(userToken);
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const search = window.location.search;
+      if (search.includes("assessment=true") || search.includes("demo=true")) {
+        router.push("/demo?assessment=true");
+      }
+    }
+  }, [router]);
 
   useEffect(() => {
     if (!openDropdown) return;

@@ -22,20 +22,30 @@ import {
   clearNotificationBadgeRegistry,
   isNotificationsRoute,
 } from "~/lib/notifications/notification-badge";
+import { markNotificationsSeen } from "~/lib/notifications/notification-store";
 
 const SideBar: React.FC = () => {
   const pathname = usePathname();
   const { state, dispatch } = useContext(DataContext);
-  const { user, orgSlug, notificationBadgeState } = state;
+  const { user, orgSlug, notificationBadgeState, orgId } = state;
   const channelId = localStorage.getItem("channelId") || "";
   const notificationBadgeCount = notificationBadgeState?.count ?? 0;
 
   useEffect(() => {
     if (!isNotificationsRoute(pathname)) return;
 
+    let userId = user?.id || user?.user_id || null;
+    if (!userId && typeof window !== "undefined") {
+      try {
+        const stored = JSON.parse(localStorage.getItem("user") || "{}");
+        userId = stored?.id || stored?.user_id || null;
+      } catch {}
+    }
+
+    markNotificationsSeen(userId, orgId);
     clearNotificationBadgeRegistry();
     dispatch({ type: ACTIONS.CLEAR_NOTIFICATION_BADGE });
-  }, [pathname, dispatch]);
+  }, [pathname, dispatch, user, orgId]);
 
   // set channel name to empty string
   const searchValue = () => {

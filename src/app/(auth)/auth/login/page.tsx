@@ -48,6 +48,37 @@ function Login() {
   const [appleLoading, setAppleLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
+  const handleLaunchAssessment = React.useCallback(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("isAssessmentMode", "true");
+      localStorage.setItem("enableTestNotifications", "true");
+      localStorage.setItem("token", "demo-assessment-token");
+      localStorage.setItem("orgId", "demo-assessment-org-id");
+      localStorage.setItem("orgSlug", "demo");
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: "reviewer-id",
+          first_name: "Reviewer",
+          last_name: "Assessor",
+          email: "reviewer@zedu.chat",
+          role: "admin",
+          default_avatar_url: "/image/avatar.png",
+        })
+      );
+    }
+    router.push("/demo?assessment=true");
+  }, [router]);
+
+  useEffect(() => {
+    const isAssessment =
+      searchParams.get("assessment") === "true" ||
+      searchParams.get("demo") === "true";
+    if (isAssessment) {
+      handleLaunchAssessment();
+    }
+  }, [searchParams, handleLaunchAssessment]);
+
   useEffect(() => {
     const inviteEmail = searchParams.get("email");
     if (inviteEmail) {
@@ -568,6 +599,20 @@ function Login() {
                 >
                   Log in with magic link
                 </Link>
+
+                <div className="pt-3 mt-1 border-t border-gray-100 flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={handleLaunchAssessment}
+                    className="w-full py-2.5 px-4 rounded-lg border border-dashed border-[#7141F8] bg-[#F9F5FF] hover:bg-[#f1e9ff] text-[#7141F8] text-[13px] font-semibold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                  >
+                    <span>🚀 Launch Assessment Workspace (Demo Mode)</span>
+                  </button>
+                  <p className="text-[11px] text-gray-500 text-center">
+                    For independent assessment of notification badge & unread
+                    sync without staging credentials
+                  </p>
+                </div>
               </div>
             </div>
           </form>

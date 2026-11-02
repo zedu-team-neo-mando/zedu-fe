@@ -52,6 +52,16 @@ export const getNotificationBadgeKey = (payload: NotificationLike): string => {
     .join(":");
 };
 
+const VALID_NOTIFICATION_TYPES = new Set([
+  "new_message",
+  "dm",
+  "mention",
+  "direct_call_initiated",
+  "direct_call_initialized",
+  "notification",
+  "announcement",
+]);
+
 export const shouldIncrementNotificationBadge = (
   payload: NotificationLike
 ): boolean => {
@@ -71,17 +81,15 @@ export const shouldIncrementNotificationBadge = (
     getString(nested.event);
   const section = getString(payload.section) || getString(nested.section);
 
-  if (Boolean(payload.isTest || payload.test || nested.isTest)) return true;
-
+  // Non-production test events
   if (
-    notificationType === "new_message" ||
-    notificationType === "dm" ||
-    notificationType === "mention" ||
-    notificationType === "direct_call_initiated" ||
-    notificationType === "direct_call_initialized" ||
-    notificationType === "notification" ||
-    notificationType === "announcement"
+    process.env.NODE_ENV !== "production" &&
+    Boolean(payload.isTest || payload.test || nested.isTest)
   ) {
+    return true;
+  }
+
+  if (notificationType && VALID_NOTIFICATION_TYPES.has(notificationType)) {
     return true;
   }
 
@@ -92,25 +100,21 @@ export const shouldIncrementNotificationBadge = (
     return true;
   }
 
-  // Any payload carrying a title or message is a user-facing notification
-  if (
-    getString(payload.title) ||
-    getString(payload.message) ||
-    getString(nested.title) ||
-    getString(nested.message)
-  ) {
-    return true;
-  }
-
   return false;
 };
 
 export const TRIGGER_NOTIFICATION_EVENT = "zedu:trigger-notification";
 
+export const isTestNotificationEnabled = (): boolean => {
+  return process.env.NODE_ENV !== "production";
+};
+
 export const triggerLocalTestNotification = (
   payload?: NotificationLike
 ): void => {
-  if (typeof window === "undefined") return;
+  if (process.env.NODE_ENV === "production") {
+    return;
+  }
   const data = {
     id: `test-${Date.now()}`,
     title: "New Notification",
@@ -131,7 +135,7 @@ declare global {
   }
 }
 
-if (typeof window !== "undefined") {
+if (typeof window !== "undefined" && process.env.NODE_ENV !== "production") {
   window.triggerTestNotification = triggerLocalTestNotification;
 }
 
