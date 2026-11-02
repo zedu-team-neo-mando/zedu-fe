@@ -118,6 +118,12 @@ export const ResourcesHub = () => {
               >
                 Planner
               </Link>
+              <Link
+                href="/tools/cohort-communication-health-check"
+                className="min-h-11 shrink-0 inline-flex items-center rounded-full px-5 text-sm font-medium transition-colors md:px-6 text-neutral-600 hover:text-neutral-900"
+              >
+                Health Check
+              </Link>
             </div>
           </div>
           <div
