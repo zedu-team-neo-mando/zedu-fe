@@ -22,6 +22,7 @@
       "src/app/layout.tsx",
       "src/app/client-layout.tsx",
       "src/app/(client)/[org]/layout.tsx",
+      "src/app/(homepage)/unsubscribe/page.tsx",
       "src/app/(client)/[org]/client-layout.tsx",
       "src/app/(homepage)/layout.tsx",
       "src/app/(homepage)/refer/page.tsx",
