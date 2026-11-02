@@ -21,6 +21,7 @@ const PAGES: { path: string; priority: number }[] = [
     priority: 0.7,
   })),
   { path: "/products/channels", priority: 0.7 },
+  { path: "/products/direct-messages", priority: 0.7 },
   { path: "/products/buzz", priority: 0.7 },
   { path: "/products/file-management", priority: 0.7 },
   { path: "/products/ai", priority: 0.7 },
