@@ -19,7 +19,7 @@ interface MediaItem {
 
 const previewCache = new Map<string, LinkPreview[]>();
 
-const extractLinks = (text: string) => {
+export const extractLinks = (text: string) => {
   const urlRegex =
     /((?:https?:\/\/|www\.)[^\s<"]+|\b\w+\.(?:com|co|ng|net|org|io|dev|ai|app|cc)\b)/gi;
 
