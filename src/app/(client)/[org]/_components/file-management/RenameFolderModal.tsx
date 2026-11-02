@@ -68,9 +68,7 @@ const RenameFolderModal: React.FC<RenameFolderModalProps> = ({
               className="px-6 mt-2 w-full"
             >
               <input
-                {...register("rename", {
-                  validate: (value) => value.trim().length > 0,
-                })}
+                {...register("rename", { required: true })}
                 type="text"
                 className="w-[324px] border border-[#7141F8] outline-[#7141F8] px-3 py-2  rounded-lg"
               />
@@ -89,7 +87,7 @@ const RenameFolderModal: React.FC<RenameFolderModalProps> = ({
                 </button>
                 <input
                   type="submit"
-                  disabled={!watch("rename")?.trim()}
+                  disabled={!watch("rename")}
                   value="Rename"
                   className="disabled:opacity-50 px-4 py-2 text-sm bg-[#7141F8] text-white rounded-lg"
                 />
