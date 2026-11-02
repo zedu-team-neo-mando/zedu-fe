@@ -59,70 +59,101 @@ const formatDate = (date: string) =>
     timeZone: "UTC",
   });
 
+const articleJsonLd = (article: Article) => ({
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: article.headline,
+  description: article.description,
+  image: {
+    "@type": "ImageObject",
+    url: siteUrl(article.image),
+    width: article.imageWidth,
+    height: article.imageHeight,
+  },
+  datePublished: article.datePublished,
+  author: { "@type": "Person", name: articleAuthor.name },
+  publisher: { "@type": "Organization", name: "Zedu" },
+  mainEntityOfPage: {
+    "@type": "WebPage",
+    "@id": siteUrl(articlePath(article.slug)),
+  },
+});
+
 export const ArticleView = ({ article }: { article: Article }) => {
   return (
-    <article className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-12 text-left sm:px-8 sm:py-16">
-      <header className="flex flex-col gap-5">
-        <Link
-          href="/resources"
-          className="text-sm font-medium text-primary-500 underline hover:text-primary-400"
-        >
-          Resources
-        </Link>
-        <h1 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-3xl md:text-4xl">
-          {article.headline}
-        </h1>
-        <p className="text-sm text-neutral-600">
-          By{" "}
-          <span className="font-medium text-neutral-900">
-            {articleAuthor.name}
-          </span>{" "}
-          ·{" "}
-          <time dateTime={article.datePublished}>
-            {formatDate(article.datePublished)}
-          </time>
-        </p>
-        <Image
-          src={article.image}
-          alt={article.imageAlt}
-          width={article.imageWidth}
-          height={article.imageHeight}
-          priority
-          className="h-auto w-full rounded-lg object-cover"
-        />
-      </header>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(articleJsonLd(article)).replace(
+            /</g,
+            "\\u003c"
+          ),
+        }}
+      />
+      <article className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-12 text-left sm:px-8 sm:py-16">
+        <header className="flex flex-col gap-5">
+          <Link
+            href="/resources"
+            className="text-sm font-medium text-primary-500 underline hover:text-primary-400"
+          >
+            Resources
+          </Link>
+          <h1 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-3xl md:text-4xl">
+            {article.headline}
+          </h1>
+          <p className="text-sm text-neutral-600">
+            By{" "}
+            <span className="font-medium text-neutral-900">
+              {articleAuthor.name}
+            </span>{" "}
+            ·{" "}
+            <time dateTime={article.datePublished}>
+              {formatDate(article.datePublished)}
+            </time>
+          </p>
+          <Image
+            src={article.image}
+            alt={article.imageAlt}
+            width={article.imageWidth}
+            height={article.imageHeight}
+            priority
+            className="h-auto w-full rounded-lg object-cover"
+          />
+        </header>
 
-      <ArticleBody markdown={article.body} />
+        <ArticleBody markdown={article.body} />
 
-      <div className="flex w-full flex-col items-start gap-3 sm:flex-row sm:items-center">
-        <ArrowBtn
-          text={article.primaryCta.label}
-          href={article.primaryCta.href}
-        />
-        <OutlineBtn
-          text={article.secondaryCta.label}
-          href={article.secondaryCta.href}
-        />
-      </div>
+        <div className="flex w-full flex-col items-start gap-3 sm:flex-row sm:items-center">
+          <ArrowBtn
+            text={article.primaryCta.label}
+            href={article.primaryCta.href}
+          />
+          <OutlineBtn
+            text={article.secondaryCta.label}
+            href={article.secondaryCta.href}
+          />
+        </div>
 
-      <section className="flex flex-col gap-3 text-neutral-600">
-        <h2 className="text-lg font-semibold text-neutral-900">
-          Keep reading and exploring
-        </h2>
-        <ul className="list-disc space-y-2 pl-6">
-          {article.relatedLinks.map((link) => (
-            <li key={link.href}>
-              <Link
-                href={link.href}
-                className="font-medium text-primary-500 underline hover:text-primary-400"
-              >
-                {link.label}
-              </Link>
-              {link.description && `: ${link.description}`}
-            </li>
-          ))}
-        </ul>
-      </section>
-    </article>
+        <section className="flex flex-col gap-3 text-neutral-600">
+          <h2 className="text-lg font-semibold text-neutral-900">
+            Keep reading and exploring
+          </h2>
+          <ul className="list-disc space-y-2 pl-6">
+            {article.relatedLinks.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="font-medium text-primary-500 underline hover:text-primary-400"
+                >
+                  {link.label}
+                </Link>
+                {link.description && `: ${link.description}`}
+              </li>
+            ))}
+          </ul>
+        </section>
+      </article>
+    </>
   );
 };
