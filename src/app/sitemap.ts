@@ -30,6 +30,7 @@ const PAGES: { path: string; priority: number }[] = [
   { path: "/contact-sales", priority: 0.6 },
   { path: "/ambassadors", priority: 0.6 },
   { path: "/refer", priority: 0.6 },
+  { path: "/changelog", priority: 0.5 },
   { path: "/resources", priority: 0.6 },
   { path: "/tools/cohort-communication-health-check", priority: 0.5 },
   { path: "/templates", priority: 0.5 },
