@@ -24,6 +24,16 @@ export const tabs: ResourceTab[] = [
 
 export const resources: ResourceItem[] = [
   {
+    id: 11,
+    tab: "guides",
+    category: "Guides",
+    title: "Getting Started with Zedu",
+    description:
+      "A step-by-step tutorial: create your organisation, set up channels, invite learners and run your first cohort.",
+    image: "/images/homepage/resources/getting-started/cover.png",
+    link: "/resources?guide=getting-started-with-zedu",
+  },
+  {
     id: 10,
     tab: "guides",
     category: "Guides",
