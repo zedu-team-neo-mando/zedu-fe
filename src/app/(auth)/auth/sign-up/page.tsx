@@ -20,6 +20,23 @@ import {
 } from "~/lib/password";
 
 import { isAutoCreatedOrg } from "~/utils/organisation";
+import { saveRememberMe } from "~/utils/auth-session";
+import {
+  captureAttribution,
+  clearStoredAttribution,
+  formatAttributionMessage,
+  getStoredAttribution,
+} from "~/utils/attribution";
+
+/**
+ * Adds the stored campaign attribution to a registration webhook message, then
+ * clears it so it is only credited to this one sign-up.
+ */
+const withAttribution = (message: string) => {
+  const attributed = `${message}${formatAttributionMessage(getStoredAttribution())}`;
+  clearStoredAttribution();
+  return attributed;
+};
 
 /**
  * User registration page supporting email/password, Google, Apple auth, and template onboarding.
@@ -31,6 +48,7 @@ function SignUp() {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [staySignedIn, setStaySignedIn] = useState(false);
   const [errors, setErrors] = useState({
     email: "",
     password: "",
@@ -67,6 +85,7 @@ function SignUp() {
         const user = res?.data?.data?.user;
         const redirectUrl = searchParams.get("redirect") || "";
         localStorage.setItem("token", res?.data?.data?.access_token);
+        saveRememberMe(staySignedIn);
         localStorage.setItem("useremail", user?.email);
         localStorage.setItem("user", JSON.stringify(user));
         localStorage.setItem("orgId", user?.current_org);
@@ -91,7 +110,7 @@ function SignUp() {
         RegisterWebhookRequest(
           user?.username,
           "User Registration (Apple)",
-          message.trim(),
+          withAttribution(message.trim()),
           "success"
         );
       }
@@ -103,6 +122,9 @@ function SignUp() {
   };
 
   useEffect(() => {
+    // Covers campaign links that point straight at the sign-up page.
+    captureAttribution();
+
     const fromInvite = new URLSearchParams(window.location.search).get(
       "invite"
     );
@@ -204,6 +226,7 @@ function SignUp() {
 
       if (res?.status === 200 || res?.status === 201) {
         localStorage.setItem("token", res?.data?.data?.access_token);
+        saveRememberMe(staySignedIn);
         localStorage.setItem("useremail", res?.data?.data?.user?.email);
         localStorage.setItem("user", JSON.stringify(res?.data?.data?.user));
         localStorage.setItem("orgId", res?.data?.data?.user?.current_org);
@@ -239,7 +262,7 @@ function SignUp() {
         RegisterWebhookRequest(
           user?.username,
           "User Registration",
-          message.trim(),
+          withAttribution(message.trim()),
           "success"
         );
       } else {
@@ -265,6 +288,7 @@ function SignUp() {
           const redirectUrl = searchParams.get("redirect") || "";
 
           localStorage.setItem("token", res?.data?.data?.access_token);
+          saveRememberMe(staySignedIn);
           localStorage.setItem("useremail", user?.email);
           localStorage.setItem("user", JSON.stringify(user));
           localStorage.setItem("orgId", user?.current_org);
@@ -294,7 +318,7 @@ function SignUp() {
           RegisterWebhookRequest(
             user?.username,
             "User Registration",
-            message.trim(),
+            withAttribution(message.trim()),
             "success"
           );
         }
@@ -420,7 +444,12 @@ function SignUp() {
           </div>
           <div className="flex flex-col gap-[12px] mb-3">
             <div className="flex flex-row gap-[6px] items-center">
-              <Checkbox id="stay-signed-in" className="mt-[2px]" />
+              <Checkbox
+                id="stay-signed-in"
+                className="mt-[2px]"
+                checked={staySignedIn}
+                onCheckedChange={(checked) => setStaySignedIn(checked === true)}
+              />
               <label
                 htmlFor="stay-signed-in"
                 className="text-[14px] font-[400] leading-[17.64px]"

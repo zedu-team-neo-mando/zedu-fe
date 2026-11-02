@@ -106,6 +106,12 @@ const ResourcesPage = () => {
               >
                 Templates
               </Link>
+              <Link
+                href="/resources/cohort-communication-planner"
+                className="min-h-11 shrink-0 inline-flex items-center rounded-full px-5 text-sm font-medium transition-colors md:px-6 text-neutral-600 hover:text-neutral-900"
+              >
+                Planner
+              </Link>
             </div>
           </div>
           <div
