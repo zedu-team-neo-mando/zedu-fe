@@ -132,7 +132,7 @@ export const pricingComparisonSections: PricingComparisonSection[] = [
       },
       {
         key: "announcement-channels",
-        label: "Announcements Channels",
+        label: "Announcement Channels",
         showInfoIcon: true,
         values: {
           starter: true,
