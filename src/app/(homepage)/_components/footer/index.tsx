@@ -62,6 +62,11 @@ const supportLinks: FooterLink[] = [
     label: "Ambassadors",
     href: "/ambassadors",
   },
+  {
+    id: 5,
+    label: "Refer a program",
+    href: "/refer",
+  },
 ];
 
 const resourcesLinks: FooterLink[] = [

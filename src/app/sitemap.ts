@@ -27,6 +27,7 @@ const PAGES: { path: string; priority: number }[] = [
   { path: "/download", priority: 0.6 },
   { path: "/contact-sales", priority: 0.6 },
   { path: "/ambassadors", priority: 0.6 },
+  { path: "/refer", priority: 0.6 },
   { path: "/resources", priority: 0.6 },
   { path: "/templates", priority: 0.5 },
   ...TEMPLATES.map(({ slug }) => ({

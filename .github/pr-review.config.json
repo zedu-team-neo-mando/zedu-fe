@@ -23,6 +23,8 @@
       "src/app/(client)/[org]/layout.tsx",
       "src/app/(client)/[org]/client-layout.tsx",
       "src/app/(homepage)/layout.tsx",
+      "src/app/(homepage)/refer/page.tsx",
+      "src/app/(homepage)/refer/refer-program-form.tsx",
       "src/app/(client)/[org]/home/channels/[id]/settings/page.tsx",
       "src/app/(client)/[org]/home/channels/[id]/settings/history/page.tsx"
     ]
