@@ -144,7 +144,7 @@ const InviteForm = () => {
 
       setOrgData(data);
 
-      if (!isLoggedIn && isNewUser) {
+      if (!isLoggedIn && (isNewUser || !userEmail)) {
         setPendingRedirect({
           path: buildAuthRedirectUrl("/auth/sign-up", userEmail),
           message: `Please create an account to continue to join ${formattedOrgName} organisation.`,
@@ -279,14 +279,26 @@ const InviteForm = () => {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={buttonLoading || !!pendingRedirect}
-              className="flex w-full items-center justify-center rounded-md bg-blue-200 py-3 font-semibold text-white transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              Accept Invitation
-              {buttonLoading && <Loading />}
-            </button>
+            {pendingRedirect ? (
+              <button
+                type="button"
+                onClick={() => router.replace(pendingRedirect.path)}
+                className="flex w-full items-center justify-center rounded-md bg-[#7141F8] py-3 font-semibold text-white transition hover:bg-[#5925DC]"
+              >
+                {pendingRedirect.path.startsWith("/auth/sign-up")
+                  ? "Create Account"
+                  : "Login"}
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={buttonLoading}
+                className="flex w-full items-center justify-center rounded-md bg-blue-200 py-3 font-semibold text-white transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Accept Invitation
+                {buttonLoading && <Loading />}
+              </button>
+            )}
 
             {!pendingRedirect && (
               <div className="mt-3 flex items-start gap-2">
