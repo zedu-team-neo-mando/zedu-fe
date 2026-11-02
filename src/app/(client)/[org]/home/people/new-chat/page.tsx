@@ -1,5 +1,5 @@
 "use client";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import NewChatHeader from "../../../_components/new-chat-header";
 import { User } from "../../../_components/new-chat-header";
 import { PostRequest } from "~/utils/new-request";
@@ -25,6 +25,18 @@ const NewChat = () => {
     dispatch({ type: ACTIONS.CLEAR_CHATS });
     dispatch({ type: ACTIONS.PARTICIPANTS, payload: [] });
   }, [dispatch]);
+
+  const placeholderText = useMemo(() => {
+    if (!selectedUsers || selectedUsers.length === 0) {
+      return "Select a recipient above to start messaging...";
+    }
+    if (selectedUsers.length === 1) {
+      const recipientName =
+        selectedUsers[0].name || selectedUsers[0].username || "recipient";
+      return `Message @${recipientName}`;
+    }
+    return `Message group (${selectedUsers.length} members)...`;
+  }, [selectedUsers]);
 
   const handleSendMessage = async (
     uuid: string,
@@ -112,7 +124,11 @@ const NewChat = () => {
       <NewChatHeader onUsersSelected={setSelectedUsers} />
 
       <FirstPeopleMessage selectedUsers={selectedUsers} />
-      <FirstMessageBox sendMessage={handleSendMessage} />
+      <FirstMessageBox
+        sendMessage={handleSendMessage}
+        placeholder={placeholderText}
+        disabled={!selectedUsers || selectedUsers.length === 0}
+      />
     </div>
   );
 };

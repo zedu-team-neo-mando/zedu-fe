@@ -51,10 +51,21 @@ interface FirstMessageBoxProps {
     content: string,
     medias: unknown[]
   ) => Promise<{ destination: string } | false>;
+  placeholder?: string;
+  disabled?: boolean;
 }
 
-const FirstMessageBox = ({ sendMessage }: FirstMessageBoxProps) => {
-  const { editor, isEmpty } = UseTextEditor();
+const FirstMessageBox = ({
+  sendMessage,
+  placeholder,
+  disabled,
+}: FirstMessageBoxProps) => {
+  const { editor, isEmpty } = UseTextEditor(
+    undefined,
+    undefined,
+    undefined,
+    placeholder
+  );
   const router = useRouter();
   const uuid = useRef(uuidv7());
   const [open, setOpen] = useState(false);
@@ -95,7 +106,7 @@ const FirstMessageBox = ({ sendMessage }: FirstMessageBoxProps) => {
   // Handle message submission (no need to upload images here)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (submittingRef.current) return;
+    if (disabled || submittingRef.current) return;
 
     const editorText = editor?.getText() ?? "";
     const content = normalizeOutgoingMessageHtml(
@@ -132,7 +143,9 @@ const FirstMessageBox = ({ sendMessage }: FirstMessageBoxProps) => {
         return;
       } else {
         event.preventDefault();
-        handleSubmit(event);
+        if (!disabled) {
+          handleSubmit(event);
+        }
       }
     }
   };
@@ -484,9 +497,13 @@ const FirstMessageBox = ({ sendMessage }: FirstMessageBoxProps) => {
             <button
               aria-label="Send message"
               type="submit"
-              className="p-1.5 hover:bg-gray-100 rounded size-8 flex items-center justify-center"
+              className="p-1.5 hover:bg-gray-100 rounded size-8 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleSubmit}
-              disabled={isSubmitting || (isEmpty && attachments.length === 0)}
+              disabled={
+                disabled ||
+                isSubmitting ||
+                (isEmpty && attachments.length === 0)
+              }
             >
               <SendHorizonal
                 className={

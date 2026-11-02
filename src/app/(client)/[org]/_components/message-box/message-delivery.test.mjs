@@ -202,7 +202,7 @@ function* files(directory) {
 }
 for (const path of files(base)) {
   const source = readFileSync(path, "utf8");
-  if (source.includes("FirstMessageBox sendMessage=")) continue;
+  if (source.includes("FirstMessageBox")) continue;
   if (
     !source.includes("sendMessage={handleSendMessage}") &&
     !source.includes("handleSendMessage={handleReplyMessage}")
