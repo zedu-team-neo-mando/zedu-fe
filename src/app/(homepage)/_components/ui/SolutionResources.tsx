@@ -17,6 +17,20 @@ const communicationPlanner = {
 };
 
 const resources = {
+  tutors: {
+    introduction:
+      "Explore practical ways to organise lessons, materials and follow-ups for every student or group you teach.",
+    items: [
+      {
+        title: "Explore the university class template",
+        description:
+          "Preview channels for the syllabus, lecture notes, study groups and office hours you can adapt per student.",
+        href: "/templates/university-college-class",
+      },
+      classroomGuide,
+      communicationPlanner,
+    ],
+  },
   schools: {
     introduction:
       "Explore practical ways to organise class conversations and plan communication for your learning group.",

@@ -14,6 +14,7 @@ const PAGES: { path: string; priority: number }[] = [
   { path: "/solutions/schools", priority: 0.8 },
   { path: "/solutions/universities", priority: 0.8 },
   { path: "/solutions/study-groups", priority: 0.8 },
+  { path: "/solutions/tutors", priority: 0.8 },
   { path: "/alternatives/google-classroom", priority: 0.8 },
   { path: "/compare", priority: 0.7 },
   ...allComparisonSlugs.map((slug) => ({
