@@ -255,7 +255,7 @@ const HeroSection = () => {
           |
         </span>
         <p className="leading-relaxed sm:leading-normal">
-          Trusted by most modern educators and learners worldwide
+          Built for educators and learners
         </p>
       </div>
 
