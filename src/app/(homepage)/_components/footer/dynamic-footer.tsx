@@ -8,9 +8,11 @@ import { cn } from "~/lib/utils";
 export const DynamicFooter = ({
   text,
   description,
+  backgroundClassName = "bg-blue-50/30",
 }: {
   text: string;
   description: string;
+  backgroundClassName?: string;
 }) => {
   const { celebration } = useCelebration();
 
@@ -18,7 +20,7 @@ export const DynamicFooter = ({
     <div
       className={cn(
         "flex flex-col items-center gap-5 px-4 py-12 text-center sm:gap-6 sm:px-8 sm:py-16 transition-colors",
-        celebration ? celebration.footerBgClass : "bg-blue-50/30"
+        celebration ? celebration.footerBgClass : backgroundClassName
       )}
     >
       {celebration && (
