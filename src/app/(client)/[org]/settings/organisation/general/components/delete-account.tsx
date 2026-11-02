@@ -37,7 +37,7 @@ const DeleteAccount = () => {
       const token = localStorage.getItem("token") || "";
       const res = await DeleteRequests(
         `/organisations/${orgId}`,
-        { password },
+        { password, include_profile_in_deletion_mail: agreed },
         token
       );
 
@@ -86,12 +86,27 @@ const DeleteAccount = () => {
   const handleClick = () => {
     setOpen(false);
     setIsContinue(false);
+    setPassword("");
+    setShowPassword(false);
+    setAgreed(false);
+    setDeleteError("");
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      setIsContinue(false);
+      setPassword("");
+      setShowPassword(false);
+      setAgreed(false);
+      setDeleteError("");
+    }
   };
 
   //
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <button className="inline-block py-2 px-4 mt-6 border rounded-[4px] border-[#F81404] text-[#F81404] text-sm font-semibold hover:bg-[#F81404] hover:text-white transition-colors duration-200">
           Delete this organisation

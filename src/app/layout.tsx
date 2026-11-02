@@ -34,15 +34,6 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(createWebApplicationJsonLd()).replace(
-              /</g,
-              "\\u003c"
-            ),
-          }}
-        />
         {analyticsEnabled && (
           <>
             <Script async src={`${gtmUrl}?id=${gaId}`} />
@@ -63,6 +54,15 @@ export default function RootLayout({
         )}
       </head>
       <body className="max-w-screen overflow-x-hidden" suppressHydrationWarning>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(createWebApplicationJsonLd()).replace(
+              /</g,
+              "\\u003c"
+            ),
+          }}
+        />
         <ThemeProvider>
           <ClientLayout>
             <DataProvider>{children}</DataProvider>
