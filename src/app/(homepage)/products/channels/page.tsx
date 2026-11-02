@@ -10,6 +10,7 @@ import {
 import { MessagesIcon } from "../../_components/svgs";
 import { FAQSection } from "../../_components/home/FAQSection";
 import { DynamicFooter } from "../../_components/footer/dynamic-footer";
+import { getProductBreadcrumbJsonLd } from "../../_lib/productStructuredData";
 import type { HomeFAQ } from "../../_lib/faqData";
 
 export const metadata: Metadata = {
@@ -130,6 +131,12 @@ const channelsFAQs: HomeFAQ[] = [
 const ChannelProductPage = () => {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: getProductBreadcrumbJsonLd("Channels", "/products/channels"),
+        }}
+      />
       <section className="relative isolate overflow-hidden px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div
           aria-hidden="true"

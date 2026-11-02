@@ -4,6 +4,7 @@ import Image from "next/image";
 import { ArrowBtn } from "../../_components/ui/Button";
 import { FeaturedCard } from "../../_components/ui/FeaturedCard";
 import { DynamicFooter } from "../../_components/footer/dynamic-footer";
+import { getProductBreadcrumbJsonLd } from "../../_lib/productStructuredData";
 import { FAQSection } from "../../_components/home/FAQSection";
 import type { HomeFAQ } from "../../_lib/faqData";
 
@@ -134,6 +135,15 @@ const fileManagementFAQs: HomeFAQ[] = [
 const FileManagementProductsPage = () => {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: getProductBreadcrumbJsonLd(
+            "File Management",
+            "/products/file-management"
+          ),
+        }}
+      />
       <section className="relative isolate flex w-full flex-col items-center gap-4 overflow-hidden px-4 py-10 text-center sm:gap-6 sm:px-8 sm:py-16  lg:gap-8 lg:px-12 mt-10">
         <div
           aria-hidden="true"

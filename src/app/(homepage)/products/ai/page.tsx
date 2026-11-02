@@ -5,6 +5,7 @@ import { ArrowBtn } from "../../_components/ui/Button";
 import { FAQSection } from "../../_components/home/FAQSection";
 import type { HomeFAQ } from "../../_lib/faqData";
 import { DynamicFooter } from "../../_components/footer/dynamic-footer";
+import { getProductBreadcrumbJsonLd } from "../../_lib/productStructuredData";
 
 export const metadata: Metadata = {
   title: "AI Assistant - Smarter Learning and Teaching | Zedu",
@@ -143,6 +144,12 @@ const aiPlanComparison = [
 const AiProductsPage = () => {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: getProductBreadcrumbJsonLd("AI Assistant", "/products/ai"),
+        }}
+      />
       {/* Hero */}
       <section className="relative isolate overflow-hidden bg-gradient-to-b from-blue-50/70 via-white to-white px-4 py-16 sm:px-6 sm:py-20 lg:px-10 lg:py-24">
         <div

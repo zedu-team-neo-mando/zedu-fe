@@ -6,6 +6,7 @@ import { BuzzPageHeroSVG } from "../../_components/svgs";
 import { FAQSection } from "../../_components/home/FAQSection";
 import type { HomeFAQ } from "../../_lib/faqData";
 import { DynamicFooter } from "../../_components/footer/dynamic-footer";
+import { getProductBreadcrumbJsonLd } from "../../_lib/productStructuredData";
 
 export const metadata: Metadata = {
   title: "Buzz - Instant Voice Conversations for Learning Teams",
@@ -98,6 +99,12 @@ const buzzFAQs: HomeFAQ[] = [
 const BuzzProductsPage = () => {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: getProductBreadcrumbJsonLd("Buzz", "/products/buzz"),
+        }}
+      />
       <section className="relative isolate overflow-hidden px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div
           aria-hidden="true"
