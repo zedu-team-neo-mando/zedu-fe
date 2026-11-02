@@ -7,6 +7,15 @@ export type ChangelogEntry = {
   description: string;
 };
 
+export const changelogDescription =
+  "See the latest features, improvements and fixes shipped in Zedu.";
+
+export const changelogTypeLabels: Record<ChangelogEntryType, string> = {
+  feature: "New",
+  improvement: "Improved",
+  fix: "Fixed",
+};
+
 // Newest first. Add an entry here when something ships.
 export const changelogEntries: ChangelogEntry[] = [
   {

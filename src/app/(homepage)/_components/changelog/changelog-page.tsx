@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
+import { Rss } from "lucide-react";
 import { ogImageUrl, siteUrl } from "~/lib/env-urls";
-import { changelogEntries, type ChangelogEntryType } from "./entries";
+import { changelogEntryId, changelogFeedPath } from "./changelog-feed";
+import {
+  changelogDescription as description,
+  changelogEntries,
+  changelogTypeLabels as typeLabels,
+} from "./entries";
 
 const title = "What's new in Zedu | Changelog";
-const description =
-  "See the latest features, improvements and fixes shipped in Zedu.";
 
 export const metadata: Metadata = {
   title,
@@ -33,13 +37,8 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: siteUrl("/changelog"),
+    types: { "application/rss+xml": siteUrl(changelogFeedPath) },
   },
-};
-
-const typeLabels: Record<ChangelogEntryType, string> = {
-  feature: "New",
-  improvement: "Improved",
-  fix: "Fixed",
 };
 
 const formatDate = (date: string) =>
@@ -57,11 +56,19 @@ export default function ChangelogPage() {
         What&apos;s new in Zedu
       </h1>
       <p className="mt-3 text-base text-neutral-600">{description}</p>
-      <ol className="mt-12 flex flex-col gap-8">
+      <a
+        href={changelogFeedPath}
+        className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-lg px-1 text-sm font-medium text-primary-500 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+      >
+        <Rss className="h-4 w-4" aria-hidden="true" />
+        Follow via RSS
+      </a>
+      <ol className="mt-8 flex flex-col gap-8">
         {changelogEntries.map((entry) => (
           <li
-            key={`${entry.date}-${entry.title}`}
-            className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
+            key={changelogEntryId(entry)}
+            id={changelogEntryId(entry)}
+            className="scroll-mt-24 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
           >
             <div className="flex items-center gap-3 text-sm">
               <span className="rounded-full bg-primary-50 px-3 py-1 font-medium text-primary-700">
