@@ -26,7 +26,10 @@
       "src/app/(homepage)/refer/page.tsx",
       "src/app/(homepage)/refer/refer-program-form.tsx",
       "src/app/(client)/[org]/home/channels/[id]/settings/page.tsx",
-      "src/app/(client)/[org]/home/channels/[id]/settings/history/page.tsx"
+      "src/app/(client)/[org]/home/channels/[id]/settings/history/page.tsx",
+      "src/app/(homepage)/solutions/study-groups/page.tsx",
+      "src/app/(homepage)/solutions/study-groups/opengraph-image.tsx",
+      "src/app/(homepage)/solutions/study-groups/twitter-image.tsx"
     ]
   },
   "reuse": {
