@@ -123,11 +123,13 @@ export const FeatureSection = () => {
                       : "text-primary-500"
                   )}
                 >
-                  One Simple Subscription
+                  One Workspace. Flexible Plans.
                 </span>
               </h2>
               <p className="text-sm text-[#344054] sm:text-base">
-                Replace disconnected learning tools with one seamless platform
+                Bring your learning tools together in one workspace. Start free
+                with Starter, choose paid Pro for growing cohorts, or contact
+                sales for custom Enterprise pricing.
               </p>
               <div>
                 <Image
