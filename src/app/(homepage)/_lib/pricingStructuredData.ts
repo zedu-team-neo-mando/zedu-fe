@@ -1,12 +1,12 @@
 import { siteUrl } from "~/lib/env-urls";
-import { homeFAQs } from "./faqData";
+import { pricingFAQs, type HomeFAQ } from "./faqData";
 import { pricingCardsByCycle } from "./pricingData";
 
 // Schema.org's vocabulary identifier, not an application URL.
 const SCHEMA_CONTEXT = ["https:", "schema.org"].join("//");
 
 /** Describes published monthly prices and the FAQs shown on the pricing page. */
-export function getPricingStructuredData() {
+export function getPricingStructuredData(faqs: HomeFAQ[] = pricingFAQs) {
   const offers = pricingCardsByCycle.monthly
     // Enterprise has a custom quote, not a published price.
     .filter((plan) => plan.monthlyPrice !== undefined)
@@ -47,7 +47,7 @@ export function getPricingStructuredData() {
       {
         "@type": "FAQPage",
         "@id": siteUrl("/pricing#help-center"),
-        mainEntity: homeFAQs.map((faq) => ({
+        mainEntity: faqs.map((faq) => ({
           "@type": "Question",
           name: faq.question,
           acceptedAnswer: {
