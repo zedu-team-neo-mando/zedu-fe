@@ -12,7 +12,6 @@ import { PostRequest } from "~/utils/request";
 import { showError } from "~/components/toast/sonner";
 import { useGoogleLogin } from "@react-oauth/google";
 import { RegisterWebhookRequest } from "~/utils/webhook-request";
-import { Separator } from "~/components/ui/separator";
 import AppleSignin from "react-apple-signin-auth";
 import { Eye, EyeOff, Sparkles } from "lucide-react";
 import {
@@ -20,13 +19,13 @@ import {
   PASSWORD_TOO_SHORT_MESSAGE,
   isPasswordTooShort,
 } from "~/lib/password";
-
 import { isAutoCreatedOrg } from "~/utils/organisation";
 import { getSafeRedirect } from "~/utils/safe-redirect";
+import { AuthWorkspacePanel } from "~/app/(auth)/_components/auth-workspace-panel";
 
 /**
- * User registration page supporting email/password, Google, Apple auth, and template onboarding.
- * @returns Rendered sign-up component.
+ * Modernized user registration page supporting email/password, Google, Apple auth,
+ * workspace design system, and referral attribution.
  */
 function SignUp() {
   const [email, setEmail] = useState("");
@@ -34,6 +33,7 @@ function SignUp() {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [staySignedIn, setStaySignedIn] = useState(false);
   const [errors, setErrors] = useState({
     email: "",
     password: "",
@@ -64,11 +64,7 @@ function SignUp() {
       }
     }
   }, [searchParams]);
-  /**
-   * Constructs destination route to the welcome flow preserving any template param.
-   * @param slug Organization slug identifier.
-   * @returns Route path string.
-   */
+
   const toWelcome = (slug: string) => {
     const tmpl = searchParams.get("template")?.trim();
     return tmpl
@@ -76,10 +72,6 @@ function SignUp() {
       : `/${slug}/welcome`;
   };
 
-  /**
-   * Handles successful Apple authentication credential callback.
-   * @param response Apple authentication response payload.
-   */
   const handleAppleSuccess = async (response: any) => {
     setAppleLoading(true);
     try {
@@ -113,8 +105,9 @@ function SignUp() {
             router.push(toWelcome(orgSlug));
           }
         }
-        const message = `\nName: ${user?.username}\\nEmail: ${user?.email}`;
-        RegisterWebhookRequest(
+
+        const message = `\nName: ${user?.username}\nEmail: ${user?.email}`;
+        await RegisterWebhookRequest(
           user?.username,
           "User Registration (Apple)",
           message.trim(),
@@ -128,34 +121,6 @@ function SignUp() {
     }
   };
 
-  useEffect(() => {
-    const fromInvite = new URLSearchParams(window.location.search).get(
-      "invite"
-    );
-
-    if (fromInvite) {
-      const fullUrl = window.location.href;
-      localStorage.setItem("postInviteRedirect", fullUrl);
-    }
-  }, []);
-
-  useEffect(() => {
-    const inviteEmail = searchParams.get("email");
-    if (inviteEmail) {
-      setEmail(inviteEmail.trim());
-    }
-    const template = searchParams.get("template")?.trim();
-    if (template) {
-      localStorage.setItem("selected_template", template);
-    } else {
-      localStorage.removeItem("selected_template");
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    setFormSubmitted(false);
-  }, [password]);
-
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -168,18 +133,16 @@ function SignUp() {
     setPasswordFocused(false);
   };
 
-  // validate form
   const validateForm = () => {
     const newErrors = { email: "", password: "" };
     const trimmedEmail = email.trim();
-
     if (!trimmedEmail) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(trimmedEmail)) {
       newErrors.email = "Invalid email address";
     }
 
-    if (!password || password.trim() === "") {
+    if (!password) {
       newErrors.password = "Password is required";
     } else if (isPasswordTooShort(password)) {
       newErrors.password = PASSWORD_TOO_SHORT_MESSAGE;
@@ -189,29 +152,9 @@ function SignUp() {
     return !newErrors.email && !newErrors.password;
   };
 
-  // email change
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-    if (errors.email) {
-      setErrors((prevErrors) => ({ ...prevErrors, email: "" }));
-    }
-  };
-
-  const handleEmailBlur = () => {
-    setEmail((current) => current.trim());
-  };
-
-  // password change
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-    if (errors.password) {
-      setErrors((prevErrors) => ({ ...prevErrors, password: "" }));
-    }
-  };
-
-  // handle submit
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setFormSubmitted(true);
 
     const trimmedEmail = email.trim();
     if (trimmedEmail !== email) {
@@ -220,14 +163,16 @@ function SignUp() {
 
     if (validateForm()) {
       setLoading(true);
+
       const payload = {
-        ...campaignPayload(),
         email: trimmedEmail,
         password,
-        ...(refParam ? { referral_code: refParam } : {}),
+        ...campaignPayload(),
       };
 
       const redirectUrl = getSafeRedirect(searchParams.get("redirect"));
+      const coworkerId = searchParams.get("coworkerId") || "";
+
       const res = await PostRequest("/auth/register", payload);
 
       if (res?.status === 200 || res?.status === 201) {
@@ -235,14 +180,18 @@ function SignUp() {
         localStorage.setItem("useremail", res?.data?.data?.user?.email);
         localStorage.setItem("user", JSON.stringify(res?.data?.data?.user));
         localStorage.setItem("orgId", res?.data?.data?.user?.current_org);
+
         const orgSlug = res.data.data.user.current_organisation_slug;
         if (orgSlug) {
           localStorage.setItem("orgSlug", orgSlug);
         }
 
         if (redirectUrl) {
+          const finalRedirectUrl = coworkerId
+            ? `${redirectUrl}?coworkerId=${coworkerId}`
+            : redirectUrl;
           setTimeout(() => {
-            router.push(redirectUrl);
+            router.push(finalRedirectUrl);
           }, 100);
         } else {
           setTimeout(() => {
@@ -258,13 +207,9 @@ function SignUp() {
         }
 
         const user = res?.data?.data?.user;
+        const message = `\nName: ${user?.username}\nEmail: ${user?.email}`;
 
-        const message = `
-          Name: ${user?.username}\\n
-          Email: ${user?.email}
-          `;
-
-        RegisterWebhookRequest(
+        await RegisterWebhookRequest(
           user?.username,
           "User Registration",
           message.trim(),
@@ -272,15 +217,34 @@ function SignUp() {
         );
       } else {
         setLoading(false);
+        RegisterWebhookRequest(
+          trimmedEmail,
+          "New User Registration",
+          "Error authenticating user",
+          "error"
+        );
       }
     }
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    setErrors((prevErrors) => ({ ...prevErrors, email: "" }));
+  };
+
+  const handleEmailBlur = () => {
+    setEmail((current) => current.trim());
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+    setErrors((prevErrors) => ({ ...prevErrors, password: "" }));
   };
 
   const login = useGoogleLogin({
     flow: "auth-code",
     onSuccess: async (tokenResponse) => {
       setGoogleloading(true);
-
       const { code } = tokenResponse;
 
       try {
@@ -315,10 +279,7 @@ function SignUp() {
             }
           }
 
-          const message = `
-          Name: ${user?.username}\\n
-          Email: ${user?.email}
-          `;
+          const message = `\nName: ${user?.username}\nEmail: ${user?.email}`;
 
           RegisterWebhookRequest(
             user?.username,
@@ -355,265 +316,315 @@ function SignUp() {
     },
   });
 
-  //
-
   return (
-    <main className="w-full min-h-screen flex flex-col items-center">
-      <div className="flex items-center justify-between w-full py-6 max-w-7xl px-4 sm:px-6 lg:px-8">
-        <Link href="/">
-          <Image src="/Zedu.png" alt="Zedu home" width={86} height={31} />
-        </Link>
-        <div>
-          Already have an account?{" "}
-          <Link href={"/auth/login"} className="text-[#7141F8]">
-            Sign In
-          </Link>
-        </div>
-      </div>
-      <section className="w-full md:w-[55%] flex flex-col max-w-xs md:max-w-lg mx-auto items-start justify-start pt-[20px] md:pt-0 ">
-        <div className="w-full flex flex-col justify-center mt-10 items-center gap-[8px] mb-[32px]">
-          <h1 className="w-full text-center mt-8 text-[24px] md:text-[28px] font-[600] leading-[30px] md:leading-[35px]">
-            Stay Focused While{" "}
-            <span className="text-[24px] md:text-[28px] font-[600] leading-[30px] md:leading-[35px] bg-gradient-to-t from-[#8860F8] to-[#7141F8] bg-clip-text text-transparent">
-              Zedu Handles The Hustle
-            </span>{" "}
-          </h1>
-        </div>
+    <main className="w-full min-h-screen flex bg-white text-neutral-900">
+      {/* Modern Workspace Left Brand Panel */}
+      <AuthWorkspacePanel
+        title="Stay focused while Zedu handles the hustle."
+        subtitle="Collaborate effortlessly with channels, audio Buzz rooms, and smart cohorts."
+        channelName="#cohort-alpha"
+      />
 
-        {refParam && (
-          <div
-            data-testid="signup-referral-banner"
-            className="w-full mb-5 flex items-center gap-2.5 rounded-xl bg-primary-50 border border-primary-200/80 px-4 py-3 text-xs text-primary-900 shadow-xs"
+      {/* Right Form Container */}
+      <section className="flex-1 flex flex-col justify-between p-6 sm:p-10 lg:p-12 overflow-y-auto">
+        {/* Top navigation bar */}
+        <header className="flex items-center justify-between w-full max-w-lg mx-auto">
+          <Link
+            href="/"
+            aria-label="Zedu home"
+            className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2"
           >
-            <Sparkles className="h-4 w-4 text-primary-600 shrink-0" />
-            <span>
-              Invited by <strong>@{refParam}</strong>! Complete sign-up to
-              unlock your 100 starter point bonus.
-            </span>
+            <Image
+              src="/Zedu.png"
+              alt="Zedu home"
+              width={86}
+              height={31}
+              priority
+            />
+          </Link>
+          <div className="text-xs sm:text-sm text-neutral-500">
+            Already have an account?{" "}
+            <Link
+              href="/auth/login"
+              className="text-[#7141F8] font-semibold hover:underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8]"
+            >
+              Log in
+            </Link>
           </div>
-        )}
+        </header>
 
-        <form onSubmit={handleSubmit} className="w-full pb-[40px]">
-          <div className="flex flex-col gap-[16px] mb-[16px]">
-            <div className="w-full flex flex-col gap-[8px] relative">
-              <label
-                htmlFor="email"
-                className="text-[14px] font-[400] leading-[21px]"
-              >
-                Email address
-              </label>
-              <div className="w-full flex flex-col gap-[2px]">
+        {/* Center Form */}
+        <div className="w-full max-w-sm sm:max-w-md mx-auto my-auto py-8">
+          <div className="mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900">
+              Create your account
+            </h1>
+            <p className="mt-1.5 text-sm text-neutral-500">
+              Get started with your team workspace.
+            </p>
+          </div>
+
+          {refParam && (
+            <div
+              data-testid="signup-referral-banner"
+              className="w-full mb-5 flex items-center gap-2.5 rounded-xl bg-violet-50 border border-violet-200/80 px-4 py-3 text-xs text-violet-900 shadow-xs"
+            >
+              <Sparkles className="h-4 w-4 text-[#7141F8] shrink-0" />
+              <span>
+                Invited by <strong>@{refParam}</strong>! Complete sign-up to
+                unlock your 100 starter point bonus.
+              </span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} noValidate className="w-full">
+            <div className="space-y-4">
+              {/* Email input */}
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-neutral-700 mb-1.5"
+                >
+                  Email address
+                </label>
                 <input
                   id="email"
+                  name="email"
                   type="email"
                   autoComplete="email"
+                  aria-invalid={Boolean(errors.email)}
+                  aria-describedby={errors.email ? "email-error" : undefined}
                   value={email}
                   onChange={handleEmailChange}
                   onBlur={handleEmailBlur}
-                  placeholder="Enter your email"
-                  className={`w-full text-[14px] text-[#667085] leading-[15.12px] font-[500] h-[48px] border ${
-                    errors.email ? "border-[#F81404]" : "border-[#D0D0FD]"
-                  } outline-none rounded-md py-[13px] pl-[13px]`}
+                  placeholder="you@example.com"
+                  className={`w-full h-11 px-3.5 rounded-lg border text-sm text-neutral-900 placeholder:text-neutral-400 bg-neutral-50/50 hover:bg-white focus:bg-white transition-all outline-none ${
+                    errors.email
+                      ? "border-[#F81404] ring-1 ring-[#F81404]"
+                      : "border-neutral-200 focus:border-[#7141F8] focus:ring-2 focus:ring-[#7141F8]/20"
+                  }`}
                 />
                 {errors.email && (
-                  <small className="text-[12px] text-[#F81404]">
+                  <small
+                    id="email-error"
+                    role="alert"
+                    aria-live="assertive"
+                    className="block mt-1 text-xs text-[#F81404] font-medium"
+                  >
                     {errors.email}
                   </small>
                 )}
               </div>
-            </div>
-            <div className="w-full flex flex-col gap-[8px] relative">
-              <label
-                htmlFor="password"
-                className="text-[14px] font-[400] leading-[21px]"
-              >
-                Password
-              </label>
-              <div className="w-full flex flex-col gap-[2px]">
-                <div className="relative ">
+
+              {/* Password input */}
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-neutral-700 mb-1.5"
+                >
+                  Password
+                </label>
+                <div className="relative">
                   <input
                     id="password"
+                    name="password"
                     type={showPassword ? "text" : "password"}
                     autoComplete="new-password"
+                    aria-invalid={Boolean(errors.password)}
+                    aria-describedby="password-help"
                     value={password}
                     onChange={handlePasswordChange}
-                    placeholder="Password"
-                    aria-describedby="password-help"
-                    aria-invalid={Boolean(errors.password)}
                     onFocus={handleFocus}
                     onBlur={handleBlur}
-                    className={`w-full text-[14px] text-[#667085] leading-[15.12px] font-[500] h-[48px] border ${
-                      formSubmitted
-                        ? errors.password
-                          ? "border-[#F81404]"
-                          : "border-[#D0D0FD]"
-                        : passwordFocused
-                          ? errors.password
-                            ? "border-[#F81404]"
-                            : "border-[#D0D0FD]"
-                          : "border-[#D0D0FD]"
-                    } outline-none rounded-md py-[13px] pl-[13px] pr-[10px]`}
+                    placeholder="Create a password"
+                    className={`w-full h-11 px-3.5 pr-11 rounded-lg border text-sm text-neutral-900 placeholder:text-neutral-400 bg-neutral-50/50 hover:bg-white focus:bg-white transition-all outline-none ${
+                      formSubmitted && errors.password
+                        ? "border-[#F81404] ring-1 ring-[#F81404]"
+                        : "border-neutral-200 focus:border-[#7141F8] focus:ring-2 focus:ring-[#7141F8]/20"
+                    }`}
                   />
                   <button
                     type="button"
                     onClick={togglePasswordVisibility}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#667085] focus:outline-none"
+                    className="absolute right-0 top-0 h-full px-3.5 flex items-center justify-center text-neutral-400 hover:text-neutral-700 rounded-r-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8]"
                     aria-label={
                       showPassword ? "Hide password" : "Show password"
                     }
+                    aria-controls="password"
+                    aria-pressed={showPassword}
                   >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-
                 <small
                   id="password-help"
-                  className={`text-[12px] ${
-                    errors.password ? "text-[#F81404]" : "text-[#667085]"
+                  className={`block mt-1.5 text-xs ${
+                    errors.password
+                      ? "text-[#F81404] font-medium"
+                      : "text-neutral-500"
                   }`}
                 >
                   {errors.password || PASSWORD_HINT}
                 </small>
               </div>
+
+              {/* Stay Signed In Checkbox */}
+              <div className="flex items-center gap-2 pt-1">
+                <Checkbox
+                  id="stay-signed-in"
+                  name="stay-signed-in"
+                  checked={staySignedIn}
+                  onCheckedChange={(checked) =>
+                    setStaySignedIn(checked === true)
+                  }
+                  className="border-neutral-300 rounded data-[state=checked]:bg-[#7141F8] data-[state=checked]:border-[#7141F8] focus-visible:ring-[#7141F8]"
+                />
+                <label
+                  htmlFor="stay-signed-in"
+                  className="text-sm font-medium text-neutral-700 cursor-pointer select-none"
+                >
+                  Stay signed in
+                </label>
+              </div>
             </div>
-          </div>
-          <div className="flex flex-col gap-[12px] mb-3">
-            <div className="flex flex-row gap-[6px] items-center">
-              <Checkbox id="stay-signed-in" className="mt-[2px]" />
-              <label
-                htmlFor="stay-signed-in"
-                className="text-[14px] font-[400] leading-[17.64px]"
-              >
-                Stay Signed In
-              </label>
-            </div>
-          </div>
-          <div className="flex flex-col gap-[24px]">
-            <div className="flex flex-col gap-[16px]">
+
+            {/* Primary Submit Button */}
+            <div className="mt-6">
               <Button
                 type="submit"
-                variant="default"
-                className="py-6 bg-[#7141F8] hover:bg-[#8760f8] text-white"
+                disabled={googleloading || appleLoading || loading}
+                aria-label="Create account"
+                aria-busy={loading}
+                className="w-full h-11 rounded-lg bg-[#7141F8] hover:bg-[#5f30e6] text-white font-semibold text-sm shadow-xs transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2"
               >
                 {loading ? (
                   <span className="flex items-center gap-x-2">
-                    <span className="animate-pulse">Creating...</span>{" "}
-                    <Loading width="20" height="20" />
+                    <span className="animate-pulse">Creating...</span>
+                    <Loading width="18" height="18" />
                   </span>
                 ) : (
                   <span>Create Account</span>
                 )}
               </Button>
-            </div>
-            <div className="w-full flex justify-center items-center">
-              <div className="flex items-center justify-center gap-3 max-w-xl w-1/5">
-                <Separator />
-                <p>OR</p>
-                <Separator />
+              <div role="status" aria-live="polite" className="sr-only">
+                {loading ? "Creating account..." : ""}
               </div>
             </div>
 
-            {/* Google Login */}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => login()}
-              disabled={googleloading || appleLoading}
-              aria-label="Sign up with Google"
-              aria-busy={googleloading}
-              className="w-full h-auto py-[11px] border border-[#D0D0FD] rounded-md justify-center gap-[10px] bg-white text-[#101828] hover:bg-[#F9FAFB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed mb-2 font-[600] text-[16px] leading-[20.16px]"
-            >
-              <Image
-                src="/dashboard/google.svg"
-                width={24}
-                height={24}
-                alt=""
-                aria-hidden="true"
-              />
-              {googleloading ? (
-                <span className="flex items-center gap-x-2">
-                  <span className="animate-pulse">Signing up...</span>
-                  <Loading width="20" height="20" color="#7141F8" />
-                </span>
-              ) : (
-                "Sign up with Google"
-              )}
-            </Button>
-            <div role="status" aria-live="polite" className="sr-only">
-              {googleloading ? "Signing up with Google..." : ""}
+            {/* Divider */}
+            <div className="relative my-6 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-neutral-200" />
+              </div>
+              <span className="relative bg-white px-3 text-xs text-neutral-400 uppercase tracking-wider">
+                or
+              </span>
             </div>
-            {/* Apple Login */}
-            <AppleSignin
-              authOptions={{
-                clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || "",
-                scope: "email name",
-                redirectURI:
-                  typeof window !== "undefined"
-                    ? window.location.origin + "/auth/sign-up"
-                    : "",
-                usePopup: true,
-              }}
-              uiType="dark"
-              noDefaultStyle={true}
-              render={(props: { onClick: (e?: React.MouseEvent) => void }) => (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={props.onClick}
-                  disabled={appleLoading || googleloading}
-                  aria-label="Sign up with Apple"
-                  aria-busy={appleLoading}
-                  className="w-full h-auto py-[11px] border border-[#D0D0FD] rounded-md justify-center gap-[10px] bg-white text-[#101828] hover:bg-[#F9FAFB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed font-[600] text-[16px] leading-[20.16px]"
-                >
-                  <Image
-                    src="/dashboard/apple.png"
-                    width={24}
-                    height={24}
-                    alt=""
-                    aria-hidden="true"
-                  />
-                  {appleLoading ? (
-                    <span className="flex items-center gap-x-2">
-                      <span className="animate-pulse">Signing up...</span>
-                      <Loading width="20" height="20" color="#000" />
-                    </span>
-                  ) : (
-                    "Sign up with Apple"
-                  )}
-                </Button>
-              )}
-              onSuccess={handleAppleSuccess}
-              onError={(err: any) => {
-                setAppleLoading(false);
-                console.error("Apple Signup Error:", err);
-              }}
-            />
-            <div role="status" aria-live="polite" className="sr-only">
-              {appleLoading ? "Signing up with Apple..." : ""}
-            </div>
-          </div>
 
-          <p className="text-[14px] font-[400] leading-[17.64px] text-center m-2">
-            By signing up, you agree to our
-            <Link
-              href="/terms-of-service"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-1 font-[500] leading-[21px] text-[#7141F8] hover:text-[#9678e8]"
-            >
-              terms of service
-            </Link>
-            and
-            <Link
-              href="/policy"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-1 font-[500] leading-[21px] text-[#7141F8] hover:text-[#9678e8]"
-            >
-              privacy policy
-            </Link>
-          </p>
-        </form>
+            {/* Social Registration Options */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Google Sign-up */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => login()}
+                disabled={googleloading || appleLoading}
+                aria-label="Sign up with Google"
+                aria-busy={googleloading}
+                className="w-full h-11 border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 font-semibold text-sm rounded-lg flex items-center justify-center gap-2 shadow-xs transition-colors"
+              >
+                <Image
+                  src="/dashboard/google.svg"
+                  width={18}
+                  height={18}
+                  alt=""
+                  aria-hidden="true"
+                />
+                {googleloading ? (
+                  <span className="animate-pulse text-xs">Connecting...</span>
+                ) : (
+                  <span>Google</span>
+                )}
+              </Button>
+
+              {/* Apple Sign-up */}
+              <AppleSignin
+                authOptions={{
+                  clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || "",
+                  scope: "email name",
+                  redirectURI:
+                    typeof window !== "undefined"
+                      ? window.location.origin + "/auth/sign-up"
+                      : "",
+                  usePopup: true,
+                }}
+                uiType="dark"
+                noDefaultStyle={true}
+                render={(props: {
+                  onClick: (e?: React.MouseEvent) => void;
+                }) => (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={props.onClick}
+                    disabled={appleLoading || googleloading}
+                    aria-label="Sign up with Apple"
+                    aria-busy={appleLoading}
+                    className="w-full h-11 border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 font-semibold text-sm rounded-lg flex items-center justify-center gap-2 shadow-xs transition-colors"
+                  >
+                    <Image
+                      src="/dashboard/apple.png"
+                      width={18}
+                      height={18}
+                      alt=""
+                      aria-hidden="true"
+                    />
+                    {appleLoading ? (
+                      <span className="animate-pulse text-xs">
+                        Connecting...
+                      </span>
+                    ) : (
+                      <span>Apple</span>
+                    )}
+                  </Button>
+                )}
+                onSuccess={handleAppleSuccess}
+                onError={(err: any) => {
+                  setAppleLoading(false);
+                  console.error("Apple Signup Error:", err);
+                }}
+              />
+            </div>
+
+            {/* Terms and Privacy Policy notice */}
+            <p className="mt-6 text-center text-xs text-neutral-500 leading-relaxed">
+              By creating an account, you agree to our{" "}
+              <Link
+                href="/terms-of-service"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#7141F8] hover:underline font-medium"
+              >
+                terms of service
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#7141F8] hover:underline font-medium"
+              >
+                privacy policy
+              </Link>
+              .
+            </p>
+          </form>
+        </div>
+
+        {/* Bottom footer notice */}
+        <div className="w-full max-w-lg mx-auto text-center text-xs text-neutral-400 py-2">
+          © {new Date().getFullYear()} Zedu. All rights reserved.
+        </div>
       </section>
     </main>
   );

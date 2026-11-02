@@ -15,9 +15,9 @@ import { LoginWebhookRequest } from "~/utils/webhook-request";
 import { getSafeRedirect } from "~/utils/safe-redirect";
 import { useGoogleLogin } from "@react-oauth/google";
 import AppleSignin from "react-apple-signin-auth";
-import { Separator } from "~/components/ui/separator";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Mail } from "lucide-react";
 import { getLoggedInRedirectPath } from "~/app/(auth)/layout";
+import { AuthWorkspacePanel } from "~/app/(auth)/_components/auth-workspace-panel";
 
 function resolvePostLoginRedirect(orgSlug?: string, user?: any): string {
   let selectedTemplate: string | null = null;
@@ -33,8 +33,6 @@ function resolvePostLoginRedirect(orgSlug?: string, user?: any): string {
   if (redirectPath) return redirectPath;
   return user?.is_onboarded ? `/${orgSlug}` : `/${orgSlug}/welcome`;
 }
-
-//
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -121,7 +119,7 @@ function Login() {
         } else {
           router.push(resolvePostLoginRedirect(orgSlug, user));
         }
-        const message = `\nName: ${user?.username}\\nEmail: ${user?.email}`;
+        const message = `\nName: ${user?.username}\nEmail: ${user?.email}`;
         await LoginWebhookRequest(
           user?.username,
           "User Login Detected (Apple)",
@@ -198,7 +196,6 @@ function Login() {
         }
 
         if (redirectUrl) {
-          // If there's a coworkerId, append it to the redirect URL
           const finalRedirectUrl = coworkerId
             ? `${redirectUrl}?coworkerId=${coworkerId}`
             : redirectUrl;
@@ -214,9 +211,8 @@ function Login() {
         }
 
         const user = res?.data?.data?.user;
-        // after successful login call this endpoint
         const message = `
-            Name: ${user?.username}\\n
+            Name: ${user?.username}\n
             Email: ${user?.email}
             `;
 
@@ -291,7 +287,7 @@ function Login() {
           }
 
           const message = `
-            Name: ${user?.username}\\n
+            Name: ${user?.username}\n
             Email: ${user?.email}
             `;
 
@@ -331,136 +327,66 @@ function Login() {
     },
   });
 
-  //
-
   return (
     <>
       <Toaster />
-      <main className="w-full min-h-screen flex flex-col  items-center ">
-        <div className="flex items-center justify-between w-full py-6 max-w-7xl px-4 sm:px-6 lg:px-8">
-          <Link
-            href="/"
-            aria-label="Zedu home"
-            className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2"
-          >
-            <Image src="/Zedu.png" alt="Zedu home" width={86} height={31} />
-          </Link>
-          <div>
-            Don't have an account?{" "}
+      <main className="w-full min-h-screen flex bg-white text-neutral-900">
+        {/* Modern Workspace Left Brand Panel */}
+        <AuthWorkspacePanel
+          title="Your team has been busy."
+          subtitle="12 new messages are waiting for you in 3 channels."
+          channelName="#team-flamingo"
+        />
+
+        {/* Right Form Container */}
+        <section className="flex-1 flex flex-col justify-between p-6 sm:p-10 lg:p-12 overflow-y-auto">
+          {/* Top navigation bar */}
+          <header className="flex items-center justify-between w-full max-w-lg mx-auto">
             <Link
-              href={"/auth/sign-up"}
-              className="text-[#7141F8] hover:underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2"
-            >
-              Sign up
-            </Link>
-          </div>
-        </div>
-
-        <section className="w-full md:w-[55%] flex flex-col max-w-xs md:max-w-lg mx-auto items-start justify-start pt-[20px] md:pt-0">
-          <div className="w-full flex flex-col justify-center mt-[60px] md:mt-[80px] items-center gap-[8px] mb-[32px]">
-            <h1 className="w-full text-center text-[24px] md:text-[28px] font-[600] leading-[30px] md:leading-[35px]">
-              Log in to Zedu
-            </h1>
-            <p className="w-full text-center text-[14px] md:text-[16px] text-[#344054] font-[400] leading-[21px] md:leading-[27px]">
-              Welcome back! We&apos;ve missed you!
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-[10px] w-full mt-4">
-            {/* Google Login */}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => login()}
-              disabled={googleloading || appleLoading}
-              aria-label="Sign in with Google"
-              aria-busy={googleloading}
-              className="w-full h-auto py-[11px] border border-[#D0D0FD] rounded-md justify-center gap-[10px] bg-white text-[#101828] hover:bg-[#F9FAFB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed mb-2 font-[600] text-[16px] leading-[20.16px]"
+              href="/"
+              aria-label="Zedu home"
+              className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2"
             >
               <Image
-                src="/dashboard/google.svg"
-                width={24}
-                height={24}
-                alt=""
-                aria-hidden="true"
+                src="/Zedu.png"
+                alt="Zedu home"
+                width={86}
+                height={31}
+                priority
               />
-              {googleloading ? (
-                <span className="flex items-center gap-x-2">
-                  <span className="animate-pulse">Logging in...</span>
-                  <Loading width="20" height="20" color="#7141F8" />
-                </span>
-              ) : (
-                "Sign in with Google"
-              )}
-            </Button>
-            <div role="status" aria-live="polite" className="sr-only">
-              {googleloading ? "Logging in with Google..." : ""}
+            </Link>
+            <div className="text-xs sm:text-sm text-neutral-500">
+              New to Zedu?{" "}
+              <Link
+                href="/auth/sign-up"
+                className="text-[#7141F8] font-semibold hover:underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8]"
+              >
+                Create an account
+              </Link>
             </div>
-            {/* Apple Login */}
-            <AppleSignin
-              authOptions={{
-                clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || "",
-                scope: "email name",
-                redirectURI:
-                  typeof window !== "undefined" ? window.location.origin : "",
-                usePopup: true,
-              }}
-              uiType="dark"
-              noDefaultStyle={true}
-              render={(props: { onClick: (e?: React.MouseEvent) => void }) => (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={props.onClick}
-                  disabled={appleLoading || googleloading}
-                  aria-label="Sign in with Apple"
-                  aria-busy={appleLoading}
-                  className="w-full h-auto py-[11px] border border-[#D0D0FD] rounded-md justify-center gap-[10px] bg-white text-[#101828] hover:bg-[#F9FAFB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed font-[600] text-[16px] leading-[20.16px]"
-                >
-                  <Image
-                    src="/dashboard/apple.png"
-                    width={24}
-                    height={24}
-                    alt=""
-                    aria-hidden="true"
-                  />
-                  {appleLoading ? (
-                    <span className="flex items-center gap-x-2">
-                      <span className="animate-pulse">Logging in...</span>
-                      <Loading width="20" height="20" color="#000" />
-                    </span>
-                  ) : (
-                    "Sign in with Apple"
-                  )}
-                </Button>
-              )}
-              onSuccess={handleAppleSuccess}
-              onError={(err: any) => {
-                setAppleLoading(false);
-                console.error("Apple Login Error:", err);
-              }}
-            />
-            <div role="status" aria-live="polite" className="sr-only">
-              {appleLoading ? "Logging in with Apple..." : ""}
+          </header>
+
+          {/* Center Form */}
+          <div className="w-full max-w-sm sm:max-w-md mx-auto my-auto py-8">
+            <div className="mb-8">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900">
+                Welcome back
+              </h1>
+              <p className="mt-1.5 text-sm text-neutral-500">
+                Log in to catch up with your team.
+              </p>
             </div>
-          </div>
-          <div className="w-full flex justify-center items-center my-5">
-            <div className="flex items-center justify-center gap-3 max-w-xl w-1/5">
-              <Separator />
-              <p>OR</p>
-              <Separator />
-            </div>
-          </div>
-          <form onSubmit={handleSubmit} noValidate className="w-full">
-            <div className="flex flex-col gap-[16px]">
-              <div className="w-full flex flex-col gap-[8px] relative">
-                <label
-                  htmlFor="email"
-                  className="text-[14px] font-[400] leading-[21px]"
-                >
-                  Email address
-                </label>
-                <div className="w-full flex flex-col gap-[2px]">
+
+            <form onSubmit={handleSubmit} noValidate className="w-full">
+              <div className="space-y-4">
+                {/* Email input */}
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-neutral-700 mb-1.5"
+                  >
+                    Email address
+                  </label>
                   <input
                     id="email"
                     name="email"
@@ -471,31 +397,41 @@ function Login() {
                     value={email}
                     onChange={handleEmailChange}
                     onBlur={handleEmailBlur}
-                    placeholder="Enter your email"
-                    className={`w-full text-[14px] text-[#667085] leading-[15.12px] font-[500] h-[48px] border ${
-                      errors.email ? "border-[#F81404]" : "border-[#D0D0FD]"
-                    } outline-none rounded-md py-[13px] pl-[13px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2`}
+                    placeholder="you@example.com"
+                    className={`w-full h-11 px-3.5 rounded-lg border text-sm text-neutral-900 placeholder:text-neutral-400 bg-neutral-50/50 hover:bg-white focus:bg-white transition-all outline-none ${
+                      errors.email
+                        ? "border-[#F81404] ring-1 ring-[#F81404]"
+                        : "border-neutral-200 focus:border-[#7141F8] focus:ring-2 focus:ring-[#7141F8]/20"
+                    }`}
                   />
                   {errors.email && (
                     <small
                       id="email-error"
                       role="alert"
                       aria-live="assertive"
-                      className="text-[12px] text-[#F81404]"
+                      className="block mt-1 text-xs text-[#F81404] font-medium"
                     >
                       {errors.email}
                     </small>
                   )}
                 </div>
-              </div>
-              <div className="w-full flex flex-col gap-[8px] relative">
-                <label
-                  htmlFor="password"
-                  className="text-[14px] font-[400] leading-[21px]"
-                >
-                  Password
-                </label>
-                <div className="w-full flex flex-col gap-[2px]">
+
+                {/* Password input */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label
+                      htmlFor="password"
+                      className="text-sm font-medium text-neutral-700"
+                    >
+                      Password
+                    </label>
+                    <Link
+                      href="/auth/forgot-password"
+                      className="text-xs font-semibold text-[#7141F8] hover:underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8]"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
                   <div className="relative">
                     <input
                       id="password"
@@ -508,24 +444,24 @@ function Login() {
                       }
                       value={password}
                       onChange={handlePasswordChange}
-                      placeholder="Password"
-                      className={`w-full text-[14px] text-[#667085] leading-[15.12px] font-[500] h-[48px] border ${
+                      placeholder="Enter your password"
+                      className={`w-full h-11 px-3.5 pr-11 rounded-lg border text-sm text-neutral-900 placeholder:text-neutral-400 bg-neutral-50/50 hover:bg-white focus:bg-white transition-all outline-none ${
                         errors.password
-                          ? "border-[#F81404]"
-                          : "border-[#D0D0FD]"
-                      } outline-none rounded-md py-[13px] pl-[13px] pr-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2`}
+                          ? "border-[#F81404] ring-1 ring-[#F81404]"
+                          : "border-neutral-200 focus:border-[#7141F8] focus:ring-2 focus:ring-[#7141F8]/20"
+                      }`}
                     />
                     <button
                       type="button"
                       onClick={togglePasswordVisibility}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-[#667085] hover:text-[#101828] rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-1"
+                      className="absolute right-0 top-0 h-full px-3.5 flex items-center justify-center text-neutral-400 hover:text-neutral-700 rounded-r-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8]"
                       aria-label={
                         showPassword ? "Hide password" : "Show password"
                       }
                       aria-controls="password"
                       aria-pressed={showPassword}
                     >
-                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
                   {errors.password && (
@@ -533,57 +469,47 @@ function Login() {
                       id="password-error"
                       role="alert"
                       aria-live="assertive"
-                      className="text-[12px] text-[#F81404]"
+                      className="block mt-1 text-xs text-[#F81404] font-medium"
                     >
                       {errors.password}
                     </small>
                   )}
                 </div>
-              </div>
-            </div>
-            <div className="mt-[10px] flex justify-between items-center mb-[32px]">
-              <div className="flex items-center -ml-2">
-                <div className="relative flex items-center justify-center min-h-[44px] min-w-[44px]">
+
+                {/* Keep me logged in */}
+                <div className="flex items-center gap-2 pt-1">
                   <Checkbox
                     id="remember-me"
                     name="remember-me"
-                    aria-label="Remember me"
+                    aria-label="Keep me logged in"
                     checked={rememberMe}
                     onCheckedChange={(checked) =>
                       setRememberMe(checked === true)
                     }
-                    className="relative z-10 before:content-[''] before:absolute before:-inset-3 before:min-w-[44px] before:min-h-[44px] before:cursor-pointer border-[#D0D0FD] data-[state=checked]:bg-[#7141F8] data-[state=checked]:border-[#7141F8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2"
+                    className="border-neutral-300 rounded data-[state=checked]:bg-[#7141F8] data-[state=checked]:border-[#7141F8] focus-visible:ring-[#7141F8]"
                   />
+                  <label
+                    htmlFor="remember-me"
+                    className="text-sm font-medium text-neutral-700 cursor-pointer select-none"
+                  >
+                    Keep me logged in
+                  </label>
                 </div>
-                <label
-                  htmlFor="remember-me"
-                  className="flex items-center min-h-[44px] text-[14px] font-[500] leading-[17.64px] text-[#344054] cursor-pointer select-none py-2"
-                >
-                  Remember me
-                </label>
               </div>
-              <Link
-                href="/auth/forgot-password"
-                className="text-[14px] font-[500] leading-[21px] text-[#101828] hover:text-[#7141F8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2 rounded"
-              >
-                Forgot Password?
-              </Link>
-            </div>
 
-            <div className="flex flex-col gap-[24px]">
-              <div className="flex flex-col gap-[16px]">
+              {/* Primary Log in Button */}
+              <div className="mt-6">
                 <Button
                   type="submit"
-                  variant="default"
-                  className="py-6 bg-[#7141F8] hover:bg-[#8760f8] text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2"
                   disabled={googleloading || appleLoading || loading}
                   aria-label="Log in"
                   aria-busy={loading}
+                  className="w-full h-11 rounded-lg bg-[#7141F8] hover:bg-[#5f30e6] text-white font-semibold text-sm shadow-xs transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2"
                 >
                   {loading ? (
                     <span className="flex items-center gap-x-2">
-                      <span className="animate-pulse">Logging in...</span>{" "}
-                      <Loading width="20" height="40" />
+                      <span className="animate-pulse">Logging in...</span>
+                      <Loading width="18" height="18" />
                     </span>
                   ) : (
                     <span>Log in</span>
@@ -592,30 +518,123 @@ function Login() {
                 <div role="status" aria-live="polite" className="sr-only">
                   {loading ? "Logging in..." : ""}
                 </div>
-
-                <Link
-                  href="/auth/magiclink"
-                  className="w-fit text-left text-[14px] font-[500] text-[#7141F8] hover:text-[#5a32c7] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2 rounded py-2"
-                >
-                  Log in with magic link
-                </Link>
-
-                <div className="pt-3 mt-1 border-t border-gray-100 flex flex-col gap-2">
-                  <button
-                    type="button"
-                    onClick={handleLaunchAssessment}
-                    className="w-full py-2.5 px-4 rounded-lg border border-dashed border-[#7141F8] bg-[#F9F5FF] hover:bg-[#f1e9ff] text-[#7141F8] text-[13px] font-semibold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-                  >
-                    <span>🚀 Launch Assessment Workspace (Demo Mode)</span>
-                  </button>
-                  <p className="text-[11px] text-gray-500 text-center">
-                    For independent assessment of notification badge & unread
-                    sync without staging credentials
-                  </p>
-                </div>
               </div>
-            </div>
-          </form>
+
+              {/* Divider */}
+              <div className="relative my-6 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-neutral-200" />
+                </div>
+                <span className="relative bg-white px-3 text-xs text-neutral-400 uppercase tracking-wider">
+                  or
+                </span>
+              </div>
+
+              {/* Social Login Options */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Google Login */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => login()}
+                  disabled={googleloading || appleLoading}
+                  aria-label="Sign in with Google"
+                  aria-busy={googleloading}
+                  className="w-full h-11 border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 font-semibold text-sm rounded-lg flex items-center justify-center gap-2 shadow-xs transition-colors"
+                >
+                  <Image
+                    src="/dashboard/google.svg"
+                    width={18}
+                    height={18}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                  {googleloading ? (
+                    <span className="animate-pulse text-xs">Connecting...</span>
+                  ) : (
+                    <span>Google</span>
+                  )}
+                </Button>
+
+                {/* Apple Login */}
+                <AppleSignin
+                  authOptions={{
+                    clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || "",
+                    scope: "email name",
+                    redirectURI:
+                      typeof window !== "undefined"
+                        ? window.location.origin
+                        : "",
+                    usePopup: true,
+                  }}
+                  uiType="dark"
+                  noDefaultStyle={true}
+                  render={(props: {
+                    onClick: (e?: React.MouseEvent) => void;
+                  }) => (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={props.onClick}
+                      disabled={appleLoading || googleloading}
+                      aria-label="Sign in with Apple"
+                      aria-busy={appleLoading}
+                      className="w-full h-11 border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 font-semibold text-sm rounded-lg flex items-center justify-center gap-2 shadow-xs transition-colors"
+                    >
+                      <Image
+                        src="/dashboard/apple.png"
+                        width={18}
+                        height={18}
+                        alt=""
+                        aria-hidden="true"
+                      />
+                      {appleLoading ? (
+                        <span className="animate-pulse text-xs">
+                          Connecting...
+                        </span>
+                      ) : (
+                        <span>Apple</span>
+                      )}
+                    </Button>
+                  )}
+                  onSuccess={handleAppleSuccess}
+                  onError={(err: any) => {
+                    setAppleLoading(false);
+                    console.error("Apple Login Error:", err);
+                  }}
+                />
+              </div>
+
+              {/* Magic Link */}
+              <Link
+                href="/auth/magiclink"
+                className="w-full h-11 mt-3 border border-neutral-200 hover:border-neutral-300 bg-white hover:bg-neutral-50 text-neutral-700 font-semibold text-sm rounded-lg flex items-center justify-center gap-2 shadow-xs transition-colors"
+              >
+                <Mail size={16} className="text-neutral-500" />
+                <span>Email me a login link</span>
+              </Link>
+
+              {/* Demo Mode for Reviewers & Testing */}
+              <div className="pt-4 mt-6 border-t border-neutral-100 flex flex-col gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleLaunchAssessment}
+                  className="w-full py-2 px-3 rounded-lg border border-dashed border-[#7141F8]/50 bg-violet-50/60 hover:bg-violet-50 text-[#7141F8] text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <span>🚀 Launch Assessment Workspace (Demo Mode)</span>
+                </button>
+                <p className="text-[11px] text-neutral-400 text-center">
+                  For automated assessment of workspace features without
+                  credentials
+                </p>
+              </div>
+            </form>
+          </div>
+
+          {/* Bottom spacer for balance */}
+          <div className="w-full max-w-lg mx-auto text-center text-xs text-neutral-400 py-2">
+            © {new Date().getFullYear()} Zedu. All rights reserved.
+          </div>
         </section>
       </main>
     </>
