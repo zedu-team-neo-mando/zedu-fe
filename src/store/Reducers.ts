@@ -1,4 +1,5 @@
 import { ACTIONS } from "./Actions";
+import { updateSavedBookmarks } from "~/utils/saved-bookmarks";
 
 type TypingPayload = { userId?: string; username?: string; typing?: boolean };
 
@@ -212,6 +213,14 @@ const reducers = (state: any, action: any) => {
       return {
         ...state,
         orgId: payload,
+        ...(state.orgId !== payload
+          ? {
+              bookmarks: [],
+              bookmarkPending: {},
+              bookmarkVersions: {},
+              bookmarkOrgVersion: (state.bookmarkOrgVersion || 0) + 1,
+            }
+          : {}),
       };
     case ACTIONS.CALLBACK:
       return {
@@ -1310,6 +1319,8 @@ const reducers = (state: any, action: any) => {
         ...state,
         bookmarks: payload,
       };
+    case ACTIONS.UPDATE_SAVED_BOOKMARK:
+      return updateSavedBookmarks(state, payload);
     case ACTIONS.DATA_ID:
       return {
         ...state,

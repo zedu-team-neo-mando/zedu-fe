@@ -309,12 +309,21 @@ test("delivery status updates only the matching optimistic message", async () =>
     )
   );
   const actionsUrl = `data:text/javascript;base64,${Buffer.from(actionsCode).toString("base64")}`;
+  const bookmarksCode = compile(
+    readFileSync(
+      new URL("../../../../../utils/saved-bookmarks.ts", import.meta.url),
+      "utf8"
+    )
+  );
+  const bookmarksUrl = `data:text/javascript;base64,${Buffer.from(bookmarksCode).toString("base64")}`;
   const reducerCode = compile(
     readFileSync(
       new URL("../../../../../store/Reducers.ts", import.meta.url),
       "utf8"
     )
-  ).replace('"./Actions"', JSON.stringify(actionsUrl));
+  )
+    .replace('"./Actions"', JSON.stringify(actionsUrl))
+    .replace('"~/utils/saved-bookmarks"', JSON.stringify(bookmarksUrl));
   const { default: reducer } = await import(
     `data:text/javascript;base64,${Buffer.from(reducerCode).toString("base64")}`
   );

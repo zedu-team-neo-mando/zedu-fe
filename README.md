@@ -50,4 +50,7 @@ pnpm dev
 
 ## Contributing
 
+See [Save for Later consistency](docs/saved-message-consistency.md) for concurrent
+message actions, error recovery and the focused regression workflow.
+
 Please see [CONTRIBUTING](./CONTRIBUTING.md)
