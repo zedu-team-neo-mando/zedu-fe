@@ -36,6 +36,7 @@ const solutionLinks: FooterLink[] = [
   { id: 1, label: "Schools", href: "/solutions/schools" },
   { id: 2, label: "Universities", href: "/solutions/universities" },
   { id: 3, label: "Study Groups", href: "/solutions/study-groups" },
+  { id: 4, label: "Tutors", href: "/solutions/tutors" },
 ];
 
 const supportLinks: FooterLink[] = [
@@ -68,6 +69,11 @@ const supportLinks: FooterLink[] = [
     id: 5,
     label: "Refer a program",
     href: "/refer",
+  },
+  {
+    id: 6,
+    label: "What's new",
+    href: "/changelog",
   },
 ];
 

@@ -9,7 +9,7 @@ import { Button } from "~/components/ui/button";
 import { DataContext } from "~/store/GlobalState";
 import UserAvatar from "~/components/layout/user-avatar";
 import { isUserDeactivated } from "~/utils/user-deactivation";
-import DmMenuDropdown from "./menu-dropdown";
+import MenuDropdown from "../channel-nav/menu-dropdown";
 import Tooltips from "../tooltip";
 import { cn } from "~/lib/utils";
 import Loading from "~/components/ui/loading";
@@ -25,6 +25,7 @@ const PeopleHeader = ({ user }: { user: any }) => {
 
   const params = useParams();
   const id = params.id as string;
+  const isPersonalDm = user?.user_id === state?.user?.user_id;
 
   const handleOpen = () => {
     setTimeout(() => {
@@ -112,6 +113,7 @@ const PeopleHeader = ({ user }: { user: any }) => {
           className="text-[#1D2939] text-base lg:text-lg font-bold"
         >
           {user?.username}
+          {isPersonalDm ? " (you)" : ""}
         </h2>
       </div>
 
@@ -144,7 +146,6 @@ const PeopleHeader = ({ user }: { user: any }) => {
             )}
           </button>
         )}
-        <DmMenuDropdown key={id} />
       </div>
 
       <StartBuzzConfirmModal

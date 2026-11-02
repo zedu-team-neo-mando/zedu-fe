@@ -10,7 +10,7 @@ import {
 } from "react";
 import { DataContext } from "~/store/GlobalState";
 import { ACTIONS } from "~/store/Actions";
-import { Loader2, PlusIcon, Search, Star, X } from "lucide-react";
+import { Loader2, PlusIcon, Search, X } from "lucide-react";
 import { Input } from "~/components/ui/input";
 import moment from "moment";
 import { useParams, useRouter } from "next/navigation";
@@ -22,6 +22,16 @@ import UserAvatar from "~/components/layout/user-avatar";
 import { isUserDeactivated } from "~/utils/user-deactivation";
 import { useOrganisationDms } from "~/hooks/useOrganisationDms";
 import { PostRequest } from "~/utils/new-request";
+
+const isPersonalDm = (dm: any, userId: string | undefined) => {
+  if (!userId) return false;
+  return (
+    dm.channel_type === "dm" &&
+    (String(dm.participant_id) === String(userId) ||
+      (dm.participants?.length === 1 &&
+        String(dm.participants[0]?.user_id) === String(userId)))
+  );
+};
 
 const dedupeDmList = (dms: any[] | undefined) => {
   const seen = new Set<string>();
@@ -37,22 +47,14 @@ const dedupeDmList = (dms: any[] | undefined) => {
   return list;
 };
 
-/** Returns the DM list with favourited entries first, stable order within each group. */
-const sortFavouritesFirst = (dms: any[]) => {
-  const favourites: any[] = [];
-  const rest: any[] = [];
-
-  for (const dm of dms) {
-    (dm?.is_favourite ? favourites : rest).push(dm);
-  }
-
-  return [...favourites, ...rest];
-};
-
-const filterDmList = (dms: any[] | undefined, rawQuery: string) => {
+const filterDmList = (
+  dms: any[] | undefined,
+  rawQuery: string,
+  userId: string | undefined
+) => {
   const list = dedupeDmList(dms);
   const query = rawQuery.trim().toLowerCase();
-  if (!query) return sortFavouritesFirst(list);
+  if (!query) return list;
 
   const words = query.split(/\s+/).filter(Boolean);
 
@@ -127,6 +129,10 @@ const filterDmList = (dms: any[] | undefined, rawQuery: string) => {
     })
     .filter((row): row is { dm: any; score: number } => row !== null)
     .sort((a, b) => {
+      const aPersonal = isPersonalDm(a.dm, userId);
+      const bPersonal = isPersonalDm(b.dm, userId);
+      if (aPersonal && !bPersonal) return -1;
+      if (!aPersonal && bPersonal) return 1;
       if (a.score !== b.score) return a.score - b.score;
       return String(a.dm.username || "").localeCompare(
         String(b.dm.username || "")
@@ -147,6 +153,7 @@ export default function DMNav({
   const params = useParams();
   const id = params.id as string;
   const { orgSlug } = state;
+  const userId = state?.user?.user_id;
   const sidebarScrollRef = useRef<HTMLDivElement | null>(null);
 
   const orgId =
@@ -219,8 +226,8 @@ export default function DMNav({
   };
 
   const searchData = useMemo(
-    () => filterDmList(state?.dms, searchInput),
-    [state?.dms, searchInput]
+    () => filterDmList(state?.dms, searchInput, state?.user?.user_id),
+    [state?.dms, searchInput, state?.user?.user_id]
   );
 
   return (
@@ -319,18 +326,10 @@ export default function DMNav({
                       </div>
                       <div className="flex-1">
                         <div className="relative flex justify-between items-start mb-1">
-                          <div className="flex items-center gap-1 min-w-0">
-                            <span className="text-[15px] font-semibold text-white break-words max-w-[200px] line-clamp-2">
-                              {dm.username}
-                            </span>
-                            {dm?.is_favourite && (
-                              <Star
-                                size={12}
-                                aria-label="Favourited"
-                                className="shrink-0 fill-[#F59E0B] text-[#F59E0B]"
-                              />
-                            )}
-                          </div>
+                          <span className="text-[15px] font-semibold text-white break-words max-w-[200px] line-clamp-2">
+                            {dm.username}
+                            {isPersonalDm(dm, userId) ? " (you)" : ""}
+                          </span>
 
                           <div className="">
                             {dm.thread_count > 0 && (
@@ -343,7 +342,9 @@ export default function DMNav({
                               </div>
                             )}
                             <span className="text-[12px] text-[#BABAFB]">
-                              {dm.last_read_at ? moment(dm.last_read_at).format("LT") : ""}
+                              {dm.last_read_at
+                                ? moment(dm.last_read_at).format("LT")
+                                : ""}
                             </span>
                           </div>
                         </div>

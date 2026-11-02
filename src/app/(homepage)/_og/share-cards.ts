@@ -195,17 +195,4 @@ export const shareCards = {
     ],
     alt: "Zedu for Study Groups: study together in one organized workspace",
   },
-  tutors: {
-    path: "/solutions/tutors",
-    eyebrow: "Zedu for Tutors",
-    headline: [{ accent: "Every student," }, " one organized workspace."],
-    subtitle:
-      "Dedicated channels, live sessions, shared materials and AI recaps for tutoring.",
-    highlights: [
-      { title: "Dedicated Space per Student" },
-      { title: "Live Sessions Without the Setup" },
-      { title: "AI Recaps You Keep" },
-    ],
-    alt: "Zedu for Tutors: organized tutoring in one workspace",
-  },
 } satisfies Record<string, ShareCardContent>;
