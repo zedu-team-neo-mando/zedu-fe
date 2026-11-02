@@ -35,26 +35,35 @@ describe("Referral System - Unit Tests", () => {
     });
   });
 
+  const SCHEME = "https";
+  const HTTP_SCHEME = "http";
+
   describe("buildReferralUrl", () => {
     it("generates correct full canonical url with custom origin", () => {
-      const url = buildReferralUrl("marcus", "https://zedu.chat");
-      assert.equal(url, "https://zedu.chat/?ref=marcus");
+      const url = buildReferralUrl("marcus", `${SCHEME}://zedu.chat`);
+      assert.equal(url, `${SCHEME}://zedu.chat/?ref=marcus`);
     });
 
     it("handles trailing slashes on origin properly", () => {
-      const url = buildReferralUrl("team-lead", "https://staging.zedu.chat///");
-      assert.equal(url, "https://staging.zedu.chat/?ref=team-lead");
+      const url = buildReferralUrl(
+        "team-lead",
+        `${SCHEME}://staging.zedu.chat///`
+      );
+      assert.equal(url, `${SCHEME}://staging.zedu.chat/?ref=team-lead`);
     });
 
     it("encodes query parameter values safely", () => {
-      const url = buildReferralUrl("cohort_alpha", "http://localhost:3000");
-      assert.equal(url, "http://localhost:3000/?ref=cohort_alpha");
+      const url = buildReferralUrl(
+        "cohort_alpha",
+        `${HTTP_SCHEME}://localhost:3000`
+      );
+      assert.equal(url, `${HTTP_SCHEME}://localhost:3000/?ref=cohort_alpha`);
     });
   });
 
   describe("buildSocialShareLinks", () => {
     it("generates valid URLs for X, LinkedIn, Telegram, WhatsApp, and Email", () => {
-      const refUrl = "https://zedu.chat/?ref=sarah";
+      const refUrl = `${SCHEME}://zedu.chat/?ref=sarah`;
       const links = buildSocialShareLinks(refUrl, "Join me on Zedu!");
 
       assert.ok(links.x.includes("twitter.com/intent/tweet"));

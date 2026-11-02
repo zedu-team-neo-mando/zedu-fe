@@ -53,7 +53,7 @@ export const ReferralLinkCard: React.FC<ReferralLinkCardProps> = ({
   const currentOrigin =
     typeof window !== "undefined"
       ? window.location.origin
-      : "https://zedu.chat";
+      : process.env.NEXT_PUBLIC_CLIENT_URL || "";
   const referralUrl = buildReferralUrl(referralCode, currentOrigin);
   const shareLinks = buildSocialShareLinks(referralUrl);
 

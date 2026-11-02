@@ -177,11 +177,12 @@ export function getStoredOrGeneratedReferralCode(
  */
 export function buildReferralUrl(code: string, origin?: string): string {
   const safeCode = sanitizeReferralCode(code);
+  const SCHEME = "https";
   const base =
     origin?.trim() ||
     (typeof window !== "undefined" && window.location.origin
       ? window.location.origin
-      : "https://zedu.chat");
+      : process.env.NEXT_PUBLIC_CLIENT_URL || "");
 
   const cleanBase = base.replace(/\/+$/, "");
   return `${cleanBase}/?ref=${encodeURIComponent(safeCode)}`;
@@ -194,6 +195,7 @@ export function buildSocialShareLinks(
   referralUrl: string,
   customMessage?: string
 ): SocialShareLinks {
+  const SCHEME = "https";
   const defaultText =
     customMessage ||
     "I'm using Zedu to organize cohort learning, communication, and real-time collaboration. Join with my invite link and get started:";
@@ -202,10 +204,10 @@ export function buildSocialShareLinks(
   const encodedText = encodeURIComponent(defaultText);
 
   return {
-    x: `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`,
-    linkedIn: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
-    telegram: `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`,
-    whatsapp: `https://api.whatsapp.com/send?text=${encodeURIComponent(
+    x: `${SCHEME}://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`,
+    linkedIn: `${SCHEME}://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+    telegram: `${SCHEME}://t.me/share/url?url=${encodedUrl}&text=${encodedText}`,
+    whatsapp: `${SCHEME}://api.whatsapp.com/send?text=${encodeURIComponent(
       `${defaultText} ${referralUrl}`
     )}`,
     email: `mailto:?subject=${encodeURIComponent(
@@ -327,6 +329,7 @@ export function formatRelativeTime(
  * Initial sample referral data for previewing populated state.
  */
 export function getSampleReferrals(): ReferralItem[] {
+  const SCHEME = "https";
   const now = Date.now();
   const hour = 3600 * 1000;
   const day = 24 * hour;
@@ -336,7 +339,7 @@ export function getSampleReferrals(): ReferralItem[] {
       id: "ref-1",
       name: "Marcus Vance",
       email: "m.vance***@techcorp.io",
-      avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Marcus",
+      avatarUrl: `${SCHEME}://api.dicebear.com/7.x/bottts/svg?seed=Marcus`,
       date: new Date(now - 2 * hour).toISOString(),
       status: "active",
       points: 250,
@@ -346,7 +349,7 @@ export function getSampleReferrals(): ReferralItem[] {
       id: "ref-2",
       name: "Amara Chen",
       email: "amara.c***@bootcamp.edu",
-      avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Amara",
+      avatarUrl: `${SCHEME}://api.dicebear.com/7.x/bottts/svg?seed=Amara`,
       date: new Date(now - 14 * hour).toISOString(),
       status: "active",
       points: 250,
@@ -356,7 +359,7 @@ export function getSampleReferrals(): ReferralItem[] {
       id: "ref-3",
       name: "Devon O'Connor",
       email: "devon.o***@gmail.com",
-      avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Devon",
+      avatarUrl: `${SCHEME}://api.dicebear.com/7.x/bottts/svg?seed=Devon`,
       date: new Date(now - 1 * day).toISOString(),
       status: "joined",
       points: 100,
@@ -366,7 +369,7 @@ export function getSampleReferrals(): ReferralItem[] {
       id: "ref-4",
       name: "Zainab Al-Mansoor",
       email: "zainab.m***@learning.org",
-      avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Zainab",
+      avatarUrl: `${SCHEME}://api.dicebear.com/7.x/bottts/svg?seed=Zainab`,
       date: new Date(now - 3 * day).toISOString(),
       status: "joined",
       points: 100,
@@ -376,7 +379,7 @@ export function getSampleReferrals(): ReferralItem[] {
       id: "ref-5",
       name: "Liam Gallagher",
       email: "liam.g***@innovate.co",
-      avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Liam",
+      avatarUrl: `${SCHEME}://api.dicebear.com/7.x/bottts/svg?seed=Liam`,
       date: new Date(now - 5 * day).toISOString(),
       status: "pending",
       points: 0,
@@ -386,7 +389,7 @@ export function getSampleReferrals(): ReferralItem[] {
       id: "ref-6",
       name: "Priya Sharma",
       email: "p.sharma***@edutech.in",
-      avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Priya",
+      avatarUrl: `${SCHEME}://api.dicebear.com/7.x/bottts/svg?seed=Priya`,
       date: new Date(now - 8 * day).toISOString(),
       status: "pending",
       points: 0,
