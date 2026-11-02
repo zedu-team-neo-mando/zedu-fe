@@ -46,7 +46,7 @@ const StorageOffloadModal: React.FC<StorageOffloadModalProps> = ({
                   Before you can cancel your subscription, your used storage
                   space should be{" "}
                   <span className="font-semibold">under 10GB</span> as you will
-                  be downgraded to the Zedu Free Plan. Please clear out
+                  be downgraded to the Zedu Starter Plan. Please clear out
                   unnecessary chats to offload your organisational space.
                 </p>
 
