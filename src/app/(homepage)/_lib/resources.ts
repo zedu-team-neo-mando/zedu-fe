@@ -84,6 +84,16 @@ export const resources: ResourceItem[] = [
     link: "/resources/cohort-communication-planner",
   },
   {
+    id: 11,
+    tab: "guides",
+    category: "Tools",
+    title: "Shipped on Zedu",
+    description:
+      "Fill in the fix you shipped and download a branded card, three captions, and the #ShippedOnZedu hashtag.",
+    image: "/images/homepage/resources/image-2.png",
+    link: "/shipped",
+  },
+  {
     id: 9,
     tab: "guides",
     category: "Tools",
