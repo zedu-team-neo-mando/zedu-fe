@@ -114,6 +114,11 @@ const StatusModal = () => {
     "dont-clear",
   ];
 
+  // "dont-clear" is the API value; show a human-readable label instead.
+  const removeOptionLabels: Record<string, string> = {
+    "dont-clear": "Don't clear",
+  };
+
   const handleEmojiSelect = (emoji: any) => {
     setEmoji(emoji.native);
     setShowEmojiPicker(false);
@@ -285,7 +290,7 @@ const StatusModal = () => {
               >
                 {removeOptions.map((option) => (
                   <option key={option} value={option}>
-                    {option}
+                    {removeOptionLabels[option] ?? option}
                   </option>
                 ))}
               </select>

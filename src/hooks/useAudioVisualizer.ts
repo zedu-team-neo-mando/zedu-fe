@@ -7,10 +7,7 @@ import type {
 
 interface UseAudioVisualizerProps {
   audioTrack:
-    | IMicrophoneAudioTrack
-    | IRemoteAudioTrack
-    | ILocalAudioTrack
-    | null;
+    IMicrophoneAudioTrack | IRemoteAudioTrack | ILocalAudioTrack | null;
   threshold?: number;
   maxConsecutiveErrors?: number;
 }

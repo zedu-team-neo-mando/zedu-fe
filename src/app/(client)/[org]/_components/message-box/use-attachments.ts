@@ -74,17 +74,15 @@ export const useAttachments = () => {
 
   const add = useCallback(
     (files: File[], voice?: Attachment["voice"]) => {
-      const added = files.map(
-        (file): Attachment => ({
-          id: uuidv7(),
-          file,
-          type: file.type.split("/")[0],
-          preview: URL.createObjectURL(file),
-          status: "uploading",
-          uploaded: [],
-          voice,
-        })
-      );
+      const added = files.map((file): Attachment => ({
+        id: uuidv7(),
+        file,
+        type: file.type.split("/")[0],
+        preview: URL.createObjectURL(file),
+        status: "uploading",
+        uploaded: [],
+        voice,
+      }));
       setAttachments((prev) => [...prev, ...added]);
       added.forEach((attachment) => void upload(attachment));
     },

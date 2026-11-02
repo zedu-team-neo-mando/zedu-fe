@@ -9,10 +9,7 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 
 export type FileView =
-  | "All files"
-  | "My files"
-  | "Shared with me"
-  | "Deleted files";
+  "All files" | "My files" | "Shared with me" | "Deleted files";
 
 const sidebarBtns: { icon: typeof Files; label: FileView; path: string }[] = [
   { icon: Files, label: "All files", path: "/files" },

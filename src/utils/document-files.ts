@@ -5,11 +5,7 @@ import {
 } from "~/lib/env-urls";
 
 export type DocumentCategory =
-  | "pdf"
-  | "document"
-  | "spreadsheet"
-  | "presentation"
-  | "file";
+  "pdf" | "document" | "spreadsheet" | "presentation" | "file";
 
 export const CHAT_FILE_ACCEPT =
   "image/*,video/*,audio/*,application/pdf,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation";

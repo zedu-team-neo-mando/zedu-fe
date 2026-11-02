@@ -7,11 +7,7 @@ import { cn } from "~/lib/utils";
 interface RaiseHandAnimationProps {
   trigger: boolean;
   position?:
-    | "top-right"
-    | "top-left"
-    | "bottom-right"
-    | "bottom-left"
-    | "center";
+    "top-right" | "top-left" | "bottom-right" | "bottom-left" | "center";
   useRelativePosition?: boolean; // When true, doesn't apply fixed positioning (for use in absolute containers)
 }
 
