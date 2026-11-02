@@ -39,6 +39,7 @@ interface ParsedTopics {
   provided: number;
   overflow: number;
   placed: number;
+  conflicts: number[];
 }
 
 /** Parses "Week N: topic" lines (or plain lines) into slots for each week. */
@@ -50,17 +51,25 @@ export const parseTopics = (raw: string, weeks: number): ParsedTopics => {
   const slots: (string | null)[] = Array<string | null>(weeks).fill(null);
   let overflow = 0;
   let cursor = 0;
+  const conflicts: number[] = [];
+  const unnumbered: string[] = [];
 
+  // Reserve explicit weeks first so a later Week N never erases a plain line.
   for (const line of lines) {
     const explicit = line.match(/^week\s*(\d+)\s*[:.\-–—]\s*(.+)$/i);
     if (explicit) {
       const n = Number(explicit[1]);
-      if (n >= 1 && n <= weeks) slots[n - 1] = explicit[2].trim();
-      else overflow += 1;
+      if (n < 1 || n > weeks) overflow += 1;
+      else if (slots[n - 1] !== null) {
+        if (!conflicts.includes(n)) conflicts.push(n);
+      } else slots[n - 1] = explicit[2].trim();
       continue;
     }
     const numbered = line.match(/^\d+\s*[).:\-–—]\s*(.+)$/);
-    const topic = numbered ? numbered[1].trim() : line;
+    unnumbered.push(numbered ? numbered[1].trim() : line);
+  }
+
+  for (const topic of unnumbered) {
     while (cursor < weeks && slots[cursor] !== null) cursor += 1;
     if (cursor < weeks) {
       slots[cursor] = topic;
@@ -75,6 +84,7 @@ export const parseTopics = (raw: string, weeks: number): ParsedTopics => {
     provided: lines.length,
     overflow,
     placed: slots.filter(Boolean).length,
+    conflicts,
   };
 };
 
@@ -646,6 +656,10 @@ export const generatePlan = (
   const fillSubject = goal || DEFAULT_SUBJECT;
   const topics = parseTopics(raw.topics, weeks);
 
+  for (const week of topics.conflicts)
+    notes.push(
+      `Week ${week} was listed more than once. The first topic was kept; later entries were not scheduled. Give each a different week number to include it.`
+    );
   if (topics.provided > 0 && topics.overflow > 0)
     notes.push(
       `${topics.overflow} topic ${topics.overflow === 1 ? "line falls" : "lines fall"} beyond the modelled ${weeks}-week duration and ${topics.overflow === 1 ? "was" : "were"} not scheduled.`
