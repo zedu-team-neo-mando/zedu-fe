@@ -43,29 +43,11 @@ const CreateOrganization: React.FC = () => {
   }, []);
 
   const validateForm = () => {
-    const trimmedName = values.organisationName.trim();
-    const trimmedType = values.organisationType.trim();
-
-    if (!trimmedName) {
-      showError("Please enter an organisation name.");
+    const { organisationName, organisationType } = values;
+    if (!organisationName || !organisationType) {
+      showError("Please fill in all required fields.");
       return false;
     }
-
-    if (trimmedName.length < 2 || trimmedName.length > 255) {
-      showError("Organisation name must be between 2 and 255 characters.");
-      return false;
-    }
-
-    if (!trimmedType) {
-      showError("Please enter an organisation type.");
-      return false;
-    }
-
-    if (!country?.value) {
-      showError("Please select a country.");
-      return false;
-    }
-
     return true;
   };
 
@@ -83,8 +65,8 @@ const CreateOrganization: React.FC = () => {
     setButtonloding(true);
 
     const payload = {
-      name: values.organisationName.trim(),
-      type: values.organisationType.trim(),
+      name: values.organisationName,
+      type: values.organisationType,
       email: "email@email.com",
       country: country?.value,
     };
@@ -145,8 +127,6 @@ const CreateOrganization: React.FC = () => {
                   value={values.organisationName}
                   onChange={handleChange}
                   name="organisationName"
-                  minLength={2}
-                  maxLength={255}
                   required
                 />
               </div>

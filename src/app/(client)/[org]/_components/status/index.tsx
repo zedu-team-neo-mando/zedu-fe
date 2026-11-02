@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogClose,
@@ -19,7 +19,6 @@ import { PostRequest } from "~/utils/new-request";
 import Loading from "~/components/ui/loading";
 import { ACTIONS } from "~/store/Actions";
 import { DataContext } from "~/store/GlobalState";
-import { clampStatusText, STATUS_MAX_LENGTH } from "./status-text";
 
 type StatusPreset = {
   emoji: string;
@@ -76,7 +75,6 @@ const StatusModal = () => {
     );
   }, [workspaceSection]);
   const [statusText, setStatusText] = useState("");
-  const isComposingRef = useRef(false);
   const [emoji, setEmoji] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [removeAfter, setRemoveAfter] = useState("Today");
@@ -119,39 +117,12 @@ const StatusModal = () => {
     setShowEmojiPicker(false);
   };
 
-  const handleStatusTextChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const { value } = event.target;
-
-    // Rewriting an active composition buffer can split a surrogate pair or
-    // cancel the IME. Keep the buffer untouched and clamp on composition end.
-    if (isComposingRef.current) {
-      setStatusText(value);
-      return;
-    }
-
-    setStatusText(clampStatusText(value));
-  };
-
-  const handleCompositionEnd = (
-    event: React.CompositionEvent<HTMLInputElement>
-  ) => {
-    isComposingRef.current = false;
-    setStatusText(clampStatusText(event.currentTarget.value));
-  };
-
   const handleSubmit = async () => {
-    // The input can briefly hold a longer value while an IME composition is
-    // active, and a programmatic value change can skip the change handler.
-    const safeStatusText = clampStatusText(statusText);
-    if (safeStatusText !== statusText) setStatusText(safeStatusText);
-
     setLoading(true);
 
     const payload = {
       icon: emoji,
-      text: safeStatusText,
+      text: statusText,
       status_timeout: removeAfter,
       pause_notification: pauseNotifications,
       clear_status: false,
@@ -205,15 +176,9 @@ const StatusModal = () => {
           <input
             type="text"
             value={statusText}
-            onChange={handleStatusTextChange}
-            onCompositionStart={() => {
-              isComposingRef.current = true;
-            }}
-            onCompositionEnd={handleCompositionEnd}
+            onChange={(e) => setStatusText(e.target.value)}
             placeholder="What's your status?"
-            aria-label="Status text"
-            aria-describedby="status-character-count"
-            className="min-w-0 flex-1 border-0 focus:outline-none"
+            className="flex-1 border-0 focus:outline-none"
           />
 
           {(statusText || emoji) && (
@@ -228,15 +193,6 @@ const StatusModal = () => {
               <X className="w-4 h-4 text-gray-400" />
             </button>
           )}
-
-          <span
-            id="status-character-count"
-            aria-live="polite"
-            aria-atomic="true"
-            className="shrink-0 text-xs tabular-nums text-gray-500"
-          >
-            {statusText.length}/{STATUS_MAX_LENGTH}
-          </span>
         </div>
 
         {/* Show Suggestions when no status */}

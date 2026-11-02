@@ -36,8 +36,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/images/homepage/download/download-hero.png",
-        width: 950,
-        height: 713,
+        width: 1200,
+        height: 630,
         alt: "Zedu app preview on mobile devices",
       },
     ],

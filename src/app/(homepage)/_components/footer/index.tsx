@@ -63,11 +63,6 @@ const resourcesLinks: FooterLink[] = [
   { id: 1, label: "Templates", href: "/templates" },
   { id: 2, label: "Privacy Policy", href: "/policy" },
   { id: 3, label: "Terms of Service", href: "/terms-of-service" },
-  {
-    id: 4,
-    label: "Zedu vs Google Classroom",
-    href: "/alternatives/google-classroom",
-  },
 ];
 
 const footerSections = [
@@ -358,7 +353,7 @@ const Footer = () => {
             </div>
             <div className="flex flex-col gap-1 text-white/95">
               <span className="font-semibold leading-none tracking-[-0.02em]">
-                © {new Date().getFullYear()} Zedu. All Rights Reserved
+                © 2026 Zedu. All Rights Reserved
               </span>
               <Link
                 href="mailto:contact@zedu.chat"
