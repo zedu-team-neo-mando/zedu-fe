@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ChooseSetupGuide } from "./_components/home/ChooseSetupGuide";
 import { FeatureSection } from "./_components/home/FeatureSection";
 import HeroSection from "./_components/home/Herosection";
 import { CreatorSection } from "./_components/home/CreatorSection";
@@ -58,6 +59,7 @@ const HomePage = () => {
       />
       <HeroSection />
       <CreatorSection />
+      <ChooseSetupGuide />
       <FeatureSection />
       <ArticlesSection />
       <PricingSection />
