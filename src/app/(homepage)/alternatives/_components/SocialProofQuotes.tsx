@@ -12,14 +12,13 @@ export const SocialProofQuotes: React.FC<QuotesProps> = ({ config }) => {
       <div className="text-center max-w-3xl mx-auto mb-10">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs sm:text-sm font-semibold mb-3">
           <Award className="w-4 h-4 text-emerald-600" />
-          Real Educator Testimonials
+          Illustrative Educator Scenarios
         </div>
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-neutral-900 tracking-tight">
           Why Instructors &amp; Academies Switched from {config.name}
         </h2>
         <p className="mt-2 text-neutral-600 text-sm sm:text-base">
-          Read direct feedback from directors, professors, and mentors who
-          migrated their cohorts to Zedu.
+          Example scenarios showing why cohorts migrate. These are illustrative, not quotes from named individuals.
         </p>
       </div>
 

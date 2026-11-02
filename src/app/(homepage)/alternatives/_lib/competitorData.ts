@@ -392,27 +392,27 @@ export const slackConfig: CompetitorPageConfig = {
   testimonials: [
     {
       quote:
-        "Slack's 90-day message limit was breaking our bootcamp. Students in Week 10 couldn't access their own code discussions from Week 2! Switching to Zedu saved us $14,000 this year and our students love the built-in whiteboard.",
-      author: "David Chen",
-      role: "Director of Curriculum",
-      institution: "DevPath Fullstack Academy",
-      highlight: "Saved $14,000/year",
+        "Slack's 90-day message limit was breaking our bootcamp. Students in Week 10 couldn't access their own code discussions from Week 2! Switching to Zedu reduced our tooling costs and our students use the built-in whiteboard.",
+      author: "Example educator",
+      role: "Educator",
+      institution: "Example institution",
+      highlight: "Lower total cost",
     },
     {
       quote:
         "We used to pay for Slack, Miro, and Zoom for every single cohort. Zedu replaced all three into one organized workspace with flat cohort pricing. It is a no-brainer for any educator.",
-      author: "Dr. Sarah Mitchell",
-      role: "Computer Science Professor",
-      institution: "Metropolitan Technical Institute",
-      highlight: "Replaced 3 apps in 1",
+      author: "Example educator",
+      role: "Educator",
+      institution: "Example institution",
+      highlight: "Consolidated tools",
     },
     {
       quote:
-        "The migration took literally 4 minutes. We imported our channel topics, sent out the join link, and our 120 students were chatting and collaborating on the whiteboard the same afternoon.",
-      author: "Amina Yusuf",
-      role: "Lead Bootcamp Mentor",
-      institution: "CodeCraft Africa",
-      highlight: "4-minute seamless switch",
+        "Migration was quick: we set up channels, shared a join link, and learners were collaborating the same day.",
+      author: "Example educator",
+      role: "Educator",
+      institution: "Example institution",
+      highlight: "Quick migration",
     },
   ],
   faqs: [
@@ -775,26 +775,26 @@ export const discordConfig: CompetitorPageConfig = {
     {
       quote:
         "Our coding bootcamp was running on Discord, and it was a nightmare. Students were constantly distracted by gaming statuses, Twitch streams, and meme bots. Moving to Zedu transformed student focus and project completion rates within two weeks.",
-      author: "Marcus Vance",
-      role: "Head of Education",
-      institution: "NextGen Software Academy",
-      highlight: "Transformed student focus",
+      author: "Example educator",
+      role: "Educator",
+      institution: "Example institution",
+      highlight: "Improved focus",
     },
     {
       quote:
-        "As a university lecturer, Discord was a FERPA compliance liability. Zedu gave us the real-time chat and voice features our students love, but with verified institutional identity and zero gaming distractions.",
-      author: "Elena Rostova",
-      role: "Associate Dean of Computing",
-      institution: "State Polytechnic University",
-      highlight: "Institutional compliance solved",
+        "Discord raised compliance concerns for our institution. Zedu provides real-time chat and voice with institutional identity and fewer distractions.",
+      author: "Example educator",
+      role: "Educator",
+      institution: "Example institution",
+      highlight: "Compliance addressed",
     },
     {
       quote:
-        "The built-in whiteboard alone makes Zedu 10x better than Discord for bootcamps. Our TAs solve algorithms with students visually without juggling five different browser tabs.",
-      author: "Tunde Bakare",
-      role: "Senior Engineering Instructor",
-      institution: "Apex Bootcamp",
-      highlight: "10x better for code reviews",
+        "The built-in whiteboard helps our instructors solve problems with learners visually in one place.",
+      author: "Example educator",
+      role: "Educator",
+      institution: "Example institution",
+      highlight: "Better collaboration",
     },
   ],
   faqs: [
