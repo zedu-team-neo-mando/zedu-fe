@@ -72,6 +72,11 @@ const supportLinks: FooterLink[] = [
     href: "/refer",
   },
   {
+    id: 7,
+    label: "Referral Program",
+    href: "/referrals",
+  },
+  {
     id: 6,
     label: "What's new",
     href: "/changelog",

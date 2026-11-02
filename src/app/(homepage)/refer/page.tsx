@@ -75,6 +75,17 @@ export default function ReferProgramPage() {
               Referral reward details are being finalized. We’ll share the
               approved terms with you before any referral reward is offered.
             </p>
+            <p className="mt-3 text-sm leading-6 text-neutral-600">
+              Looking for your personal invite link and milestone tier rewards?
+              Visit the{" "}
+              <Link
+                href="/referrals"
+                className="font-medium text-[#6042EC] hover:underline"
+              >
+                Referral Program Dashboard
+              </Link>
+              .
+            </p>
           </div>
         </section>
 
