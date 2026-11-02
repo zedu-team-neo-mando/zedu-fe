@@ -45,7 +45,7 @@ const DeleteAccount = () => {
       let orgId = res?.data?.data?.user?.current_org;
 
       if (!orgId) {
-        window.location.href = "/";
+        setTimeout(() => { window.location.href = "/"; }, 2500);
         return;
       }
 
