@@ -15,8 +15,7 @@ import {
 export default function ChannelConnection() {
   const params = useParams();
   const id = params.id as string;
-  const { dispatch, state } = useContext(DataContext);
-  const { channelCallback } = state;
+  const { dispatch } = useContext(DataContext);
 
   // centrifugo connection for notification
   useEffect(() => {

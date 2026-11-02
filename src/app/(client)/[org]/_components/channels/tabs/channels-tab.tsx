@@ -10,6 +10,7 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
+  Lightbulb,
 } from "lucide-react";
 import CreateChannelDialog from "../../chat-nav/create-channel-dialog";
 import { DataContext } from "~/store/GlobalState";
@@ -19,6 +20,9 @@ import { search } from "~/utils/filter";
 import { Channel } from "~/types/channel";
 import { PostRequest } from "~/utils/new-request";
 import Loading from "~/components/ui/loading";
+
+const CHANNELS_TIP_DISMISSED_KEY = "channelsTipDismissed";
+let channelsTipDismissedInMemory = false;
 
 /**
  * Directories → Channels tab: lists the organisation's channels with search,
@@ -45,6 +49,9 @@ export default function ChannelsTab() {
   const [sortOrder, setSortOrder] = useState("A to Z");
   const [searchInput, setSearchInput] = useState("");
   const [buttonLoading, setButtonloading] = useState(false);
+  // The tip stays hidden until we've checked whether it was dismissed, so it
+  // doesn't flash for returning users.
+  const [tipChecked, setTipChecked] = useState(false);
 
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showTypeMenu, setShowTypeMenu] = useState(false);
@@ -76,6 +83,29 @@ export default function ChannelsTab() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchInput, filter, channelType]);
+
+  useEffect(() => {
+    // localStorage can throw (e.g. blocked storage); fall back to showing the tip.
+    try {
+      const isDismissed =
+        localStorage.getItem(CHANNELS_TIP_DISMISSED_KEY) === "true" ||
+        channelsTipDismissedInMemory;
+      setShowBanner(!isDismissed);
+    } catch {
+      setShowBanner(!channelsTipDismissedInMemory);
+    }
+    setTipChecked(true);
+  }, []);
+
+  const dismissBanner = () => {
+    channelsTipDismissedInMemory = true;
+    setShowBanner(false);
+    try {
+      localStorage.setItem(CHANNELS_TIP_DISMISSED_KEY, "true");
+    } catch {
+      // Storage unavailable: the tip is still hidden for this visit.
+    }
+  };
 
   if (channelloading) {
     return (
@@ -191,25 +221,26 @@ export default function ChannelsTab() {
         <CreateChannelDialog />
       </div>
 
-      {showBanner && (
-        <div className="relative bg-[#e8f5fa] dark:bg-[#1A3F66]/40 rounded-lg p-4 md:p-8 mb-6 border border-[#c5e5f3] dark:border-[#1A3F66]">
+      {tipChecked && showBanner && (
+        <div className="flex items-center gap-3 rounded-lg border border-[#c5e5f3] dark:border-[#1A3F66] bg-[#e8f5fa] dark:bg-[#1A3F66]/40 px-3 py-2 mb-4 text-[13px] text-[#454245] dark:text-zinc-300">
+          <Lightbulb
+            size={16}
+            aria-hidden="true"
+            className="shrink-0 text-[#1264a3] dark:text-sky-300"
+          />
+          <p className="flex-1">
+            <span className="font-bold text-[#1d1c1d] dark:text-zinc-100">
+              Channels
+            </span>{" "}
+            group people, messages and files by project or topic.
+          </p>
           <button
-            onClick={() => setShowBanner(false)}
-            className="absolute top-4 right-4 text-gray-500 dark:text-zinc-400 hover:text-black dark:hover:text-zinc-100 transition-colors"
+            onClick={dismissBanner}
+            aria-label="Dismiss tip"
+            className="shrink-0 text-gray-500 dark:text-zinc-400 hover:text-black dark:hover:text-zinc-100 transition-colors"
           >
-            <X size={20} />
+            <X size={16} />
           </button>
-          <div className="max-w-2xl">
-            <h2 className="text-lg md:text-[28px] font-black leading-tight mb-3 text-[#1d1c1d] dark:text-zinc-100">
-              Organize your team’s conversations
-            </h2>
-            <p className="text-[15px] text-[#454245] dark:text-zinc-300 leading-relaxed mb-6">
-              Channels are spaces for gathering all the right people, messages,
-              files and tools. Organize them by any project, group, initiative
-              or topic of your choosing.
-            </p>
-            <CreateChannelDialog />
-          </div>
         </div>
       )}
 

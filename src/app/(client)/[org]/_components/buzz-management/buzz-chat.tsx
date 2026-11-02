@@ -24,6 +24,7 @@ import { Badge } from "~/components/ui/badge";
 import { ArrowDownIcon, Pin } from "lucide-react";
 import { BookmarkFilledIcon } from "@radix-ui/react-icons";
 import MessageBox from "../message-box";
+import { ScrollToLatestButton } from "~/components/ui/scroll-to-latest-button";
 
 import ChannelConnection from "~/components/layout/centrifugo/channel-connection";
 
@@ -50,7 +51,7 @@ const BuzzChat = () => {
     if (!container) return;
 
     const handleScroll = () => {
-      const isAtBottom = container.scrollTop >= 0;
+      const isAtBottom = container.scrollTop >= -1;
 
       if (isAtBottom) {
         getData();
@@ -69,7 +70,7 @@ const BuzzChat = () => {
     return () => {
       container.removeEventListener("scroll", handleScroll);
     };
-  }, [getData]);
+  }, [getData, loading]);
 
   // Runs when new messages arrive; reads the latest badge and user without re-running on them.
   const markReadOnNewMessage = useEffectEvent(() => {
@@ -133,36 +134,42 @@ const BuzzChat = () => {
   return (
     <div className="flex flex-col h-full">
       <ChannelConnection />
-      <div className="flex-grow overflow-y-auto">
+      <div className="flex-grow relative min-h-0 overflow-hidden flex flex-col">
+        {showBadge && state?.threadCount > 0 && (
+          <Badge
+            onClick={() => {
+              if (scrollableContainerRef.current) {
+                scrollableContainerRef.current.scrollTop = 0;
+              }
+              dispatch({
+                type: ACTIONS.COUNT_CALLBACK,
+                payload: !state?.countCallback,
+              });
+            }}
+            className="absolute bottom-16 z-20 mx-auto cursor-pointer -translate-x-[50%] left-1/2 px-3 py-1.5 flex gap-1 bg-primary-500 font-normal text-white text-[0.8125rem] border border-[E6EAEF]"
+          >
+            <ArrowDownIcon />
+            Latest messages
+          </Badge>
+        )}
+
+        <ScrollToLatestButton
+          scrollContainerRef={scrollableContainerRef}
+          isAtBottom={!showBadge}
+          onScrollToBottom={getData}
+          className="bottom-4 right-4"
+        />
+
         <div
           id="scrollableDivs"
           ref={scrollableContainerRef}
           style={{
-            height: "100%",
             overflowY: "scroll",
             display: "flex",
             flexDirection: "column-reverse",
           }}
-          className="w-full"
+          className="min-h-0 w-full flex-1"
         >
-          {showBadge && state?.threadCount > 0 && (
-            <Badge
-              onClick={() => {
-                if (scrollableContainerRef.current) {
-                  scrollableContainerRef.current.scrollTop = 0;
-                }
-                dispatch({
-                  type: ACTIONS.COUNT_CALLBACK,
-                  payload: !state?.countCallback,
-                });
-              }}
-              className="absolute bottom-40 z-20 mx-auto cursor-pointer -translate-x-[50%] left-1/2 px-3 py-1.5 flex gap-1 bg-primary-500 font-normal text-white text-[0.8125rem] border border-[E6EAEF]"
-            >
-              <ArrowDownIcon />
-              Latest messages
-            </Badge>
-          )}
-
           <InfiniteScroll
             dataLength={messages?.length || 0}
             next={fetchMoreData}

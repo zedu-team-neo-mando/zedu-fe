@@ -518,7 +518,7 @@ const reducers = (state: any, action: any) => {
     case ACTIONS.CHANNEL_CALLBACK:
       return {
         ...state,
-        channelCallback: !state.channelCallback,
+        channelCallback: (state.channelCallback || 0) + 1,
       };
     case ACTIONS.CHANNEL_SUBSCRIPTION:
       return {

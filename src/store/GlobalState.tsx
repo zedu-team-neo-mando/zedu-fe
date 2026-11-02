@@ -58,7 +58,10 @@ export const DataProvider = ({ children }: DataProviderProps) => {
 
     // ----------------------
     orgData: null,
-    channelCallback: false,
+    // Monotonic counter, not a boolean: two CHANNEL_CALLBACK dispatches in one
+    // batch must both count, or the second toggle cancels the first and the
+    // channel-list refetch is skipped.
+    channelCallback: 0,
     channelSubscription: null,
     chatSubscription: null,
     replySubscription: null,

@@ -26,6 +26,7 @@ import { ArrowDownIcon, Pin } from "lucide-react";
 import { BookmarkFilledIcon } from "@radix-ui/react-icons";
 import { useMessageHighlight } from "~/hooks/use-message-highlight";
 import { useMessageDeepLink } from "~/hooks/use-message-deep-link";
+import { ScrollToLatestButton } from "~/components/ui/scroll-to-latest-button";
 
 const ChannelsMessage = () => {
   const { fetchMoreData, hasMore, loading } = UseChannel();
@@ -91,7 +92,7 @@ const ChannelsMessage = () => {
     if (!container) return;
 
     const handleScroll = () => {
-      const isAtBottom = container.scrollTop >= 0;
+      const isAtBottom = container.scrollTop >= -1;
 
       if (isAtBottom) {
         getData();
@@ -191,170 +192,183 @@ const ChannelsMessage = () => {
   });
 
   return (
-    <div
-      id="scrollableDivs"
-      ref={scrollableContainerRef}
-      style={{
-        overflowY: "scroll",
-        display: "flex",
-        flexDirection: "column-reverse",
-        paddingBottom: "var(--chat-composer-height, 140px)",
-      }}
-      className="min-h-0 w-full flex-1"
-    >
+    <div className="relative w-full flex-1 min-h-0 flex flex-col">
       {showBadge && state?.threadCount > 0 && (
         <Badge
           onClick={() => {
             if (scrollableContainerRef.current) {
               scrollableContainerRef.current.scrollTop = 0;
             }
+            getData();
             dispatch({
               type: ACTIONS.COUNT_CALLBACK,
               payload: !state?.countCallback,
             });
           }}
-          className="absolute bottom-40 z-20 mx-auto cursor-pointer -translate-x-[50%] left-1/2 px-3 py-1.5 flex gap-1 bg-primary-500 font-normal text-white text-[0.8125rem] border border-[E6EAEF]"
+          className="absolute bottom-[calc(var(--chat-composer-height,140px)+16px)] z-20 mx-auto cursor-pointer -translate-x-[50%] left-1/2 px-3 py-1.5 flex gap-1 bg-primary-500 font-normal text-white text-[0.8125rem] border border-[E6EAEF]"
         >
           <ArrowDownIcon />
           Latest messages
         </Badge>
       )}
 
+      <ScrollToLatestButton
+        scrollContainerRef={scrollableContainerRef}
+        isAtBottom={!showBadge}
+        onScrollToBottom={getData}
+        className="bottom-[calc(var(--chat-composer-height,140px)+16px)] right-6"
+      />
+
       {loading && !messages?.length && <MessageListSkeleton />}
 
-      <InfiniteScroll
-        dataLength={messages?.length || 0}
-        next={fetchMoreData}
-        hasMore={hasMore}
-        loader={
-          messages?.length !== 0 && (
-            <h4 className="my-5 text-xs text-center">
-              Loading older threads...
-            </h4>
-          )
-        }
+      <div
+        id="scrollableDivs"
+        ref={scrollableContainerRef}
         style={{
+          overflowY: "scroll",
           display: "flex",
           flexDirection: "column-reverse",
-          overflow: "visible",
+          paddingBottom: "var(--chat-composer-height, 140px)",
         }}
-        scrollableTarget="scrollableDivs"
-        inverse={true}
+        className="min-h-0 w-full flex-1"
       >
-        {Object.entries(groupedMessages)?.map(([dateLabel, threads]: any) => (
-          <div key={dateLabel} className="flex flex-col-reverse">
-            {threads?.map((item: any, index: number) => {
-              const nextMessage = threads[index + 1];
-              const shouldShowAvatar =
-                !nextMessage ||
-                nextMessage.user_id !== item.user_id ||
-                nextMessage.type === "system";
+        <InfiniteScroll
+          dataLength={messages?.length || 0}
+          next={fetchMoreData}
+          hasMore={hasMore}
+          loader={
+            messages?.length !== 0 && (
+              <h4 className="my-5 text-xs text-center">
+                Loading older threads...
+              </h4>
+            )
+          }
+          style={{
+            display: "flex",
+            flexDirection: "column-reverse",
+            overflow: "visible",
+          }}
+          scrollableTarget="scrollableDivs"
+          inverse={true}
+        >
+          {Object.entries(groupedMessages)?.map(([dateLabel, threads]: any) => (
+            <div key={dateLabel} className="flex flex-col-reverse">
+              {threads?.map((item: any, index: number) => {
+                const nextMessage = threads[index + 1];
+                const shouldShowAvatar =
+                  !nextMessage ||
+                  nextMessage.user_id !== item.user_id ||
+                  nextMessage.type === "system";
 
-              const isSaved = bookmarks?.some(
-                (b: any) => b.thread_id === item.thread_id
-              );
+                const isSaved = bookmarks?.some(
+                  (b: any) => b.thread_id === item.thread_id
+                );
 
-              // Check if this is the first unread message
-              const isFirstUnread =
-                unreadDividerId === `unread-divider-${item.thread_id}`;
+                // Check if this is the first unread message
+                const isFirstUnread =
+                  unreadDividerId === `unread-divider-${item.thread_id}`;
 
-              const unreadDividerEl = isFirstUnread ? (
-                <div
-                  id={unreadDividerId}
-                  className="flex items-center gap-3 my-3 px-5"
-                >
+                const unreadDividerEl = isFirstUnread ? (
                   <div
-                    className="flex-1 h-px"
-                    style={{ backgroundColor: "#e5e7eb" }}
-                  ></div>
-                  <span
-                    className="text-[11px] font-semibold uppercase tracking-wide"
-                    style={{ color: "#9CA3AF" }}
+                    id={unreadDividerId}
+                    className="flex items-center gap-3 my-3 px-5"
                   >
-                    Unread messages
-                  </span>
-                  <div
-                    className="flex-1 h-px"
-                    style={{ backgroundColor: "#e5e7eb" }}
-                  ></div>
-                </div>
-              ) : null;
-
-              return (
-                <React.Fragment key={index}>
-                  {isFirstUnread && !dividerOnTop && unreadDividerEl}
-                  {isEdit && thread?.thread_id === item?.thread_id ? (
                     <div
-                      className={`flex mb-5 mt-2 z-10 px-5 py-3 bg-blue-50 w-full`}
+                      className="flex-1 h-px"
+                      style={{ backgroundColor: "#e5e7eb" }}
+                    ></div>
+                    <span
+                      className="text-[11px] font-semibold uppercase tracking-wide"
+                      style={{ color: "#9CA3AF" }}
                     >
-                      <div className="mb-2 mr-3">
-                        <UserAvatar item={item} size="md" />
-                      </div>
-
-                      <EditMessageBox
-                        subscription={state?.channelSubscription}
-                        sendMessage={handleEditMessage}
-                      />
-                    </div>
-                  ) : (
+                      Unread messages
+                    </span>
                     <div
-                      id={`thread-${item.thread_id}`}
-                      className={`${item.is_pinned ? "bg-yellow-50" : isSaved ? "bg-primary-50" : item?.type === "thread" ? "" : "hover:bg-gray-50"} duration-500 ease-in-out`}
-                    >
-                      {item?.is_pinned ? (
-                        <div className="flex items-center gap-2 bg-yellow-50 pl-10 text-[13px] font-semibold text-blue-100 pt-2">
-                          <Pin size={13} className="text-[#667085] mt-[3px]" />
-                          Pinned by{" "}
-                          {user?.email === item?.pinned_details?.email
-                            ? "you"
-                            : item?.pinned_details?.username}
-                        </div>
-                      ) : isSaved ? (
-                        <div
-                          id={`thread-${item.thread_id}`}
-                          className={`flex items-center gap-2 pl-10 text-[13px] font-bold text-blue-100 pt-2`}
-                        >
-                          <BookmarkFilledIcon
-                            fontSize={13}
-                            className="text-[#667085]"
-                          />
-                          Saved for Later
-                        </div>
-                      ) : null}
+                      className="flex-1 h-px"
+                      style={{ backgroundColor: "#e5e7eb" }}
+                    ></div>
+                  </div>
+                ) : null;
 
-                      {item?.type === "thread" ? (
-                        <Thread item={item} />
-                      ) : (
-                        <Message
-                          item={item}
-                          shouldShowAvatar={shouldShowAvatar}
-                          setPopupId={setPopupId}
-                          popupId={popupId}
+                return (
+                  <React.Fragment key={index}>
+                    {isFirstUnread && !dividerOnTop && unreadDividerEl}
+                    {isEdit && thread?.thread_id === item?.thread_id ? (
+                      <div
+                        className={`flex mb-5 mt-2 z-10 px-5 py-3 bg-blue-50 w-full`}
+                      >
+                        <div className="mb-2 mr-3">
+                          <UserAvatar item={item} size="md" />
+                        </div>
+
+                        <EditMessageBox
+                          subscription={state?.channelSubscription}
+                          sendMessage={handleEditMessage}
                         />
-                      )}
-                    </div>
-                  )}
-                  {isFirstUnread && dividerOnTop && unreadDividerEl}
-                </React.Fragment>
-              );
-            })}
+                      </div>
+                    ) : (
+                      <div
+                        id={`thread-${item.thread_id}`}
+                        className={`${item.is_pinned ? "bg-yellow-50" : isSaved ? "bg-primary-50" : item?.type === "thread" ? "" : "hover:bg-gray-50"} duration-500 ease-in-out`}
+                      >
+                        {item?.is_pinned ? (
+                          <div className="flex items-center gap-2 bg-yellow-50 pl-10 text-[13px] font-semibold text-blue-100 pt-2">
+                            <Pin
+                              size={13}
+                              className="text-[#667085] mt-[3px]"
+                            />
+                            Pinned by{" "}
+                            {user?.email === item?.pinned_details?.email
+                              ? "you"
+                              : item?.pinned_details?.username}
+                          </div>
+                        ) : isSaved ? (
+                          <div
+                            id={`thread-${item.thread_id}`}
+                            className={`flex items-center gap-2 pl-10 text-[13px] font-bold text-blue-100 pt-2`}
+                          >
+                            <BookmarkFilledIcon
+                              fontSize={13}
+                              className="text-[#667085]"
+                            />
+                            Saved for Later
+                          </div>
+                        ) : null}
 
-            <div className="sticky top-0 z-10 my-2">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-dotted border-[#E6EAEF]"></div>
-              </div>
-              <div className="relative flex justify-center">
-                <span className="bg-white px-4 py-1 text-[13px] text-[#101828] border border-[#E6EAEF] rounded-[30px]">
-                  {dateLabel}
-                </span>
+                        {item?.type === "thread" ? (
+                          <Thread item={item} />
+                        ) : (
+                          <Message
+                            item={item}
+                            shouldShowAvatar={shouldShowAvatar}
+                            setPopupId={setPopupId}
+                            popupId={popupId}
+                          />
+                        )}
+                      </div>
+                    )}
+                    {isFirstUnread && dividerOnTop && unreadDividerEl}
+                  </React.Fragment>
+                );
+              })}
+
+              <div className="sticky top-0 z-10 my-2">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-dotted border-[#E6EAEF]"></div>
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="bg-white px-4 py-1 text-[13px] text-[#101828] border border-[#E6EAEF] rounded-[30px]">
+                    {dateLabel}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </InfiniteScroll>
+          ))}
+        </InfiniteScroll>
 
-      {/* ChannelIntro typically appears when all older messages are loaded */}
-      {!hasMore && <ChannelIntro />}
+        {/* ChannelIntro typically appears when all older messages are loaded */}
+        {!hasMore && <ChannelIntro />}
+      </div>
     </div>
   );
 };

@@ -36,7 +36,8 @@ export default function TemplatesPage() {
             Launch Your Cohort Workspace in Seconds
           </h1>
           <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto">
-            Pre-built channel architectures and AI setups for modern learning.
+            Pre-built channel architectures and AI setup suggestions for modern
+            learning.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 max-w-4xl mx-auto w-full">
@@ -100,7 +101,7 @@ export default function TemplatesPage() {
                 </div>
                 <div className="pt-2 border-t border-slate-800/80 text-xs text-slate-300 flex items-center gap-1.5">
                   <span className="text-slate-500 text-[11px] font-semibold uppercase">
-                    AI:
+                    Suggested AI:
                   </span>
                   <span>🤖 {t.aiPreset}</span>
                 </div>

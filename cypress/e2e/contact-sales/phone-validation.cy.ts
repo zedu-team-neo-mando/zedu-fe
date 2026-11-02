@@ -33,8 +33,10 @@ describe("Contact Sales phone validation", () => {
     cy.contains("[role=option]", "Bootcamp").click();
     cy.contains("button", "Send").click();
 
-    cy.wait("@contactSales")
-      .its("request.body.phone_number")
-      .should("equal", "2348012345678");
+    cy.wait("@contactSales").then(({ request }) => {
+      expect(request.body.phone_number).to.equal("2348012345678");
+      expect(request.body.organization_type).to.equal("Bootcamp");
+      expect(request.body.message).to.match(/^Organization type: Bootcamp/);
+    });
   });
 });

@@ -25,7 +25,7 @@ const CLIENT_URL = process.env.NEXT_PUBLIC_CLIENT_URL;
 
 export default function GeneralNotificationConnection() {
   const { state, dispatch } = useContext(DataContext);
-  const { orgId, channelCallback } = state;
+  const { orgId } = state;
   const pathname = usePathname();
   const params = useParams();
   const id = params.id as string;
@@ -101,7 +101,7 @@ export default function GeneralNotificationConnection() {
         //     type: ACTIONS.PREPEND_CHANNEL_PREVIEW,
         //     payload: message,
         //   });
-        //   dispatch({ type: ACTIONS.CHANNEL_CALLBACK, payload: !channelCallback });
+        //   dispatch({ type: ACTIONS.CHANNEL_CALLBACK });
         // }
 
         // if (message?.channel_id && message?.thread_id && !isChannelMessage) {

@@ -25,6 +25,7 @@ import UserAvatar from "~/components/layout/user-avatar";
 import { isUserDeactivated } from "~/utils/user-deactivation";
 import { useMessageHighlight } from "~/hooks/use-message-highlight";
 import { useMessageDeepLink } from "~/hooks/use-message-deep-link";
+import { ScrollToLatestButton } from "~/components/ui/scroll-to-latest-button";
 
 const PeopleMessage = ({ participant }: any) => {
   const { fetchMoreData, hasMore, loading } = UsePeopleMessage();
@@ -67,7 +68,7 @@ const PeopleMessage = ({ participant }: any) => {
     if (!container) return;
 
     const handleScroll = () => {
-      const isAtBottom = container.scrollTop >= 0;
+      const isAtBottom = container.scrollTop >= -1;
 
       if (isAtBottom) {
         getData();
@@ -132,17 +133,7 @@ const PeopleMessage = ({ participant }: any) => {
   //
 
   return (
-    <div
-      id="scrollableDivs"
-      ref={scrollableContainerRef}
-      style={{
-        overflowY: "scroll",
-        display: "flex",
-        flexDirection: "column-reverse",
-        paddingBottom: "var(--chat-composer-height, 140px)",
-      }}
-      className="min-h-0 w-full flex-1"
-    >
+    <div className="relative w-full flex-1 min-h-0 flex flex-col">
       {showBadge && state?.dmCount > 0 && (
         <Badge
           onClick={() => {
@@ -151,145 +142,167 @@ const PeopleMessage = ({ participant }: any) => {
             }
             getData();
           }}
-          className="absolute bottom-40 z-20 mx-auto cursor-pointer -translate-x-[50%] left-1/2 px-3 py-1.5 flex gap-1 bg-primary-500 font-normal text-white text-[0.8125rem] border border-[E6EAEF]"
+          className="absolute bottom-[calc(var(--chat-composer-height,140px)+16px)] z-20 mx-auto cursor-pointer -translate-x-[50%] left-1/2 px-3 py-1.5 flex gap-1 bg-primary-500 font-normal text-white text-[0.8125rem] border border-[E6EAEF]"
         >
           <ArrowDownIcon />
           Latest messages
         </Badge>
       )}
 
-      <InfiniteScroll
-        dataLength={chats?.length}
-        next={fetchMoreData}
-        hasMore={hasMore}
-        loader={
-          chats?.length !== 0 && (
-            <h4 className="my-5 text-xs text-center">Loading threads...</h4>
-          )
-        }
+      <ScrollToLatestButton
+        scrollContainerRef={scrollableContainerRef}
+        isAtBottom={!showBadge}
+        onScrollToBottom={getData}
+        className="bottom-[calc(var(--chat-composer-height,140px)+16px)] right-6"
+      />
+
+      <div
+        id="scrollableDivs"
+        ref={scrollableContainerRef}
         style={{
+          overflowY: "scroll",
           display: "flex",
           flexDirection: "column-reverse",
-          overflow: "visible",
+          paddingBottom: "var(--chat-composer-height, 140px)",
         }}
-        scrollableTarget="scrollableDivs"
-        inverse={true}
+        className="min-h-0 w-full flex-1"
       >
-        {Object.entries(groupedMessages)?.map(([dateLabel, threads]: any) => (
-          <div key={dateLabel} className="flex flex-col-reverse">
-            {threads?.map((item: any, index: number) => {
-              const nextMessage = threads[index + 1];
-              const shouldShowAvatar =
-                !nextMessage || nextMessage.user_id !== item.user_id;
+        <InfiniteScroll
+          dataLength={chats?.length}
+          next={fetchMoreData}
+          hasMore={hasMore}
+          loader={
+            chats?.length !== 0 && (
+              <h4 className="my-5 text-xs text-center">Loading threads...</h4>
+            )
+          }
+          style={{
+            display: "flex",
+            flexDirection: "column-reverse",
+            overflow: "visible",
+          }}
+          scrollableTarget="scrollableDivs"
+          inverse={true}
+        >
+          {Object.entries(groupedMessages)?.map(([dateLabel, threads]: any) => (
+            <div key={dateLabel} className="flex flex-col-reverse">
+              {threads?.map((item: any, index: number) => {
+                const nextMessage = threads[index + 1];
+                const shouldShowAvatar =
+                  !nextMessage || nextMessage.user_id !== item.user_id;
 
-              const isSaved = bookmarks?.some(
-                (b: any) => b.thread_id === item.thread_id
-              );
+                const isSaved = bookmarks?.some(
+                  (b: any) => b.thread_id === item.thread_id
+                );
 
-              return (
-                <React.Fragment key={index}>
-                  {isEdit && thread?.thread_id === item?.thread_id ? (
-                    <div
-                      className={`flex mb-5 mt-2 z-10 bg-white px-5 py-3 bg-blue-50 w-full`}
-                    >
-                      <div className="mb-2 mr-3">
-                        <UserAvatar item={item} size="md" alt="dm" />
+                return (
+                  <React.Fragment key={index}>
+                    {isEdit && thread?.thread_id === item?.thread_id ? (
+                      <div
+                        className={`flex mb-5 mt-2 z-10 bg-white px-5 py-3 bg-blue-50 w-full`}
+                      >
+                        <div className="mb-2 mr-3">
+                          <UserAvatar item={item} size="md" alt="dm" />
+                        </div>
+
+                        <EditMessageBox
+                          subscription={state?.chatSubscription}
+                          sendMessage={handleEditMessage}
+                        />
                       </div>
+                    ) : (
+                      <div
+                        id={`thread-${item.thread_id}`}
+                        className={`${item.is_pinned ? "bg-yellow-50" : isSaved ? "bg-primary-50" : "hover:bg-gray-50"} duration-500 ease-in-out`}
+                      >
+                        {item?.is_pinned ? (
+                          <div className="flex items-center gap-2 bg-yellow-50 pl-10 text-[13px] font-semibold text-blue-100 pt-2">
+                            <Pin
+                              size={13}
+                              className="text-[#667085] mt-[3px]"
+                            />
+                            Pinned by{" "}
+                            {user?.email === item?.pinned_details?.email
+                              ? "you"
+                              : item?.pinned_details?.username}
+                          </div>
+                        ) : isSaved ? (
+                          <div className="flex items-center gap-2 pl-10 text-[13px] font-bold text-blue-100 pt-2">
+                            <BookmarkFilledIcon
+                              fontSize={13}
+                              className="text-[#667085]"
+                            />
+                            Saved for Later
+                          </div>
+                        ) : null}
 
-                      <EditMessageBox
-                        subscription={state?.chatSubscription}
-                        sendMessage={handleEditMessage}
-                      />
-                    </div>
-                  ) : (
-                    <div
-                      id={`thread-${item.thread_id}`}
-                      className={`${item.is_pinned ? "bg-yellow-50" : isSaved ? "bg-primary-50" : "hover:bg-gray-50"} duration-500 ease-in-out`}
-                    >
-                      {item?.is_pinned ? (
-                        <div className="flex items-center gap-2 bg-yellow-50 pl-10 text-[13px] font-semibold text-blue-100 pt-2">
-                          <Pin size={13} className="text-[#667085] mt-[3px]" />
-                          Pinned by{" "}
-                          {user?.email === item?.pinned_details?.email
-                            ? "you"
-                            : item?.pinned_details?.username}
-                        </div>
-                      ) : isSaved ? (
-                        <div className="flex items-center gap-2 pl-10 text-[13px] font-bold text-blue-100 pt-2">
-                          <BookmarkFilledIcon
-                            fontSize={13}
-                            className="text-[#667085]"
-                          />
-                          Saved for Later
-                        </div>
-                      ) : null}
+                        <Message
+                          item={item}
+                          shouldShowAvatar={shouldShowAvatar}
+                          setPopupId={setPopupId}
+                          popupId={popupId}
+                        />
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
 
-                      <Message
-                        item={item}
-                        shouldShowAvatar={shouldShowAvatar}
-                        setPopupId={setPopupId}
-                        popupId={popupId}
-                      />
-                    </div>
-                  )}
-                </React.Fragment>
-              );
-            })}
-
-            <div className="sticky top-0 z-10 my-2">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-dotted border-[#E6EAEF]"></div>
-              </div>
-              <div className="relative flex justify-center">
-                <span className="bg-white px-4 py-1 text-[13px] text-[#101828] border border-[#E6EAEF] rounded-[30px]">
-                  {dateLabel}
-                </span>
+              <div className="sticky top-0 z-10 my-2">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-dotted border-[#E6EAEF]"></div>
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="bg-white px-4 py-1 text-[13px] text-[#101828] border border-[#E6EAEF] rounded-[30px]">
+                    {dateLabel}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </InfiniteScroll>
+          ))}
+        </InfiniteScroll>
 
-      {!hasMore && (
-        <div className="mt-auto px-5">
-          <div className="flex gap-2 items-center my-4">
-            <div className="relative">
-              <UserAvatar
-                item={participant}
-                size="2xl"
-                alt="dm"
-                imageClassName="rounded-lg"
-                className="rounded-lg"
-              />
-
-              {!isUserDeactivated(participant) && (
-                <div
-                  className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border border-white ${
-                    participant?.online ? "bg-[#00AD51]" : "bg-[#F97316]"
-                  }`}
+        {!hasMore && (
+          <div className="mt-auto px-5">
+            <div className="flex gap-2 items-center my-4">
+              <div className="relative">
+                <UserAvatar
+                  item={participant}
+                  size="2xl"
+                  alt="dm"
+                  imageClassName="rounded-lg"
+                  className="rounded-lg"
                 />
-              )}
+
+                {!isUserDeactivated(participant) && (
+                  <div
+                    className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border border-white ${
+                      participant?.online ? "bg-[#00AD51]" : "bg-[#F97316]"
+                    }`}
+                  />
+                )}
+              </div>
+              <h3 className="text-lg font-bold text-[#1D2939]">
+                {participant?.username}
+              </h3>
             </div>
-            <h3 className="text-lg font-bold text-[#1D2939]">
-              {participant?.username}
-            </h3>
+            <p className="text-[17px] text-[#344054] mb-2">
+              This conversation is just between you and
+              <UsernameHover item={participant} />. Check out their profile to
+              learn about them.
+            </p>
+            <Button
+              variant={"outline"}
+              className="h-10"
+              onClick={() => {
+                dispatch({ type: ACTIONS.SHOW_PROFILE, payload: true });
+              }}
+            >
+              View Profile
+            </Button>
           </div>
-          <p className="text-[17px] text-[#344054] mb-2">
-            This conversation is just between you and
-            <UsernameHover item={participant} />. Check out their profile to
-            learn about them.
-          </p>
-          <Button
-            variant={"outline"}
-            className="h-10"
-            onClick={() => {
-              dispatch({ type: ACTIONS.SHOW_PROFILE, payload: true });
-            }}
-          >
-            View Profile
-          </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

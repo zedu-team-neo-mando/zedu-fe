@@ -13,7 +13,7 @@ import { isAutoCreatedOrg } from "~/utils/organisation";
  * @param template Optional template slug passed in query parameters.
  * @returns Destination URL string or null if organization slug is unresolved.
  */
-function getLoggedInRedirectPath(
+export function getLoggedInRedirectPath(
   orgSlugFromState?: string,
   template?: string | null
 ) {
@@ -49,7 +49,11 @@ function getLoggedInRedirectPath(
 
   if (!orgSlug) return null;
 
-  const query = template ? `?template=${encodeURIComponent(template)}` : "";
+  const activeTemplate = template;
+
+  const query = activeTemplate
+    ? `?template=${encodeURIComponent(activeTemplate)}`
+    : "";
 
   const matchingFromList = organisations?.find((o) => o?.slug === orgSlug);
   const resolvedOrg =
@@ -60,9 +64,15 @@ function getLoggedInRedirectPath(
 
   const needsOnboarding =
     user?.is_onboarded === false ||
-    (Boolean(template) && isAutoCreatedOrg(resolvedOrg?.type));
+    (Boolean(activeTemplate) && isAutoCreatedOrg(resolvedOrg?.type));
 
-  return needsOnboarding ? `/${orgSlug}/welcome${query}` : `/${orgSlug}`;
+  if (needsOnboarding) {
+    return `/${orgSlug}/welcome${query}`;
+  }
+
+  return activeTemplate
+    ? `/${orgSlug}/welcome/create-organization?template=${encodeURIComponent(activeTemplate)}`
+    : `/${orgSlug}`;
 }
 
 /**
@@ -82,10 +92,13 @@ export default function RootLayout({
 
   useEffect(() => {
     (async () => {
-      const t = new URLSearchParams(window.location.search).get("template");
-      if (t) {
-        localStorage.setItem("selected_template", t);
+      const urlTemplate = new URLSearchParams(window.location.search).get(
+        "template"
+      );
+      if (urlTemplate) {
+        localStorage.setItem("selected_template", urlTemplate);
       }
+      const t = urlTemplate;
       const token = localStorage.getItem("token");
       if (token) {
         const r = getLoggedInRedirectPath(orgSlug, t);

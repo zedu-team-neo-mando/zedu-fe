@@ -143,6 +143,20 @@ const ChannelHeader = () => {
     }
   };
 
+  // Members button: the channel's total, e.g. "1,909", or "12.4K" from 10,000
+  const memberCount = detailsMatch
+    ? Number(channelDetails?.user_count) || 0
+    : 0;
+  const memberTotal = memberCount.toLocaleString("en");
+  const memberLabel = memberCount === 1 ? "1 member" : `${memberTotal} members`;
+  const memberBadge =
+    memberCount < 10000
+      ? memberTotal
+      : memberCount.toLocaleString("en", {
+          notation: "compact",
+          maximumFractionDigits: 1,
+        });
+
   const headerTabs: {
     id: ChannelHeaderTab;
     label: string;
@@ -220,7 +234,9 @@ const ChannelHeader = () => {
               <div className="w-px h-5 bg-[#E6EAEF] hidden lg:block" />
 
               {/* avatar badge group */}
-              <ChannelDetailsDialog>
+              <ChannelDetailsDialog
+                triggerLabel={memberCount > 0 ? memberLabel : undefined}
+              >
                 <div
                   onClick={() =>
                     dispatch({ type: ACTIONS.ACTIVE_TAB, payload: "people" })
@@ -229,7 +245,11 @@ const ChannelHeader = () => {
                 >
                   <Tooltips
                     side="bottom"
-                    text="View all members of this channel"
+                    text={
+                      memberCount > 1
+                        ? `View all ${memberLabel}`
+                        : "View all members of this channel"
+                    }
                   >
                     <div className="flex items-center gap-1.5">
                       {channelDetails?.users
@@ -255,9 +275,9 @@ const ChannelHeader = () => {
                           </Avatar>
                         ))}
 
-                      {channelDetails?.users?.length > 3 && (
+                      {memberCount > 0 && (
                         <span className="text-[13px] font-semibold text-[#344054]">
-                          +{channelDetails.user_count - 3}
+                          {memberBadge}
                         </span>
                       )}
                     </div>

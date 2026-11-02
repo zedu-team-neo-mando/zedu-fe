@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import { PostRequest } from "~/utils/request";
-import { useToast } from "~/components/ui/use-toast";
+import axios from "axios";
+import { showSuccess } from "~/components/toast/sonner";
 import {
   appStoreUrl,
   facebookUrl,
@@ -36,8 +36,26 @@ const solutionLinks: FooterLink[] = [
 ];
 
 const supportLinks: FooterLink[] = [
-  { id: 0, label: "Pricing", href: "/pricing" },
-  { id: 3, label: "Contact Us", href: "/contact-sales" },
+  {
+    id: 0,
+    label: "About Us",
+    href: "/about",
+  },
+  {
+    id: 1,
+    label: "Pricing",
+    href: "/pricing",
+  },
+  {
+    id: 2,
+    label: "Download",
+    href: "/download",
+  },
+  {
+    id: 3,
+    label: "Contact Us",
+    href: "/contact-sales",
+  },
 ];
 
 const resourcesLinks: FooterLink[] = [
@@ -102,34 +120,63 @@ const appStoreLinks = [
 
 const plusJakartaSans = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
+// Isolated Axios client for public newsletter subscription.
+// Kept separate from the global HTTP client to avoid global interceptor side effects
+// (such as authentication-expiry redirects or token attachment) and global toast dismissals.
+const newsletterClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_BASE_URL,
+});
+
 const Footer = () => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
-  const { toast } = useToast();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setLoading(true);
-    const token = localStorage.getItem("token") || "";
+
+    if (loading) return;
+
+    setError("");
 
     if (!isValidEmail(email)) {
       setError("Please enter a valid email address.");
-      setLoading(false);
       return;
     }
 
-    const req = await PostRequest("/newsletter", { email: email }, token);
-    setLoading(false);
-    if (req?.data?.status_code === 201) {
-      setEmail("");
-      setError("");
-      toast({
-        description: "Email sent successfully!",
-      });
-    } else {
-      setError(req?.data?.message);
-      return;
+    setLoading(true);
+
+    try {
+      const res = await newsletterClient.post("/newsletter", { email });
+
+      if (res.status === 200 || res.status === 201) {
+        setEmail("");
+        setError("");
+        showSuccess(
+          "You're subscribed!",
+          "Thanks for joining us. Stay tuned for the latest updates from Zedu."
+        );
+      }
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status;
+        const body = err.response?.data;
+        const isAlreadySubscribed = status === 409 || body?.status_code === 409;
+
+        if (isAlreadySubscribed) {
+          setError("This email is already subscribed to our newsletter.");
+        } else {
+          setError(
+            body?.message ||
+              err.message ||
+              "Something went wrong. Please try again."
+          );
+        }
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -239,7 +286,7 @@ const Footer = () => {
 
             <div className="space-y-4">
               <p className="text-white/90">
-                Mobile App is available on Google PlayStore and AppStore
+                Mobile App is available on Google Play and the App Store
               </p>
               <div className="mt-5 flex flex-wrap items-start gap-8 text-white">
                 {appStoreLinks.map((store) => (

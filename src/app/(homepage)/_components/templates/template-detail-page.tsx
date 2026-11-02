@@ -109,7 +109,9 @@ export default async function TemplateDetailPage({ params }: PageProps) {
             </div>
           </div>
           <div className="pt-4 border-t border-slate-800/80 text-xs sm:text-sm text-slate-400">
-            <span className="font-semibold text-white">🤖 AI Assistant: </span>
+            <span className="font-semibold text-white">
+              🤖 Suggested AI assistant:{" "}
+            </span>
             <span className="text-cyan-300 font-medium">{t.aiPreset}</span>
           </div>
         </div>

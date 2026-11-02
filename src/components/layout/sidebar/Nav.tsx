@@ -132,14 +132,17 @@ export default function ChannelNav({
             <Link
               href={`/${orgSlug}/threads`}
               className={cn(
-                "relative flex-1 flex items-center gap-[2px] py-[7px] px-2 mx-2 mb-2 hover:bg-blue-200 hover:text-white rounded-lg ",
-                pathname.includes("/threads") ? "bg-blue-200" : ""
+                "group relative flex-1 flex items-center gap-[2px] py-[7px] px-2 mx-2 mb-2 hover:bg-blue-200 hover:text-white rounded-lg ",
+                pathname.includes("/threads") ? "bg-blue-200 text-white" : ""
               )}
             >
-              <ChatBubbleIcon />
+              <ChatBubbleIcon color="currentColor" />
               <p
                 className={cn(
-                  "text-[15px] leading-4 truncate w-[180px] text-blue-50"
+                  "text-[15px] leading-4 truncate w-[180px]",
+                  pathname.includes("/threads")
+                    ? "font-semibold text-white"
+                    : "text-blue-50 group-hover:text-white"
                 )}
               >
                 Threads
@@ -163,16 +166,19 @@ export default function ChannelNav({
             <Link
               href={`/${orgSlug}/buzzs`}
               className={cn(
-                "flex-1 flex items-center gap-[2px] py-[7px] px-2 mx-2 hover:bg-blue-200 hover:text-white rounded-lg ",
-                pathname.includes("/buzzs") ? "bg-blue-200" : ""
+                "group flex-1 flex items-center gap-[2px] py-[7px] px-2 mx-2 hover:bg-blue-200 hover:text-white rounded-lg ",
+                pathname.includes("/buzzs") ? "bg-blue-200 text-white" : ""
               )}
             >
               <div className="mt-[2px]">
-                <HeadphoneIcon />
+                <HeadphoneIcon color="currentColor" />
               </div>
               <p
                 className={cn(
-                  "text-[15px] leading-4 truncate w-[180px] text-blue-50"
+                  "text-[15px] leading-4 truncate w-[180px]",
+                  pathname.includes("/buzzs")
+                    ? "font-semibold text-white"
+                    : "text-blue-50 group-hover:text-white"
                 )}
               >
                 Buzzes

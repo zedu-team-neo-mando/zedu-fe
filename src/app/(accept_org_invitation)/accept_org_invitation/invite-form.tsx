@@ -230,8 +230,8 @@ const InviteForm = () => {
                   className="mt-1"
                 />
                 <label htmlFor="marketing" className="text-sm text-gray-600">
-                  It’s okay to send me marketing communications about
-                  Salesforce, including Zedu. I can unsubscribe at any time.
+                  It’s okay to send me marketing communications about Zedu. I
+                  can unsubscribe at any time.
                 </label>
               </div>
             )}

@@ -44,6 +44,11 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user }) => {
   // logout user
   const handleLogout = () => {
     sessionStorage.removeItem("fcm_token");
+    try {
+      sessionStorage.removeItem("pending_org");
+    } catch {
+      // ignore
+    }
     localStorage.clear();
     window.location.href = "/auth/login";
   };
