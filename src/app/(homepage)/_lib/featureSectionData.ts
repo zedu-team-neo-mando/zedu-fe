@@ -44,7 +44,7 @@ export const otherFeatures = [
   {
     title: "AI class notes",
     description:
-      "Simplifying complex concepts, empowering students to learn, explore, and master artificial intelligence with practical understanding.",
+      "AI Class Notes support learners in exploring concepts, reviewing information, and building a clearer understanding of their lessons.",
     icon: "/images/homepage/icons/AI-class-note.png",
   },
 ];
