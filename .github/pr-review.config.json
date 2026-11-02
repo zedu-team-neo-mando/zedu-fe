@@ -10,6 +10,7 @@
       "src/components/rbac/",
       "src/app/(client)/[org]/_components/",
       "src/app/(homepage)/_components/",
+      "src/app/(homepage)/solutions/",
       "src/app/(client)/[org]/settings/",
       "src/app/(auth)/",
       "src/app/(accept_general_invitation)/",
