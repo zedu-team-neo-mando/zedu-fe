@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Free Community & Channel Templates Directory",
     description: "Pre-configured cohort workspaces and channel presets.",
-    url: "/templates",
+    url: siteUrl("/templates"),
     siteName: "Zedu",
     images: [
       {
