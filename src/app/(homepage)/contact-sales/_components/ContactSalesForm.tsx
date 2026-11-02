@@ -7,13 +7,6 @@ import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import { useToast } from "~/components/ui/use-toast";
 import { cn } from "~/lib/utils";
@@ -21,11 +14,6 @@ import { contactSalesUrl } from "~/lib/env-urls";
 
 const phoneNumberPattern = /^\+?[0-9\s()-]+$/;
 
-/**
- * Extracts only digits from a phone number string.
- * @param value Raw phone number input.
- * @returns String containing only numeric digits.
- */
 const getPhoneDigits = (value: string) => value.replace(/\D/g, "");
 
 const contactSalesSchema = z.object({
@@ -51,14 +39,6 @@ const contactSalesSchema = z.object({
       const digits = getPhoneDigits(value);
       return digits.length >= 10 && digits.length <= 15;
     }, "Phone number must contain between 10 and 15 digits"),
-  organization_type: z
-    .string()
-    .trim()
-    .min(1, "Please select an organization type"),
-  organization_size: z
-    .string()
-    .trim()
-    .min(1, "Please select your organization size"),
   message: z
     .string()
     .trim()
@@ -74,17 +54,9 @@ const initialFormData: ContactSalesFormData = {
   name: "",
   email: "",
   phone: "",
-  organization_type: "",
-  organization_size: "",
   message: "",
 };
 
-/**
- * Validates a single form field value using the Zod schema.
- * @param field Form field key to validate.
- * @param value Current field value.
- * @returns Error message string, or empty string if valid.
- */
 const getFieldError = (field: FormField, value: string) => {
   const result = contactSalesSchema.shape[field].safeParse(value);
   return result.success
@@ -92,11 +64,6 @@ const getFieldError = (field: FormField, value: string) => {
     : result.error.issues[0]?.message || "Invalid value";
 };
 
-/**
- * Validates the entire contact sales form dataset.
- * @param data Form data object to validate.
- * @returns Map of field names to error messages.
- */
 const getFormErrors = (data: ContactSalesFormData): FormErrors => {
   const parsed = contactSalesSchema.safeParse(data);
 
@@ -116,25 +83,17 @@ const getFormErrors = (data: ContactSalesFormData): FormErrors => {
   return nextErrors;
 };
 
-const fieldClassName =
-  "h-[52px] rounded-[14px] border border-[#6f4ef6]/25 bg-white px-3.5 text-[#222] focus:border-[#6f4ef6] focus:ring-2 focus:ring-[#6f4ef6]/30";
-
-/**
- * Interactive contact sales form supporting organization type and phone validation.
- * @returns Rendered contact sales form component.
- */
-export const ContactSalesForm = () => {
+export const ContactSalesForm = ({
+  embedded = false,
+}: {
+  embedded?: boolean;
+}) => {
   const [formData, setFormData] =
     useState<ContactSalesFormData>(initialFormData);
   const [errors, setErrors] = useState<FormErrors>({});
   const [sending, setSending] = useState<boolean>(false);
   const { toast } = useToast();
 
-  /**
-   * Updates a form field value in state and clears active errors when resolved.
-   * @param field Field name.
-   * @param value New field value.
-   */
   const updateField = (field: FormField, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -146,10 +105,6 @@ export const ContactSalesForm = () => {
     }
   };
 
-  /**
-   * Validates a single field on blur and updates error state.
-   * @param field Field name to validate.
-   */
   const validateField = (field: FormField) => {
     setErrors((prev) => ({
       ...prev,
@@ -157,10 +112,6 @@ export const ContactSalesForm = () => {
     }));
   };
 
-  /**
-   * Submits the contact sales form data to the sales endpoint.
-   * @param event Form submit event.
-   */
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -173,22 +124,12 @@ export const ContactSalesForm = () => {
     setSending(true);
 
     const normalizedPhone = getPhoneDigits(formData.phone);
-    const orgType = formData.organization_type.trim();
-    const orgSize = formData.organization_size.trim();
-    const rawMessage = formData.message.trim();
-    const qualificationContext = [
-      `Organization type: ${orgType}`,
-      `Organization size: ${orgSize}`,
-    ].join("\n");
-    const formattedMessage = `${qualificationContext}\n\n${rawMessage}`;
     const contactData = {
       ...campaignPayload(),
       name: formData.name.trim(),
       email: formData.email.trim(),
       phone_number: normalizedPhone,
-      organization_type: orgType,
-      organization_size: orgSize,
-      message: formattedMessage,
+      message: formData.message.trim(),
     };
 
     try {
@@ -230,10 +171,14 @@ export const ContactSalesForm = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full min-w-0 rounded-[28px] bg-white p-6 shadow-[0_28px_60px_-18px_rgba(38,24,102,0.28)] ring-1 ring-[#6f4ef6]/5 sm:p-8 lg:p-9"
+      className={
+        embedded
+          ? "w-full"
+          : "w-full rounded-2xl bg-white p-4 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.12)] sm:p-6"
+      }
     >
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:gap-x-5 lg:gap-y-6">
-        <div className="flex flex-col gap-1.5 lg:gap-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+        <div className="flex flex-col gap-1.5">
           <Label htmlFor="name" className="text-sm font-medium text-[#222]">
             Name
           </Label>
@@ -245,14 +190,17 @@ export const ContactSalesForm = () => {
             onBlur={() => validateField("name")}
             placeholder="Enter your full name"
             aria-invalid={Boolean(errors.name)}
-            className={cn(fieldClassName, errors.name && "border-red-500")}
+            className={cn(
+              "h-10 border-[#d9d9df] p-3 text-sm text-[#222] focus:ring-1 focus:ring-primary-500",
+              errors.name && "border-red-500"
+            )}
           />
           {errors.name ? (
             <p className="text-xs text-red-500">{errors.name}</p>
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-1.5 lg:gap-4">
+        <div className="flex flex-col gap-1.5">
           <Label htmlFor="email" className="text-sm font-medium text-[#222]">
             Email Address
           </Label>
@@ -265,14 +213,17 @@ export const ContactSalesForm = () => {
             onBlur={() => validateField("email")}
             placeholder="Enter your email"
             aria-invalid={Boolean(errors.email)}
-            className={cn(fieldClassName, errors.email && "border-red-500")}
+            className={cn(
+              "h-10 border-[#d9d9df] p-3 text-sm text-[#222] focus:ring-1 focus:ring-primary-500",
+              errors.email && "border-red-500"
+            )}
           />
           {errors.email ? (
             <p className="text-xs text-red-500">{errors.email}</p>
           ) : null}
         </div>
 
-        <div className="flex flex-col gap-1.5 lg:gap-4">
+        <div className="sm:col-span-2 flex flex-col gap-1.5">
           <Label htmlFor="phone" className="text-sm font-medium text-[#222]">
             Phone Number
           </Label>
@@ -287,106 +238,18 @@ export const ContactSalesForm = () => {
             onBlur={() => validateField("phone")}
             placeholder="Enter your phone number"
             aria-invalid={Boolean(errors.phone)}
-            className={cn(fieldClassName, errors.phone && "border-red-500")}
+            className={cn(
+              "h-10 border-[#d9d9df] p-3 text-sm text-[#222] focus:ring-1 focus:ring-primary-500",
+              errors.phone && "border-red-500"
+            )}
           />
           {errors.phone ? (
             <p className="text-xs text-red-500">{errors.phone}</p>
           ) : null}
         </div>
-
-        <div className="flex flex-col gap-1.5 lg:gap-4">
-          <Label
-            htmlFor="organization_type"
-            className="text-sm font-medium text-[#222]"
-          >
-            Organization Type
-          </Label>
-          <Select
-            value={formData.organization_type}
-            onValueChange={(value) => updateField("organization_type", value)}
-          >
-            <SelectTrigger
-              id="organization_type"
-              aria-required="true"
-              aria-invalid={Boolean(errors.organization_type)}
-              aria-errormessage={
-                errors.organization_type ? "organization_type-error" : undefined
-              }
-              aria-describedby={
-                errors.organization_type ? "organization_type-error" : undefined
-              }
-              className={cn(
-                "h-10 border-[#d9d9df] p-3 text-sm text-[#222] focus:ring-1 focus:ring-primary-500",
-                errors.organization_type && "border-red-500"
-              )}
-            >
-              <SelectValue placeholder="Select organization type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Bootcamp">Bootcamp</SelectItem>
-              <SelectItem value="University / Higher Ed">
-                University / Higher Ed
-              </SelectItem>
-              <SelectItem value="K-12 School">K-12 School</SelectItem>
-              <SelectItem value="Online Learning Platform / Other">
-                Online Learning Platform / Other
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          {errors.organization_type ? (
-            <p id="organization_type-error" className="text-xs text-red-500">
-              {errors.organization_type}
-            </p>
-          ) : null}
-        </div>
-
-        <div className="flex flex-col gap-1.5 lg:gap-4">
-          <Label
-            htmlFor="organization_size"
-            className="text-sm font-medium text-[#222]"
-          >
-            Organization Size
-          </Label>
-          <Select
-            value={formData.organization_size}
-            onValueChange={(value) => updateField("organization_size", value)}
-          >
-            <SelectTrigger
-              id="organization_size"
-              aria-required="true"
-              aria-invalid={Boolean(errors.organization_size)}
-              aria-errormessage={
-                errors.organization_size ? "organization_size-error" : undefined
-              }
-              aria-describedby={
-                errors.organization_size ? "organization_size-error" : undefined
-              }
-              className={cn(
-                "h-10 border-[#d9d9df] p-3 text-sm text-[#222] focus:ring-1 focus:ring-primary-500",
-                errors.organization_size && "border-red-500"
-              )}
-            >
-              <SelectValue placeholder="Select organization size" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1-50 learners">1-50 learners</SelectItem>
-              <SelectItem value="51-200 learners">51-200 learners</SelectItem>
-              <SelectItem value="201-1,000 learners">
-                201-1,000 learners
-              </SelectItem>
-              <SelectItem value="1,001+ learners">1,001+ learners</SelectItem>
-              <SelectItem value="Not sure">Not sure</SelectItem>
-            </SelectContent>
-          </Select>
-          {errors.organization_size ? (
-            <p id="organization_size-error" className="text-xs text-red-500">
-              {errors.organization_size}
-            </p>
-          ) : null}
-        </div>
       </div>
 
-      <div className="mt-3 flex flex-col gap-1.5 sm:mt-4 lg:mt-6 lg:gap-4">
+      <div className="mt-3 flex flex-col gap-1.5 sm:mt-4">
         <Label htmlFor="message" className="text-sm font-medium text-[#222]">
           Message
         </Label>
@@ -399,7 +262,7 @@ export const ContactSalesForm = () => {
           rows={8}
           aria-invalid={Boolean(errors.message)}
           className={cn(
-            "min-h-[140px] resize-y rounded-[14px] border border-[#6f4ef6]/25 bg-white px-3.5 py-2 text-[#222] focus:border-[#6f4ef6] focus:ring-2 focus:ring-[#6f4ef6]/30 lg:max-h-[420px]",
+            "min-h-[140px] border-[#d9d9df] px-3 py-2 text-sm text-[#222] focus:ring-1 focus:ring-primary-500",
             errors.message && "border-red-500"
           )}
         />
@@ -411,7 +274,7 @@ export const ContactSalesForm = () => {
       <Button
         type="submit"
         disabled={sending}
-        className="mt-4 flex h-[56px] w-full items-center justify-center gap-2 rounded-full bg-[#6f4ef6] text-base font-semibold text-white hover:bg-[#5c3ce0] lg:mt-6"
+        className="mt-4 h-11 w-full rounded-full bg-[#6f4ef6] text-sm font-medium text-white hover:bg-[#6f4ef6] flex items-center gap-2"
       >
         {!sending ? (
           <Mail className="h-4 w-4" />
@@ -421,7 +284,7 @@ export const ContactSalesForm = () => {
         {!sending ? "Send" : "Sending"}
       </Button>
 
-      <p className="mt-3 text-[12px] leading-5 text-[#4b4b55] md:text-[13px] lg:mt-6">
+      <p className="mt-3 text-[10px] leading-relaxed text-[#7a7a7a] sm:text-[11px]">
         By continuing, I authorize Zedu to contact me about Zedu&apos;s
         offerings. I understand I can opt out by contacting Zedu.
       </p>
