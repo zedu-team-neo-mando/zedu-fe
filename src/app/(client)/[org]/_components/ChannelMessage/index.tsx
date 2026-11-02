@@ -104,7 +104,9 @@ const ChannelsMessage = () => {
     if (!container) return;
 
     const handleScroll = () => {
-      const isAtBottom = container.scrollTop >= -1;
+      const isAtBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight <
+        100;
 
       if (isAtBottom) {
         getData();
