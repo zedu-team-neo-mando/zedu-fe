@@ -9,7 +9,8 @@ import React, {
 } from "react";
 import CreateFolderModal from "./CreateFolderModal";
 import FolderList from "./FolderList";
-import Header from "./header";
+import Header, { HeaderHandle } from "./header";
+import { FilesEmptyState, FoldersEmptyState } from "./empty-state";
 import DeleteFileModal from "./delete-file-modal";
 import BulkDeleteModal from "./bulk-delete-modal";
 import RenameFileModal from "./rename-file-modal";
@@ -187,6 +188,7 @@ const FolderPaginationLink = ({
 );
 
 const FileExplorer: React.FC<FileExplorerProps> = ({ viewType, folderId }) => {
+  const headerRef = useRef<HeaderHandle>(null);
   const [modalState, setModalState] = useState<ModalState>({ type: null });
   const [folders, setFolders] = useState<FolderInfo[]>([]);
   const [files, setFiles] = useState<FileDetails[]>([]);
@@ -1112,6 +1114,7 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ viewType, folderId }) => {
           }`}
         >
           <Header
+            ref={headerRef}
             onNewFolderClick={handleNewFolderClick}
             onFileUpload={handleFileUpload}
             title={viewType}
@@ -1257,10 +1260,7 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ viewType, folderId }) => {
                       {renderFolderPagination()}
                     </div>
                   ) : (
-                    <div className="flex flex-col gap-2 text-[#344054] justify-center items-center mt-40">
-                      <p className="text-2xl">No folders yet</p>
-                      <p>Create a folder to get started</p>
-                    </div>
+                    <FoldersEmptyState onCreateFolder={handleNewFolderClick} />
                   )}
                 </>
               )}
@@ -1344,10 +1344,14 @@ const FileExplorer: React.FC<FileExplorerProps> = ({ viewType, folderId }) => {
                     <div className="flex flex-col gap-2 text-[#344054] justify-center items-center mt-40">
                       {(viewType === "All files" ||
                         viewType === "My Files") && (
-                        <>
-                          <p className="text-2xl">No files yet</p>
-                          <p>Upload or drag & drop to get started</p>
-                        </>
+                        <FilesEmptyState
+                          onUploadClick={() =>
+                            headerRef.current?.openFilePicker()
+                          }
+                          onFilesDropped={(droppedFiles) =>
+                            headerRef.current?.uploadFiles(droppedFiles)
+                          }
+                        />
                       )}
                       {viewType === "Shared with me" && (
                         <>

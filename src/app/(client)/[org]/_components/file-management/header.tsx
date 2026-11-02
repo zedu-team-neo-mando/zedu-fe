@@ -1,5 +1,10 @@
 import { Upload, FileIcon, FolderUp, Plus } from "lucide-react";
-import React, { useRef, ChangeEvent, useState } from "react";
+import React, {
+  useRef,
+  ChangeEvent,
+  useState,
+  useImperativeHandle,
+} from "react";
 import { Button } from "~/components/ui/button";
 import {
   Popover,
@@ -40,6 +45,12 @@ interface HeaderProps {
   onClearSelection?: () => void;
 }
 
+export interface HeaderHandle {
+  openFilePicker: () => void;
+  uploadFiles: (files: File[]) => void;
+}
+
+// React 19 passes `ref` as a normal prop, so no forwardRef wrapper is needed.
 const Header = ({
   onNewFolderClick,
   onFileUpload,
@@ -48,7 +59,8 @@ const Header = ({
   selectedCount = 0,
   onBulkDelete,
   onClearSelection,
-}: HeaderProps) => {
+  ref,
+}: HeaderProps & { ref?: React.Ref<HeaderHandle> }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { addUploadingFile, updateUploadProgress, updateUploadStatus } =
     useUpload();
@@ -194,6 +206,15 @@ const Header = ({
 
     setSelectedFiles([]);
   };
+
+  useImperativeHandle(ref, () => ({
+    openFilePicker: handleUploadClick,
+    uploadFiles: (files: File[]) => {
+      if (files.length === 0) return;
+      setSelectedFiles(files);
+      setIsConfirmationOpen(true);
+    },
+  }));
 
   return (
     <>
