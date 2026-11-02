@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { FeatureSection } from "./_components/home/FeatureSection";
 import HeroSection from "./_components/home/Herosection";
+import { CreatorSection } from "./_components/home/CreatorSection";
 import { ArticlesSection } from "./_components/home/ArticlesSection";
 import { PricingSection } from "./_components/home/PricingSection";
 import { WhySection } from "./_components/home/WhySection";
@@ -56,6 +57,7 @@ const HomePage = () => {
         dangerouslySetInnerHTML={{ __html: structuredData }}
       />
       <HeroSection />
+      <CreatorSection />
       <FeatureSection />
       <ArticlesSection />
       <PricingSection />
