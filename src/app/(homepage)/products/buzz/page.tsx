@@ -184,7 +184,10 @@ const BuzzProductsPage = () => {
       <FAQSection
         faqs={buzzFAQs}
         answerFragments={{
+          "buzz-item-1": "when-to-use-buzz",
+          "buzz-item-2": "what-can-i-do-in-a-buzz-session",
           "buzz-item-3": "how-to-start-a-buzz",
+          "buzz-item-4": "are-buzz-sessions-summarized-automatically",
         }}
       />
       <DynamicFooter
