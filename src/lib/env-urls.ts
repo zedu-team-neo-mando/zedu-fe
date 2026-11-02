@@ -27,6 +27,12 @@ export function contactSalesUrl(): string {
   return `${clean(process.env.NEXT_PUBLIC_BASE_URL)}/contact`;
 }
 
+// The desktop installer or release page. Empty until a desktop build is
+// published, in which case the download page shows a "coming soon" state.
+export function desktopDownloadUrl(): string {
+  return clean(process.env.NEXT_PUBLIC_DESKTOP_DOWNLOAD_URL);
+}
+
 type Store = "app" | "play";
 
 type StoreLinkOptions = {
