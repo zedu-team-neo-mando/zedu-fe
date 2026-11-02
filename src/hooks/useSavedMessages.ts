@@ -9,6 +9,13 @@ import {
   SaveMessage,
 } from "~/utils/new-request";
 import { showError } from "~/components/toast/sonner";
+import {
+  bookmarkKey,
+  bookmarkRevision,
+  nextBookmarkRevision,
+  type Bookmark,
+} from "~/utils/saved-bookmarks";
+export type { Bookmark } from "~/utils/saved-bookmarks";
 
 /**
  * One saved-for-later item. `id` is the saved item's own id, which the
@@ -17,11 +24,8 @@ import { showError } from "~/components/toast/sonner";
  * `message_id` (its thread_id is the parent's, so it is left out to keep the
  * parent message from looking saved).
  */
-export type Bookmark = {
-  id: string;
-  thread_id?: string;
-  message_id?: string;
-};
+// Shared across hook instances: two message rows must not toggle one target twice.
+const operations = new WeakMap<object, Set<string>>();
 
 type SavedMessage = {
   id?: string;
@@ -59,17 +63,25 @@ export const useLoadSavedMessages = (
   orgId: string,
   { enabled = true }: { enabled?: boolean } = {}
 ) => {
-  const { dispatch } = useContext(DataContext);
+  const { state, dispatch } = useContext(DataContext);
+  const orgVersion = state.bookmarkOrgVersion || 0;
 
   useEffect(() => {
     if (!enabled || !orgId) return;
     let active = true;
+    const revision = bookmarkRevision();
 
     GetRequest(`/organisations/${orgId}/saved/message`).then((res: any) => {
       if (active && isOk(res)) {
         dispatch({
-          type: ACTIONS.BOOKMARKS,
-          payload: toBookmarks(res?.data?.data),
+          type: ACTIONS.UPDATE_SAVED_BOOKMARK,
+          payload: {
+            orgId,
+            orgVersion,
+            phase: "load",
+            revision,
+            items: toBookmarks(res?.data?.data),
+          },
         });
       }
     });
@@ -77,7 +89,7 @@ export const useLoadSavedMessages = (
     return () => {
       active = false;
     };
-  }, [orgId, enabled, dispatch]);
+  }, [orgId, orgVersion, enabled, dispatch]);
 };
 
 /** Save / remove actions for a channel message or a reply. */
@@ -85,18 +97,46 @@ export const useSavedMessageActions = () => {
   const { state, dispatch } = useContext(DataContext);
   const bookmarks: Bookmark[] = state?.bookmarks || [];
   const orgId = getOrgId(state?.orgId);
+  const orgVersion = state.bookmarkOrgVersion || 0;
 
-  const setBookmarks = useCallback(
-    (next: Bookmark[]) => dispatch({ type: ACTIONS.BOOKMARKS, payload: next }),
-    [dispatch]
+  const update = useCallback(
+    (mutation: Record<string, unknown>) =>
+      dispatch({
+        type: ACTIONS.UPDATE_SAVED_BOOKMARK,
+        payload: {
+          orgId,
+          orgVersion,
+          revision: nextBookmarkRevision(),
+          ...mutation,
+        },
+      }),
+    [orgId, orgVersion, dispatch]
   );
 
   // The save route is a toggle, so when the server reply doesn't match what
   // we expected, re-read the saved list instead of guessing.
   const reload = useCallback(async () => {
+    const revision = bookmarkRevision();
     const res = await GetRequest(`/organisations/${orgId}/saved/message`);
-    if (isOk(res)) setBookmarks(toBookmarks(res?.data?.data));
-  }, [orgId, setBookmarks]);
+    if (!isOk(res)) throw new Error("Could not reload saved messages");
+    const items = toBookmarks(res?.data?.data);
+    update({ phase: "load", revision, items });
+    return items;
+  }, [orgId, update]);
+
+  const run = async (key: string, action: () => Promise<void>) => {
+    if (!orgId) return;
+    const pending = operations.get(dispatch) || new Set<string>();
+    operations.set(dispatch, pending);
+    const scopedKey = `${orgId}:${orgVersion}:${key}`;
+    if (pending.has(scopedKey)) return;
+    pending.add(scopedKey);
+    try {
+      await action();
+    } finally {
+      pending.delete(scopedKey);
+    }
+  };
 
   const isThreadSaved = (threadId?: string) =>
     !!threadId && bookmarks.some((b) => b.thread_id === threadId);
@@ -110,43 +150,46 @@ export const useSavedMessageActions = () => {
     match: (b: Bookmark) => boolean,
     pending: Bookmark
   ) => {
-    const previous = bookmarks;
-    setBookmarks([...previous.filter((b) => !match(b)), pending]);
-
-    const res = await SaveMessage(`/organisations/${orgId}/${url}`, payload);
-    const savedId = res?.data?.data?.id;
-
-    if (isOk(res) && savedId) {
-      setBookmarks([
-        ...previous.filter((b) => !match(b)),
-        { ...pending, id: savedId },
-      ]);
-    } else if (isOk(res)) {
-      await reload();
-    } else {
-      setBookmarks(previous);
-      showError(SAVE_ERROR);
-    }
+    const key = bookmarkKey(pending);
+    await run(key, async () => {
+      const previous = bookmarks.find(match);
+      update({ phase: "begin", key, value: pending });
+      try {
+        const res = await SaveMessage(
+          `/organisations/${orgId}/${url}`,
+          payload
+        );
+        if (!isOk(res)) throw new Error(SAVE_ERROR);
+        const savedId = res?.data?.data?.id;
+        const value = savedId
+          ? { ...pending, id: savedId }
+          : (await reload()).find(match);
+        update({ phase: "finish", key, value });
+      } catch {
+        update({ phase: "finish", key, value: previous });
+        showError(SAVE_ERROR);
+      }
+    });
   };
 
-  const remove = async (match: (b: Bookmark) => boolean) => {
-    const previous = bookmarks;
-    const bookmark = previous.find(match);
-    setBookmarks(previous.filter((b) => !match(b)));
-
-    if (!bookmark?.id) {
-      await reload();
-      return;
-    }
-
-    const res = await DeleteSavedMessage(
-      `/organisations/${orgId}/saved/message/${bookmark.id}`
-    );
-
-    if (!isOk(res)) {
-      setBookmarks(previous);
-      showError(REMOVE_ERROR);
-    }
+  const remove = async (key: string, match: (b: Bookmark) => boolean) => {
+    await run(key, async () => {
+      const previous = bookmarks.find(match);
+      update({ phase: "begin", key });
+      try {
+        const bookmark = previous?.id ? previous : (await reload()).find(match);
+        if (bookmark?.id) {
+          const res = await DeleteSavedMessage(
+            `/organisations/${orgId}/saved/message/${bookmark.id}`
+          );
+          if (!isOk(res)) throw new Error(REMOVE_ERROR);
+        }
+        update({ phase: "finish", key });
+      } catch {
+        update({ phase: "finish", key, value: previous });
+        showError(REMOVE_ERROR);
+      }
+    });
   };
 
   const saveThread = (item: { thread_id: string; channels_id?: string }) =>
@@ -162,7 +205,7 @@ export const useSavedMessageActions = () => {
     );
 
   const removeThread = (threadId: string) =>
-    remove((b) => b.thread_id === threadId);
+    remove(`thread:${threadId}`, (b) => b.thread_id === threadId);
 
   const saveReply = (item: {
     id: string;
@@ -181,7 +224,7 @@ export const useSavedMessageActions = () => {
     );
 
   const removeReply = (messageId: string) =>
-    remove((b) => b.message_id === messageId);
+    remove(`reply:${messageId}`, (b) => b.message_id === messageId);
 
   return {
     isThreadSaved,
