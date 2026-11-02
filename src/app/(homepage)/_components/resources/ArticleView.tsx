@@ -14,9 +14,6 @@ export const articleMetadata = (article: Article): Metadata => {
     title: { absolute: article.metaTitle },
     description: article.description,
     authors: [articleAuthor],
-    icons: {
-      icon: "/TelexIcon.svg",
-    },
     openGraph: {
       title: article.headline,
       description: article.description,
