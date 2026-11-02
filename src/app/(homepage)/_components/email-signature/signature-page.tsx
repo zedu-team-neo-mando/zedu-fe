@@ -7,7 +7,7 @@ import DOMPurify from "dompurify";
 import { Code2, Copy } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { showError, showSuccess } from "~/components/toast/sonner";
-import { buildSignature } from "./build-signature";
+import { buildSignature, normaliseUrl } from "./build-signature";
 import {
   DEFAULT_VALUES,
   SignatureForm,
@@ -67,6 +67,147 @@ interface SignaturePageProps {
   /** The marketing site's address, read on the server (client code can't read it). */
   siteBase: string;
 }
+
+/** React escapes form values while keeping the preview close to the copied HTML. */
+const SignaturePreview = ({
+  values,
+  creditUrl,
+}: {
+  values: SignatureValues;
+  creditUrl: string;
+}) => {
+  const name = values.fullName.trim();
+  const roleLine = [values.role.trim(), values.organisation.trim()]
+    .filter(Boolean)
+    .join(" · ");
+  const email = values.email.trim();
+  const phone = values.phone.trim();
+  const website = normaliseUrl(values.website);
+  const community = normaliseUrl(values.communityUrl);
+  const contacts = [
+    email && { href: `mailto:${email}`, label: email },
+    phone && {
+      href: `tel:${phone.replace(/[^\d+]/g, "")}`,
+      label: phone,
+    },
+    website && {
+      href: website,
+      label: website.replace(/^https?:\/\//, "").replace(/\/$/, ""),
+    },
+  ].filter((contact): contact is { href: string; label: string } =>
+    Boolean(contact)
+  );
+
+  return (
+    <table
+      cellPadding="0"
+      cellSpacing="0"
+      border={0}
+      style={{ borderCollapse: "collapse" }}
+    >
+      <tbody>
+        <tr>
+          <td
+            style={{
+              fontFamily: "Arial, Helvetica, sans-serif",
+              fontSize: 16,
+              fontWeight: "bold",
+              color: values.accent,
+              padding: "0 0 2px",
+            }}
+          >
+            {name || "Your name"}
+          </td>
+        </tr>
+        {roleLine && (
+          <tr>
+            <td
+              style={{
+                fontFamily: "Arial, Helvetica, sans-serif",
+                fontSize: 13,
+                color: "#525252",
+                padding: "0 0 8px",
+              }}
+            >
+              {roleLine}
+            </td>
+          </tr>
+        )}
+        {contacts.length > 0 && (
+          <tr>
+            <td
+              style={{
+                fontFamily: "Arial, Helvetica, sans-serif",
+                fontSize: 13,
+                color: "#404040",
+                padding: "0 0 8px",
+              }}
+            >
+              {contacts.map((contact, index) => (
+                <span key={contact.href}>
+                  {index > 0 && (
+                    <>
+                      {" "}
+                      <span style={{ color: "#a3a3a3" }}>|</span>{" "}
+                    </>
+                  )}
+                  <a
+                    href={contact.href}
+                    style={{ color: "#404040", textDecoration: "none" }}
+                  >
+                    {contact.label}
+                  </a>
+                </span>
+              ))}
+            </td>
+          </tr>
+        )}
+        {community && (
+          <tr>
+            <td
+              style={{
+                fontFamily: "Arial, Helvetica, sans-serif",
+                fontSize: 13,
+                padding: "0 0 8px",
+              }}
+            >
+              <a
+                href={community}
+                style={{
+                  color: values.accent,
+                  fontWeight: "bold",
+                  textDecoration: "none",
+                }}
+              >
+                Join our community on Zedu →
+              </a>
+            </td>
+          </tr>
+        )}
+        {values.showCredit && creditUrl && (
+          <tr>
+            <td
+              style={{
+                fontFamily: "Arial, Helvetica, sans-serif",
+                fontSize: 11,
+                color: "#737373",
+                padding: "4px 0 0",
+              }}
+            >
+              Signature made with{" "}
+              <a
+                href={creditUrl}
+                style={{ color: "#737373", textDecoration: "none" }}
+              >
+                Zedu
+              </a>
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  );
+};
 
 /**
  * Client-only email signature generator: builds the signature in the browser,
@@ -207,12 +348,12 @@ const SignaturePage = ({ siteBase }: SignaturePageProps) => {
               </div>
               <div className="flex flex-col gap-5 px-4 py-5 text-sm text-neutral-700 sm:px-5">
                 <p>Hi everyone, this week&apos;s notes are attached.</p>
-                {/* Every value is escaped and links are limited to http(s), mailto and tel in buildSignature. */}
-                {/* nosemgrep: typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml */}
-                <div
-                  className="overflow-x-auto"
-                  dangerouslySetInnerHTML={{ __html: safeSignatureHtml }}
-                />
+                <div className="overflow-x-auto">
+                  <SignaturePreview
+                    values={{ ...DEFAULT_VALUES, ...values }}
+                    creditUrl={creditUrl}
+                  />
+                </div>
               </div>
             </div>
 

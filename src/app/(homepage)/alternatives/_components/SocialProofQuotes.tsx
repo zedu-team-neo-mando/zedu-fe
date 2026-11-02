@@ -18,7 +18,8 @@ export const SocialProofQuotes: React.FC<QuotesProps> = ({ config }) => {
           Why Instructors &amp; Academies Switched from {config.name}
         </h2>
         <p className="mt-2 text-neutral-600 text-sm sm:text-base">
-          Example scenarios showing why cohorts migrate. These are illustrative, not quotes from named individuals.
+          Example scenarios showing why cohorts migrate. These are illustrative,
+          not quotes from named individuals.
         </p>
       </div>
 

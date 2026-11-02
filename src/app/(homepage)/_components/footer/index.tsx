@@ -17,6 +17,7 @@ import {
 } from "~/lib/env-urls";
 import { Loader2, Star } from "lucide-react";
 import { ratingSummary, storeRatings } from "~/lib/store-ratings";
+
 import { ZeduRoundedWhiteLogo, ZeduWhiteLogo } from "../svgs";
 
 type FooterLink = {
@@ -80,6 +81,7 @@ const supportLinks: FooterLink[] = [
 const resourcesLinks: FooterLink[] = [
   { id: 0, label: "Resource Library", href: "/resources" },
   { id: 1, label: "Templates", href: "/templates" },
+  { id: 10, label: "Badges", href: "/badge" },
   {
     id: 2,
     label: "Free Health Check",
