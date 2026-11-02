@@ -9,12 +9,14 @@ import { FeaturedCard } from "~/app/(homepage)/_components/ui/FeaturedCard";
 import { ComparisonShowcase } from "~/app/(homepage)/_components/ui/ComparisonShowcase";
 import { DynamicFooter } from "../../_components/footer/dynamic-footer";
 
+const description =
+  "Power higher education communication with Zedu. Connect departments, professors, and students with structured channels, searchable discussions, and AI-assisted learning workflows.";
+
 export const metadata: Metadata = {
   title: {
     absolute: "Zedu for Universities - Structured Communication at Scale",
   },
-  description:
-    "Power higher education communication with Zedu. Connect departments, professors, and students with structured channels, searchable discussions, and AI-assisted learning workflows.",
+  description,
   keywords: [
     "university communication platform",
     "higher education collaboration software",
@@ -27,8 +29,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Zedu for Universities - Structured Communication at Scale",
-    description:
-      "Unify academic communication across faculties and courses with dedicated channels, collaborative learning spaces, and AI-powered assistance.",
+    description,
     url: siteUrl("/solutions/universities"),
     siteName: "Zedu",
     type: "website",
@@ -37,8 +38,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Zedu for Universities - Academic Collaboration Platform",
-    description:
-      "Help departments and students communicate clearly, coordinate courses faster, and keep academic discussions organized in one workspace.",
+    description,
   },
   alternates: {
     canonical: siteUrl("/solutions/universities"),

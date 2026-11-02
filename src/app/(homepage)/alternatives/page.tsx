@@ -15,10 +15,12 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+const description =
+  "Explore why top bootcamps, schools, and cohort academies are switching from Slack and Discord to Zedu. Compare features, calculate cost savings, and migrate in 5 minutes.";
+
 export const metadata: Metadata = {
   title: "Competitor Comparison & Migration Hub | Zedu",
-  description:
-    "Explore why top bootcamps, schools, and cohort academies are switching from Slack and Discord to Zedu. Compare features, calculate cost savings, and migrate in 5 minutes.",
+  description,
   keywords: [
     "slack alternative for education",
     "discord alternative for schools",
@@ -29,8 +31,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Zedu Competitor Comparison & Migration Hub",
-    description:
-      "See why educators are replacing Slack's $8.75/student paywall and Discord's gaming noise with Zedu's education-first platform.",
+    description,
     url: siteUrl("/alternatives"),
     siteName: "Zedu",
     images: [
@@ -46,8 +47,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Zedu Competitor Comparison & Migration Hub",
-    description:
-      "Explore why top educators choose Zedu over Slack and Discord for structured cohorts and interactive learning.",
+    description,
     images: [ogImageUrl("og-image-5.png")],
   },
   alternates: {

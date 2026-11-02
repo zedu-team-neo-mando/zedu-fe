@@ -8,10 +8,12 @@ import { getProductBreadcrumbJsonLd } from "../../_lib/productStructuredData";
 import { FAQSection } from "../../_components/home/FAQSection";
 import type { HomeFAQ } from "../../_lib/faqData";
 
+const description =
+  "Manage course files in one structured workspace with Zedu File Management. Organize resources, share securely, and collaborate across classes, cohorts, and departments.";
+
 export const metadata: Metadata = {
   title: "File Management for Classes and Cohorts",
-  description:
-    "Manage course files in one structured workspace with Zedu File Management. Organize resources, share securely, and collaborate across classes, cohorts, and departments.",
+  description,
   keywords: [
     "Zedu file management",
     "education file sharing",
@@ -24,8 +26,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Zedu File Management - Organize and Share Learning Materials",
-    description:
-      "Store lectures, assignments, and class resources in organized spaces while keeping collaboration connected to the right learning context.",
+    description,
     url: siteUrl("/products/file-management"),
     siteName: "Zedu",
     type: "website",
@@ -33,8 +34,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Zedu File Management - Structured Learning Resources",
-    description:
-      "Keep course files organized, searchable, and secure with a collaboration-ready workspace built for education.",
+    description,
   },
   alternates: {
     canonical: siteUrl("/products/file-management"),

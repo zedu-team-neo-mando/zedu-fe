@@ -11,10 +11,12 @@ import { ComparisonShowcase } from "~/app/(homepage)/_components/ui/ComparisonSh
 import { DynamicFooter } from "../../_components/footer/dynamic-footer";
 import { BehaviorPersonalization } from "~/app/(homepage)/_components/bootcamps/BehaviorPersonalization";
 
+const description =
+  "Run bootcamp cohorts in one place: structured channels, live calls, files and AI recaps for instructors, mentors and students.";
+
 export const metadata: Metadata = {
   title: "Cohort Management Software for Bootcamps",
-  description:
-    "Run bootcamp cohorts in one place: structured channels, live calls, files and AI recaps for instructors, mentors and students.",
+  description,
   keywords: [
     "bootcamp platform",
     "cohort management software",
@@ -27,8 +29,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Zedu for Bootcamps - Structured Cohort Management",
-    description:
-      "Manage cohorts, support hands-on learning, and build strong bootcamp communities with organized channels and real-time collaboration.",
+    description,
     url: siteUrl("/solutions/bootcamps"),
     siteName: "Zedu",
     type: "website",
@@ -37,8 +38,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Zedu for Bootcamps - Cohort Management Platform",
-    description:
-      "Build and manage bootcamp cohorts where mentors, instructors, and students collaborate easily with organized channels and real-time feedback.",
+    description,
   },
   alternates: {
     canonical: siteUrl("/solutions/bootcamps"),

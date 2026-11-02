@@ -11,12 +11,14 @@ import { getDownloadStructuredData } from "../_lib/downloadStructuredData";
 const HERO_LINK = { campaign: "download-page", content: "hero" };
 const BOTTOM_LINK = { campaign: "download-page", content: "bottom" };
 
+const description =
+  "Download Zedu on iOS, Android, and desktop. Join classes, chat with peers, manage files, and stay updated in one connected learning workspace.";
+
 export const metadata: Metadata = {
   title: {
     absolute: "Download Zedu App | Mobile and Desktop Learning Workspace",
   },
-  description:
-    "Download Zedu on iOS, Android, and desktop. Join classes, chat with peers, manage files, and stay updated in one connected learning workspace.",
+  description,
   keywords: [
     "Zedu app download",
     "download Zedu",
@@ -32,8 +34,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Download Zedu App | Mobile and Desktop Learning Workspace",
-    description:
-      "Get Zedu for mobile and desktop. Learn anywhere with classes, chat, files, and real-time updates in one place.",
+    description,
     url: "/download",
     type: "website",
     images: [
@@ -48,8 +49,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Download Zedu App | Mobile and Desktop Learning Workspace",
-    description:
-      "Download Zedu for iOS, Android, and desktop to learn, collaborate, and stay updated from anywhere.",
+    description,
     images: ["/images/homepage/download/download-hero.png"],
   },
   robots: {

@@ -16,10 +16,12 @@ import {
   TableRow,
 } from "~/components/ui/table";
 
+const description =
+  "Compare Zedu with Google Classroom: structured class channels, live voice and video calls, and organised course files in one workspace for educators and cohorts.";
+
 export const metadata: Metadata = {
   title: "Google Classroom Alternative for Schools and Bootcamps",
-  description:
-    "Compare Zedu with Google Classroom: structured class channels, live voice and video calls, and organised course files in one workspace for educators and cohorts.",
+  description,
   keywords: [
     "Google Classroom alternative",
     "Zedu vs Google Classroom",
@@ -32,8 +34,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Zedu vs Google Classroom - A Structured Alternative for Educators",
-    description:
-      "See how Zedu compares with Google Classroom for class communication, live calls, community channels and pricing.",
+    description,
     url: siteUrl("/alternatives/google-classroom"),
     siteName: "Zedu",
     images: [
@@ -50,8 +51,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Zedu vs Google Classroom - A Structured Alternative",
-    description:
-      "Compare Zedu with Google Classroom for structured class channels, live calls, community channels and pricing.",
+    description,
     images: [ogImageUrl("og-image-5.png")],
   },
   alternates: {

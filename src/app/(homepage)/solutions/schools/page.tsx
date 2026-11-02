@@ -19,12 +19,14 @@ import { FeaturedCard } from "~/app/(homepage)/_components/ui/FeaturedCard";
 import { ComparisonShowcase } from "~/app/(homepage)/_components/ui/ComparisonShowcase";
 import { DynamicFooter } from "../../_components/footer/dynamic-footer";
 
+const description =
+  "Improve classroom communication with Zedu. Give teachers and students structured channels for lessons, assignments, discussions, and school-wide updates in one platform.";
+
 export const metadata: Metadata = {
   title: {
     absolute: "Zedu for Schools - Structured Communication for Classrooms",
   },
-  description:
-    "Improve classroom communication with Zedu. Give teachers and students structured channels for lessons, assignments, discussions, and school-wide updates in one platform.",
+  description,
   keywords: [
     "school communication platform",
     "classroom communication software",
@@ -37,8 +39,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Zedu for Schools - Structured Communication for Classrooms",
-    description:
-      "Bring teachers, students, and school staff into one organized workspace for announcements, assignments, and focused classroom discussions.",
+    description,
     url: siteUrl("/solutions/schools"),
     siteName: "Zedu",
     type: "website",
@@ -47,8 +48,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Zedu for Schools - Structured Classroom Communication",
-    description:
-      "Create organized school communication where class discussions, updates, and assignments stay easy to follow for everyone.",
+    description,
   },
   alternates: {
     canonical: siteUrl("/solutions/schools"),

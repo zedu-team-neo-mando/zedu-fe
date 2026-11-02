@@ -4,14 +4,15 @@ import { ogImageUrl, siteUrl } from "~/lib/env-urls";
 
 // The page is a client component, so its metadata lives here. Without it the
 // page falls back to the homepage's title, description and canonical.
+const description =
+  "Browse Zedu guides, webinars and learning materials for schools, bootcamps and cohorts, with practical help for running structured learning online.";
+
 export const metadata: Metadata = {
   title: "Resources",
-  description:
-    "Browse Zedu guides, webinars and learning materials for schools, bootcamps and cohorts, with practical help for running structured learning online.",
+  description,
   openGraph: {
     title: "Resources | Zedu",
-    description:
-      "Guides, webinars and learning materials for teams running structured learning on Zedu.",
+    description,
     url: siteUrl("/resources"),
     siteName: "Zedu",
     images: [
@@ -27,8 +28,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Resources | Zedu",
-    description:
-      "Guides, webinars and learning materials for teams running structured learning on Zedu.",
+    description,
     images: [ogImageUrl("og-image-5.png")],
   },
   alternates: {

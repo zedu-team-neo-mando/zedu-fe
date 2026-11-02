@@ -13,10 +13,12 @@ import { pricingFAQs } from "../_lib/faqData";
 import { getPricingStructuredData } from "../_lib/pricingStructuredData";
 import { CircleHelp } from "lucide-react";
 
+const description =
+  "Explore Zedu pricing plans for schools, bootcamps, and cohort-based learning teams. Compare features, choose the right plan, and scale structured learning with AI-powered collaboration.";
+
 export const metadata: Metadata = {
   title: "Pricing - Flexible Plans for Modern Learning Teams",
-  description:
-    "Explore Zedu pricing plans for schools, bootcamps, and cohort-based learning teams. Compare features, choose the right plan, and scale structured learning with AI-powered collaboration.",
+  description,
   keywords: [
     "Zedu pricing",
     "education platform pricing",
@@ -29,8 +31,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Zedu Pricing - Flexible Plans for Modern Learning Teams",
-    description:
-      "Compare Zedu plans and features to run structured cohorts, manage learning communication, and scale AI-powered education workflows.",
+    description,
     url: siteUrl("/pricing"),
     siteName: "Zedu",
     type: "website",
@@ -38,8 +39,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Zedu Pricing - Flexible Plans for Modern Learning Teams",
-    description:
-      "Choose a Zedu plan that fits your school, bootcamp, or cohort and unlock AI-powered communication and learning workflows.",
+    description,
   },
   alternates: {
     canonical: siteUrl("/pricing"),

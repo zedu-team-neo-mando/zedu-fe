@@ -7,10 +7,12 @@ import type { HomeFAQ } from "../../_lib/faqData";
 import { DynamicFooter } from "../../_components/footer/dynamic-footer";
 import { getProductBreadcrumbJsonLd } from "../../_lib/productStructuredData";
 
+const description =
+  "Discover Zedu's AI-powered learning tools, including AI Study Assistant, AI Message Summaries, AI Class Notes, and AI Moderation.";
+
 export const metadata: Metadata = {
   title: "AI Assistant - Smarter Learning and Teaching | Zedu",
-  description:
-    "Discover Zedu's AI-powered learning tools, including AI Study Assistant, AI Message Summaries, AI Class Notes, and AI Moderation.",
+  description,
   keywords: [
     "Zedu AI Assistant",
     "AI for education",
@@ -24,8 +26,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Zedu AI Assistant - Smarter Learning and Teaching",
-    description:
-      "Explore AI-powered tools that support teaching, learning, and collaboration on Zedu.",
+    description,
     url: siteUrl("/products/ai"),
     siteName: "Zedu",
     images: [
@@ -41,8 +42,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Zedu AI Assistant - Smarter Learning and Teaching",
-    description:
-      "Discover AI tools that support educators and learners throughout their learning journey.",
+    description,
     images: [ogImageUrl("og-image-5.png")],
   },
   alternates: {

@@ -3,10 +3,12 @@ import { siteUrl } from "~/lib/env-urls";
 import { ContactSalesBenefits } from "./_components/ContactSalesBenefits";
 import { ContactSalesForm } from "./_components/ContactSalesForm";
 
+const description =
+  "Contact the Zedu sales team to find the right plan for your school, bootcamp, or learning organisation. Get tailored pricing, onboarding guidance, and enterprise support.";
+
 export const metadata: Metadata = {
   title: "Contact Sales for Schools and Cohorts",
-  description:
-    "Contact the Zedu sales team to find the right plan for your school, bootcamp, or learning organisation. Get tailored pricing, onboarding guidance, and enterprise support.",
+  description,
   keywords: [
     "contact Zedu sales",
     "education platform demo",
@@ -19,8 +21,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Contact Sales - Zedu for Schools and Cohorts",
-    description:
-      "Talk to Zedu sales about tailored plans, onboarding, and AI-powered collaboration for modern learning teams.",
+    description,
     url: siteUrl("/contact-sales"),
     siteName: "Zedu",
     type: "website",
@@ -28,8 +29,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Contact Sales - Zedu",
-    description:
-      "Get tailored plans and onboarding from Zedu sales for your school, bootcamp, or cohort-based learning organisation.",
+    description,
   },
   alternates: {
     canonical: siteUrl("/contact-sales"),

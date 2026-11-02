@@ -35,8 +35,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Zedu — Structured Learning for Bootcamps & Schools",
-    description:
-      "Zedu is a structured learning platform for bootcamps, schools, and universities. Organize cohorts, channels, and AI-powered learning in one workspace.",
+    description,
     images: ["/og/zedu-home-share.png"],
   },
   alternates: {
