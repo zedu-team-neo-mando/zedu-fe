@@ -8,6 +8,8 @@ import {
   SmilePlus,
   Bookmark,
   BookmarkCheck,
+  UserMinus,
+  UserPlus,
 } from "lucide-react";
 import MessageItem from "./message-item";
 import { AppleEmojiText } from "~/app/(client)/[org]/_components/apple-emoji/apple-emoji-text";
@@ -37,6 +39,10 @@ import { TooltipArrow } from "@radix-ui/react-tooltip";
 import { cn } from "~/lib/utils";
 import UserAvatar from "~/components/layout/user-avatar";
 import { formatReactionUsers } from "~/utils/format-reaction-users";
+import {
+  membershipNames,
+  type MembershipNotice,
+} from "~/utils/membership-notices";
 
 interface MessageProps {
   item: any;
@@ -183,6 +189,53 @@ const Message = ({
       setShowMobileActions(!showMobileActions);
     }
   };
+
+  const membership: MembershipNotice | undefined = item?.membership;
+  if (item?.type === "system" && membership) {
+    const { shown, others } = membershipNames(membership.names);
+    const channelName = state?.channelName || state?.channelDetails?.name;
+    const Icon = membership.kind === "joined" ? UserPlus : UserMinus;
+    const time = new Date(item?.created_at).toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+    const names = [
+      ...shown.map((name) => (
+        <span key={name} className="font-medium text-[#344054]">
+          {name}
+        </span>
+      )),
+      ...(others
+        ? [
+            <span key="others" className="font-medium text-[#344054]">
+              {others} {others === 1 ? "other" : "others"}
+            </span>,
+          ]
+        : []),
+    ];
+
+    return (
+      <div className="message-row flex items-center gap-2 px-5 py-1">
+        <Icon aria-hidden="true" className="size-4 shrink-0 text-[#98A2B3]" />
+        <p className="min-w-0 text-[13px] leading-[18px] text-[#667085]">
+          {names.map((name, index) => (
+            <React.Fragment key={index}>
+              {index > 0 && (index === names.length - 1 ? " and " : ", ")}
+              {name}
+            </React.Fragment>
+          ))}{" "}
+          {membership.kind} {channelName ? `#${channelName}` : "this channel"}.{" "}
+          <time
+            dateTime={item?.created_at}
+            className="whitespace-nowrap text-[11px] text-[#98A2B3]"
+          >
+            {time}
+          </time>
+        </p>
+      </div>
+    );
+  }
 
   if (item?.type === "system") {
     return (
