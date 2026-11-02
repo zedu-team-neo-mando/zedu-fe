@@ -13,7 +13,12 @@ export type MembersColumn = {
   };
   paymentMethod: {
     type:
-      "visa" | "mastercard" | "amex" | "paypal" | "bank_transfer" | "credit";
+      | "visa"
+      | "mastercard"
+      | "amex"
+      | "paypal"
+      | "bank_transfer"
+      | "credit";
     lastFour: string;
     processor: "stripe" | "paypal" | "direct";
   };
@@ -32,7 +37,12 @@ export type Member = {
   name: string;
   role: string;
   status:
-    "active" | "inactive" | "invited" | "pending" | "deactivated" | "accepted";
+    | "active"
+    | "inactive"
+    | "invited"
+    | "pending"
+    | "deactivated"
+    | "accepted";
   created_at: string;
   entity_type: "bot" | "user";
   is_deactivated?: boolean;

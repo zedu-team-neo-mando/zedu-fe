@@ -50,7 +50,10 @@ export const CelebrationThemeProvider: React.FC<{
 
     // 2. Check localStorage override
     const storedOverride = localStorage.getItem(STORAGE_OVERRIDE_KEY) as
-      CelebrationKey | "none" | "auto" | null;
+      | CelebrationKey
+      | "none"
+      | "auto"
+      | null;
 
     const initialKey: CelebrationKey | "none" | "auto" =
       (queryCelebration as CelebrationKey | "none" | "auto" | null) ||
