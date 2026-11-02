@@ -42,25 +42,48 @@ interface ChannelExportModalProps {
   channelId: string;
 }
 
-const downloadExportFile = (item: ChannelExport, channelName?: string) => {
+const downloadExportFile = async (
+  item: ChannelExport,
+  channelName?: string
+) => {
   if (!item.file_url) {
     showError("This export does not have a downloadable file yet");
     return;
   }
 
-  const fileUrl = new URL(item.file_url, window.location.origin);
-  const link = document.createElement("a");
-  link.href = fileUrl.toString();
-  // Cross-origin file URLs can redirect, so let the browser follow them.
-  if (fileUrl.origin === window.location.origin) {
+  try {
+    const fileUrl = new URL(item.file_url, window.location.origin);
+    const link = document.createElement("a");
     link.download = getExportFilename(item, channelName);
+
+    if (fileUrl.origin === window.location.origin) {
+      link.href = fileUrl.toString();
+    } else {
+      try {
+        const response = await fetch(fileUrl.toString());
+        if (!response.ok) {
+          throw new Error("Failed to fetch export file");
+        }
+
+        const objectUrl = URL.createObjectURL(await response.blob());
+        link.href = objectUrl;
+        window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      } catch {
+        // The file host may not allow CORS reads, so let the browser open
+        // the URL directly as before instead of failing the download.
+        link.href = fileUrl.toString();
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+      }
+    }
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showSuccess("Download started");
+  } catch {
+    showError("Unable to download this export. Please try again.");
   }
-  link.target = "_blank";
-  link.rel = "noopener noreferrer";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  showSuccess("Download started");
 };
 
 const statusCopy = (status?: string | null) => {
@@ -380,10 +403,13 @@ export default function ChannelExportModal({
     currentExport ??
     (isExportCompleted(history[0]?.status) ? history[0] : null);
 
-  const handleDownload = (item: ChannelExport) => {
+  const handleDownload = async (item: ChannelExport) => {
     setDownloadingId(item.id);
-    downloadExportFile(item, channelName);
-    window.setTimeout(() => setDownloadingId(null), 400);
+    try {
+      await downloadExportFile(item, channelName);
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   const pageLabel = useMemo(() => {
