@@ -109,7 +109,6 @@ const nextConfig = {
       port: "",
       pathname: "/**",
     })),
-    unoptimized: true,
   },
   transpilePackages: ["lucide-react"],
   assetPrefix: isDev ? undefined : "/mainapp",
