@@ -122,11 +122,12 @@ function ResetPassword() {
 
   // resend otp
   const handleResend = async () => {
-    const payload = {
-      email,
-    };
+    if (!email || loading) return;
+    setLoading(true);
 
-    const res = await PostRequest("/auth/email-request", payload);
+    // Same endpoint as Forgot Password, so the user gets a new reset code.
+    // /auth/email-request is the account verification email.
+    const res = await PostRequest("/auth/password-reset", { email });
 
     if (res?.status === 200 || res?.status === 201) {
       setTimeLeft(1 * 60);
@@ -291,6 +292,7 @@ function ResetPassword() {
                 <Button
                   type="submit"
                   variant="default"
+                  disabled={buttonloading}
                   className="py-6 bg-[#7141F8] hover:bg-[#8760f8] text-white"
                 >
                   {buttonloading ? (
@@ -303,27 +305,28 @@ function ResetPassword() {
                   )}
                 </Button>
 
-                <Link href="/auth/login">
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    className="w-full py-6 border border-[#8760f8] text-[#8760f8] bg-white hover:bg-[#7141F8] hover:text-white"
-                  >
-                    Back to Login
-                  </Button>
-                </Link>
+                {/* A link, not a submit button: leaving must not reset the password. */}
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full py-6 border border-[#8760f8] text-[#8760f8] bg-white hover:bg-[#7141F8] hover:text-white"
+                >
+                  <Link href="/auth/login">Back to Login</Link>
+                </Button>
               </div>
             </div>
 
             <div className="flex flex-col items-center mt-3">
               <p className="text-xs text-gray-500">
                 {timeLeft <= 0 ? (
-                  <span
-                    className="cursor-pointer text-underline"
+                  <button
+                    type="button"
+                    className="cursor-pointer underline disabled:opacity-60"
                     onClick={handleResend}
+                    disabled={loading}
                   >
                     Resend code
-                  </span>
+                  </button>
                 ) : (
                   <span className="cursor-disabled">Resend code after</span>
                 )}{" "}

@@ -111,6 +111,7 @@ function ForgotPassword() {
                 <Button
                   type="submit"
                   variant="default"
+                  disabled={buttonloading}
                   className="py-6 bg-[#7141F8] hover:bg-[#8760f8] text-white"
                 >
                   {buttonloading ? (
@@ -123,15 +124,14 @@ function ForgotPassword() {
                   )}
                 </Button>
 
-                <Link href="/auth/login">
-                  <Button
-                    type="submit"
-                    variant="outline"
-                    className="w-full py-6 border border-[#8760f8] text-[#8760f8] bg-white hover:bg-[#7141F8] hover:text-white"
-                  >
-                    Back to Login
-                  </Button>
-                </Link>
+                {/* A link, not a submit button: leaving must not send a reset email. */}
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full py-6 border border-[#8760f8] text-[#8760f8] bg-white hover:bg-[#7141F8] hover:text-white"
+                >
+                  <Link href="/auth/login">Back to Login</Link>
+                </Button>
               </div>
             </div>
           </form>
