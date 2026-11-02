@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import CombinedInviteInput from "../meeting/combineInput";
 import { User, UserItem } from "../meeting/buzz-userItems";
@@ -17,6 +17,8 @@ interface AddMembersModalProps {
   channelId: string;
   existingParticipants?: { user_id?: string | number }[];
 }
+
+const MAX_NEW_MEMBERS = 9;
 
 const mapOrgMemberToUser = (member: any): User => ({
   id: String(member.id ?? member.user_id ?? ""),
@@ -49,6 +51,7 @@ export const AddMembersModal: React.FC<AddMembersModalProps> = ({
   const [search, setSearch] = useState("");
   const [highlightIndex, setHighlightIndex] = useState(0);
   const [submitLoading, setSubmitLoading] = useState(false);
+  const submittingRef = useRef(false);
 
   const {
     loading: usersLoading,
@@ -117,9 +120,12 @@ export const AddMembersModal: React.FC<AddMembersModalProps> = ({
   }, [orgMembers, selected, existingParticipantIds, state?.user?.user_id]);
 
   const handleSelectUser = (user: User) => {
-    if (!selected.some((u) => u.id === user.id)) {
-      setSelected((prev) => [...prev, user]);
-    }
+    if (selected.length >= MAX_NEW_MEMBERS) return;
+    setSelected((prev) =>
+      prev.length >= MAX_NEW_MEMBERS || prev.some((u) => u.id === user.id)
+        ? prev
+        : [...prev, user]
+    );
     setSearch("");
   };
 
@@ -163,8 +169,16 @@ export const AddMembersModal: React.FC<AddMembersModalProps> = ({
   };
 
   const handleAddMembers = async () => {
-    if (!orgId || !channelId || selected.length === 0) return;
+    if (
+      !orgId ||
+      !channelId ||
+      selected.length === 0 ||
+      selected.length > MAX_NEW_MEMBERS ||
+      submittingRef.current
+    )
+      return;
 
+    submittingRef.current = true;
     setSubmitLoading(true);
     try {
       const user_ids = selected.map((u) => u.id);
@@ -191,6 +205,7 @@ export const AddMembersModal: React.FC<AddMembersModalProps> = ({
     } catch {
       showError("Failed to add members. Please try again.");
     } finally {
+      submittingRef.current = false;
       setSubmitLoading(false);
     }
   };
@@ -222,6 +237,11 @@ export const AddMembersModal: React.FC<AddMembersModalProps> = ({
             search={search}
             onSearchChange={setSearch}
           />
+          {selected.length >= MAX_NEW_MEMBERS && (
+            <p className="mt-2 text-sm text-[#667085]" role="status">
+              You can add up to 9 people at a time.
+            </p>
+          )}
 
           <div className="flex gap-6 border-b mb-3 pt-4">
             <button

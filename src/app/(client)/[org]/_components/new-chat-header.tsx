@@ -28,6 +28,8 @@ export interface User {
   default_avatar_url: string;
 }
 
+const MAX_SELECTED_PEOPLE = 9;
+
 const UserRow = React.memo(function UserRow({
   user,
   index,
@@ -170,14 +172,23 @@ const NewChatHeader = ({ onUsersSelected }: any) => {
     if (!open) setOpen(true);
   };
 
-  const handleSelectUser = useCallback((user: User) => {
-    setSelectedUsers((prev) => [...prev, user]);
-    setInputValue("");
-    highlightRef.current = 0;
-    setHighlightIndex(0);
-    setOpen(false);
-    setTimeout(() => inputRef.current?.focus(), 10);
-  }, []);
+  const handleSelectUser = useCallback(
+    (user: User) => {
+      if (selectedUsers.length >= MAX_SELECTED_PEOPLE) return;
+      setSelectedUsers((prev) =>
+        prev.length >= MAX_SELECTED_PEOPLE ||
+        prev.some((selected) => selected.id === user.id)
+          ? prev
+          : [...prev, user]
+      );
+      setInputValue("");
+      highlightRef.current = 0;
+      setHighlightIndex(0);
+      setOpen(false);
+      setTimeout(() => inputRef.current?.focus(), 10);
+    },
+    [selectedUsers.length]
+  );
 
   const handleHoverRow = useCallback((index: number) => {
     highlightRef.current = index;
@@ -377,6 +388,11 @@ const NewChatHeader = ({ onUsersSelected }: any) => {
           </PopoverContent>
         </Popover>
       </div>
+      {selectedUsers.length >= MAX_SELECTED_PEOPLE && (
+        <p className="mt-2 text-sm text-[#667085]" role="status">
+          You can select up to 9 people.
+        </p>
+      )}
     </div>
   );
 };
