@@ -112,12 +112,14 @@ const PricingPage = () => {
 
       <div
         id="compare-plans"
-        className="relative mx-auto w-full max-w-7xl scroll-mt-24 px-4 sm:px-8 lg:px-12"
+        className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 sm:px-8 lg:px-12 relative overflow-x-auto"
       >
-        <div className="w-full overflow-x-auto no-scrollbar">
-          <div className="min-w-[680px] space-y-6 sm:min-w-[760px]">
+        {/* Single horizontal scroll region for the header and every section so
+            the plan columns cannot drift apart on mobile (issue #1107). */}
+        <div className="min-w-[680px] space-y-6 sm:min-w-[760px]">
+          <div className="no-scrollbar">
             <Table
-              className="min-w-[680px] table-fixed sm:min-w-[760px]"
+              className="min-w-[680px] table-fixed sm:min-w-[760px] no-scrollbar"
               containerClassName="overflow-visible"
             >
               <colgroup>
@@ -131,7 +133,7 @@ const PricingPage = () => {
               </colgroup>
 
               <TableHeader>
-                <TableRow className="border-b border-neutral-200 hover:bg-transparent">
+                <TableRow className="border-b border-neutral-200 hover:bg-transparent no-scrollbar">
                   <TableHead className="border-r border-neutral-200 px-4 py-3 text-left text-sm font-semibold text-neutral-700">
                     Plan Features
                   </TableHead>
@@ -146,20 +148,20 @@ const PricingPage = () => {
                 </TableRow>
               </TableHeader>
             </Table>
-
-            {pricingComparisonDemoSections.map((section) => (
-              <PricingComparisonTable
-                key={section.key}
-                plans={pricingComparisonPlans}
-                section={section}
-                rowInfoIcon={
-                  <CircleHelp className="h-3.5 w-3.5 text-neutral-400" />
-                }
-                containerClassName="overflow-visible"
-                className="mb-8 last:mb-0"
-              />
-            ))}
           </div>
+
+          {pricingComparisonDemoSections.map((section) => (
+            <PricingComparisonTable
+              key={section.key}
+              plans={pricingComparisonPlans}
+              section={section}
+              rowInfoIcon={
+                <CircleHelp className="h-3.5 w-3.5 text-neutral-400" />
+              }
+              containerClassName="overflow-visible"
+              className="mb-8 last:mb-0"
+            />
+          ))}
         </div>
       </div>
 
