@@ -343,7 +343,7 @@ export default function DMNav({
                               </div>
                             )}
                             <span className="text-[12px] text-[#BABAFB]">
-                              {moment(dm.last_read_at).format("LT")}
+                              {dm.last_read_at ? moment(dm.last_read_at).format("LT") : ""}
                             </span>
                           </div>
                         </div>
