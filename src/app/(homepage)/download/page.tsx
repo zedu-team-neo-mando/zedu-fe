@@ -5,7 +5,7 @@ import { ArrowBtn, DownloadAppBtn } from "../_components/ui/Button";
 import FeatureCard from "../_components/FeatureCard";
 import { DynamicFooter } from "../_components/footer/dynamic-footer";
 import { QRCodeDisplay } from "../_components/QRCodeDisplay";
-import { storeLink } from "~/lib/env-urls";
+import { desktopDownloadUrl, storeLink } from "~/lib/env-urls";
 import { getDownloadStructuredData } from "../_lib/downloadStructuredData";
 
 const HERO_LINK = { campaign: "download-page", content: "hero" };
@@ -59,6 +59,7 @@ export const metadata: Metadata = {
 };
 
 const DownLoadPage = () => {
+  const desktopUrl = desktopDownloadUrl();
   const features = [
     {
       icon: "buzz",
@@ -230,11 +231,24 @@ const DownLoadPage = () => {
           <p className="text-center text-xs text-neutral-500 sm:text-sm">
             Stay focused with a full learning workspace on your computer
           </p>
-          <ArrowBtn
-            text="Download for Desktop"
-            hideArrow={false}
-            className="!px-6 !py-2.5"
-          />
+          {desktopUrl ? (
+            <ArrowBtn
+              text="Download for Desktop"
+              href={desktopUrl}
+              hideArrow={false}
+              className="!px-6 !py-2.5"
+            />
+          ) : (
+            <button
+              type="button"
+              disabled
+              aria-disabled="true"
+              data-desktop-download-unavailable
+              className="cursor-not-allowed rounded-full border border-neutral-300 bg-neutral-100 px-6 py-2.5 font-medium text-neutral-500"
+            >
+              Desktop app coming soon
+            </button>
+          )}
 
           <div className="w-full">
             <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] lg:aspect-[16/8]">
