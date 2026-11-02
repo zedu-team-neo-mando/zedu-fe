@@ -55,6 +55,10 @@ const contactSalesSchema = z.object({
     .string()
     .trim()
     .min(1, "Please select an organization type"),
+  organization_size: z
+    .string()
+    .trim()
+    .min(1, "Please select your organization size"),
   message: z
     .string()
     .trim()
@@ -71,6 +75,7 @@ const initialFormData: ContactSalesFormData = {
   email: "",
   phone: "",
   organization_type: "",
+  organization_size: "",
   message: "",
 };
 
@@ -169,16 +174,20 @@ export const ContactSalesForm = () => {
 
     const normalizedPhone = getPhoneDigits(formData.phone);
     const orgType = formData.organization_type.trim();
+    const orgSize = formData.organization_size.trim();
     const rawMessage = formData.message.trim();
-    const formattedMessage = orgType
-      ? `Organization type: ${orgType}\n\n${rawMessage}`
-      : rawMessage;
+    const qualificationContext = [
+      `Organization type: ${orgType}`,
+      `Organization size: ${orgSize}`,
+    ].join("\n");
+    const formattedMessage = `${qualificationContext}\n\n${rawMessage}`;
     const contactData = {
       ...campaignPayload(),
       name: formData.name.trim(),
       email: formData.email.trim(),
       phone_number: normalizedPhone,
       organization_type: orgType,
+      organization_size: orgSize,
       message: formattedMessage,
     };
 
@@ -327,6 +336,51 @@ export const ContactSalesForm = () => {
           {errors.organization_type ? (
             <p id="organization_type-error" className="text-xs text-red-500">
               {errors.organization_type}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="flex flex-col gap-1.5 lg:gap-4">
+          <Label
+            htmlFor="organization_size"
+            className="text-sm font-medium text-[#222]"
+          >
+            Organization Size
+          </Label>
+          <Select
+            value={formData.organization_size}
+            onValueChange={(value) => updateField("organization_size", value)}
+          >
+            <SelectTrigger
+              id="organization_size"
+              aria-required="true"
+              aria-invalid={Boolean(errors.organization_size)}
+              aria-errormessage={
+                errors.organization_size ? "organization_size-error" : undefined
+              }
+              aria-describedby={
+                errors.organization_size ? "organization_size-error" : undefined
+              }
+              className={cn(
+                "h-10 border-[#d9d9df] p-3 text-sm text-[#222] focus:ring-1 focus:ring-primary-500",
+                errors.organization_size && "border-red-500"
+              )}
+            >
+              <SelectValue placeholder="Select organization size" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1-50 learners">1-50 learners</SelectItem>
+              <SelectItem value="51-200 learners">51-200 learners</SelectItem>
+              <SelectItem value="201-1,000 learners">
+                201-1,000 learners
+              </SelectItem>
+              <SelectItem value="1,001+ learners">1,001+ learners</SelectItem>
+              <SelectItem value="Not sure">Not sure</SelectItem>
+            </SelectContent>
+          </Select>
+          {errors.organization_size ? (
+            <p id="organization_size-error" className="text-xs text-red-500">
+              {errors.organization_size}
             </p>
           ) : null}
         </div>
