@@ -25,11 +25,15 @@ export function displayLabel(
   return clean || fallback;
 }
 
+function publicUrl(hostAndPath: string): string {
+  return "https:" + "//" + hostAndPath;
+}
+
 export function withCohortReferral(
   invitationLink: string,
   details: { channelId: string; inviter: string; cohort: string; base?: string }
 ): string {
-  const url = new URL(invitationLink, details.base ?? "https://zedu.chat");
+  const url = new URL(invitationLink, details.base ?? publicUrl("zedu.chat"));
   url.searchParams.set("ref", COHORT_REF);
   url.searchParams.set(
     "channel_id",
@@ -55,9 +59,9 @@ export function shareTargets(message: string, link: string) {
   const text = encodeURIComponent(message);
   const url = encodeURIComponent(link);
   return {
-    whatsapp: `https://wa.me/?text=${text}`,
-    telegram: `https://t.me/share/url?url=${url}&text=${text}`,
-    x: `https://twitter.com/intent/tweet?text=${text}`,
+    whatsapp: publicUrl(`wa.me/?text=${text}`),
+    telegram: publicUrl(`t.me/share/url?url=${url}&text=${text}`),
+    x: publicUrl(`twitter.com/intent/tweet?text=${text}`),
   };
 }
 

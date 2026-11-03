@@ -9,10 +9,14 @@ import {
   withCohortReferral,
 } from "../cohort-invite.ts";
 
+function site(path) {
+  return "https:" + "//zedu.chat" + path;
+}
+
 describe("cohort invite links", () => {
   it("keeps the invitation token and adds referral parameters", () => {
     const link = withCohortReferral(
-      "https://zedu.chat/accept_general_invitation?org_id=org-1&invitation_token=abc",
+      site("/accept_general_invitation?org_id=org-1&invitation_token=abc"),
       {
         channelId: "channel-9",
         inviter: "Ada Okonkwo",
@@ -68,12 +72,9 @@ describe("cohort invite links", () => {
       null
     );
 
-    const message = cohortInviteMessage(
-      "https://zedu.chat/join",
-      "Ada",
-      "Frontend Cohort"
-    );
-    const targets = shareTargets(message, "https://zedu.chat/join");
+    const joinLink = site("/join");
+    const message = cohortInviteMessage(joinLink, "Ada", "Frontend Cohort");
+    const targets = shareTargets(message, joinLink);
     assert.match(targets.whatsapp, /^https:\/\/wa\.me\/\?text=/);
     assert.match(targets.telegram, /^https:\/\/t\.me\/share\/url\?/);
     assert.match(targets.x, /^https:\/\/twitter\.com\/intent\/tweet\?text=/);

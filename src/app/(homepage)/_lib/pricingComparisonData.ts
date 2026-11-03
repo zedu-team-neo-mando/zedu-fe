@@ -1,5 +1,9 @@
 export type PricingComparisonCellValue =
-  string | number | boolean | null | undefined;
+  | string
+  | number
+  | boolean
+  | null
+  | undefined;
 
 export type PricingComparisonPlan = {
   key: string;
@@ -7,7 +11,11 @@ export type PricingComparisonPlan = {
 };
 
 export type PricingComparisonSectionIcon =
-  "community" | "communication" | "learning" | "automation" | "security";
+  | "community"
+  | "communication"
+  | "learning"
+  | "automation"
+  | "security";
 
 export type PricingComparisonRow = {
   key: string;
