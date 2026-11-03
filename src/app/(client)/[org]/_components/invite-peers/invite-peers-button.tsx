@@ -88,8 +88,7 @@ export function InvitePeersButton({
       role_id: roleId,
     });
     const invitationLink = res?.data?.data?.invitation_link as
-      | string
-      | undefined;
+      string | undefined;
     setLoading(false);
 
     if ((res?.status === 200 || res?.status === 201) && invitationLink) {

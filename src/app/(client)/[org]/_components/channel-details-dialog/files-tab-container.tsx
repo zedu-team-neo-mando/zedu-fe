@@ -36,12 +36,7 @@ import ChannelFileMediaPreview from "./channel-file-media-preview";
 import { extractLinks } from "../ChannelMessage/preview-links";
 
 export type ChannelFileFilter =
-  | "all"
-  | "images"
-  | "videos"
-  | "audio"
-  | "documents"
-  | "links";
+  "all" | "images" | "videos" | "audio" | "documents" | "links";
 
 type ChannelFileEntry = Media & {
   thread_id?: string;

@@ -1,11 +1,6 @@
 /** Identifier unions for the planner's selectable inputs. */
 export type CohortSizeId =
-  | "1-20"
-  | "21-50"
-  | "51-100"
-  | "101-200"
-  | "201-500"
-  | "500+";
+  "1-20" | "21-50" | "51-100" | "101-200" | "201-500" | "500+";
 
 export type DurationId = "1-4" | "5-8" | "9-12" | "13-16" | "17-24" | "25+";
 

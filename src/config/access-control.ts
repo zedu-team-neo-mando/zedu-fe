@@ -1,9 +1,7 @@
 import type { PermissionKey } from "~/types/rbac";
 
 export type PermissionRequirement =
-  | PermissionKey
-  | { anyOf: PermissionKey[] }
-  | { allOf: PermissionKey[] };
+  PermissionKey | { anyOf: PermissionKey[] } | { allOf: PermissionKey[] };
 
 export const ORG_SETTINGS_NAV_ITEMS: Array<{
   id: string;
