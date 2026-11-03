@@ -6,15 +6,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { DataContext } from "~/store/GlobalState";
 import { ACTIONS } from "~/store/Actions";
-import {
-  BellIcon,
-  DMsIcon,
-  GearIcon,
-  HomeIcon,
-  PeopleIcon,
-  AgentsIcon,
-  FileIcon,
-} from "~/svgs";
+import { DMsIcon, HomeIcon, PeopleIcon, AgentsIcon, FileIcon } from "~/svgs";
 import ProfileDropdown from "~/app/(client)/[org]/_components/profile-dropdown";
 import UseHomeChannel from "~/app/(client)/[org]/home/channels/hooks/home-channels";
 import SidebarPopouts from "./popouts/sidebar-popouts";
@@ -28,9 +20,8 @@ import { formatUnreadBadge, getDmUnreadTotal } from "./dm-unread";
 const SideBar: React.FC = () => {
   const pathname = usePathname();
   const { state, dispatch } = useContext(DataContext);
-  const { user, orgSlug, notificationBadgeState, orgId } = state;
+  const { user, orgSlug, orgId } = state;
   const channelId = localStorage.getItem("channelId") || "";
-  const notificationBadgeCount = notificationBadgeState?.count ?? 0;
   const dmUnreadCount = useMemo(
     () => getDmUnreadTotal(state?.homeDms, state?.dms),
     [state?.homeDms, state?.dms]
@@ -251,54 +242,6 @@ const SideBar: React.FC = () => {
                     </div>
 
                     <div className="relative flex flex-col items-center overflow-visible">
-                      <Link
-                        href={`/${orgSlug}/notifications`}
-                        aria-label="Notifications"
-                        title="Notifications"
-                        className={`flex flex-col group z-50 cursor-pointer items-center justify-center w-full p-1 ${
-                          pathname === `/${orgSlug}/notifications`
-                            ? "font-medium scale-[1.05]"
-                            : "hover:font-medium "
-                        } `}
-                      >
-                        <span
-                          className={`relative overflow-visible p-2 rounded-[7px]  ${
-                            pathname?.includes(`/${orgSlug}/notifications`)
-                              ? "bg-blue-200"
-                              : "group-hover:bg-blue-200"
-                          }`}
-                        >
-                          <BellIcon />
-                          {notificationBadgeCount > 0 && (
-                            <span className="pointer-events-none absolute -right-1 -top-1 z-10 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-blue-300 bg-[#F04438] px-1 text-[10px] font-semibold leading-none text-white">
-                              {notificationBadgeCount > 99
-                                ? "99+"
-                                : notificationBadgeCount}
-                            </span>
-                          )}
-                        </span>
-                      </Link>
-
-                      <Link
-                        href={`/${orgSlug}/settings/personal/account`}
-                        aria-label="Settings"
-                        className={`flex flex-col group z-50 cursor-pointer mb-2 items-center justify-center w-full ${
-                          pathname === `/${orgSlug}/settings`
-                            ? "font-medium scale-[1.05]"
-                            : "hover:font-medium "
-                        } `}
-                      >
-                        <span
-                          className={`p-2 rounded-[7px]  ${
-                            pathname?.includes(`/${orgSlug}/settings`)
-                              ? "bg-blue-200"
-                              : "group-hover:bg-blue-200"
-                          }`}
-                        >
-                          <GearIcon />
-                        </span>
-                      </Link>
-
                       <ProfileDropdown user={user} />
                     </div>
                   </div>

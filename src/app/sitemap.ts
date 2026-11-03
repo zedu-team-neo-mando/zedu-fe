@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { resources } from "~/app/(homepage)/_lib/resources";
+import { articles, articlePath } from "~/app/(homepage)/_lib/articles";
 import { siteUrl } from "~/lib/env-urls";
 import { allComparisonSlugs } from "~/app/(homepage)/_components/compare/comparisonData";
 import { TEMPLATES } from "~/data/templates";
@@ -34,6 +35,7 @@ const PAGES: { path: string; priority: number }[] = [
   { path: "/contact-sales", priority: 0.6 },
   { path: "/ambassadors", priority: 0.6 },
   { path: "/refer", priority: 0.6 },
+  { path: "/shipped", priority: 0.5 },
   { path: "/changelog", priority: 0.5 },
   { path: "/resources", priority: 0.6 },
   { path: "/tools/cohort-communication-health-check", priority: 0.5 },
@@ -67,9 +69,15 @@ const RESOURCE_PAGES = resources
   .filter(({ link }) => link.startsWith("/resources/"))
   .map(({ link }) => ({ path: link, priority: 0.5 }));
 
+// Guide articles render at /resources?guide=<slug>, the canonical URL their pages declare.
+const GUIDE_PAGES = articles.map(({ slug }) => ({
+  path: articlePath(slug),
+  priority: 0.5,
+}));
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteUrl();
-  return [...PAGES, ...RESOURCE_PAGES]
+  return [...PAGES, ...RESOURCE_PAGES, ...GUIDE_PAGES]
     .filter(
       ({ path }) =>
         !path.startsWith("/auth/") && path !== "/login" && path !== "/signup"

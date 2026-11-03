@@ -49,7 +49,7 @@ export const metadata: Metadata = {
 const featureCardData = [
   {
     title: "Talk in Real Time Inside Learning Channels",
-    desc: "Start a Buzz instantly from any course or cohort channel without leaving the conversation. With just one click, students and instructors can jump into a live voice discussion to talk through ideas, ask questions, or collaborate",
+    desc: "Start a Buzz instantly from any course or cohort channel without leaving the conversation. With just one click, students and instructors can jump into a live voice discussion to talk through ideas, ask questions, or collaborate.",
     image: "/images/homepage/products/buzz/image-1.png",
   },
   {

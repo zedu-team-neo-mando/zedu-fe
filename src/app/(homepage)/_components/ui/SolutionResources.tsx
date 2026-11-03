@@ -9,6 +9,13 @@ const classroomGuide = {
   href: "/resources/moving-your-class-from-whatsapp-telegram-to-zedu",
 };
 
+const gettingStartedGuide = {
+  title: "Set up your first cohort",
+  description:
+    "Follow a step-by-step tutorial to create your organisation, organise channels, invite learners and run your cohort on Zedu.",
+  href: "/resources?guide=getting-started-with-zedu",
+};
+
 const communicationPlanner = {
   title: "Plan your cohort communication",
   description:
@@ -40,6 +47,7 @@ const resources = {
     introduction:
       "Prepare your cohort workspace, review communication habits and plan how learners will find updates and support.",
     items: [
+      gettingStartedGuide,
       {
         title: "Explore the coding bootcamp template",
         description:

@@ -24,6 +24,16 @@ export const tabs: ResourceTab[] = [
 
 export const resources: ResourceItem[] = [
   {
+    id: 11,
+    tab: "guides",
+    category: "Guides",
+    title: "Getting Started with Zedu",
+    description:
+      "A step-by-step tutorial: create your organisation, set up channels, invite learners and run your first cohort.",
+    image: "/images/homepage/resources/getting-started/cover.png",
+    link: "/resources?guide=getting-started-with-zedu",
+  },
+  {
     id: 10,
     tab: "guides",
     category: "Guides",
@@ -82,6 +92,16 @@ export const resources: ResourceItem[] = [
       "Answer four questions about your cohort and get a downloadable playbook with channels, a weekly roadmap, and a communication schedule.",
     image: "/images/homepage/resources/image-3.png",
     link: "/resources/cohort-communication-planner",
+  },
+  {
+    id: 11,
+    tab: "guides",
+    category: "Tools",
+    title: "Shipped on Zedu",
+    description:
+      "Fill in the fix you shipped and download a branded card, three captions, and the #ShippedOnZedu hashtag.",
+    image: "/images/homepage/resources/image-2.png",
+    link: "/shipped",
   },
   {
     id: 9,

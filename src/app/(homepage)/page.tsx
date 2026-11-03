@@ -4,6 +4,7 @@ import { FeatureSection } from "./_components/home/FeatureSection";
 import HeroSection from "./_components/home/Herosection";
 import { CreatorSection } from "./_components/home/CreatorSection";
 import { ArticlesSection } from "./_components/home/ArticlesSection";
+import { LearningSetupGuide } from "./_components/home/LearningSetupGuide";
 import { PricingSection } from "./_components/home/PricingSection";
 import { WhySection } from "./_components/home/WhySection";
 import { TestimonialsSection } from "./_components/home/TestimonialsSection";
@@ -62,6 +63,7 @@ const HomePage = () => {
       <ChooseSetupGuide />
       <FeatureSection />
       <ArticlesSection />
+      <LearningSetupGuide />
       <PricingSection />
       <WhySection />
       <TestimonialsSection />

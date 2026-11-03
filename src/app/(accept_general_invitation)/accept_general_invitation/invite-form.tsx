@@ -15,6 +15,12 @@ import { Button } from "~/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { DataContext } from "~/store/GlobalState";
 import PoweredByZedu from "~/components/powered-by-zedu";
+import {
+  COHORT_REF,
+  cohortBanner,
+  preserveReferralParams,
+  trackCohortInvite,
+} from "~/lib/cohort-invite";
 
 const REDIRECT_SECONDS = 10;
 
@@ -38,13 +44,30 @@ const InviteForm = () => {
     useState<PendingRedirect | null>(null);
   const [redirectCountdown, setRedirectCountdown] = useState(REDIRECT_SECONDS);
   const hasInitialized = useRef(false);
+  const trackedClick = useRef(false);
+  const banner = cohortBanner({
+    ref: searchParams.get("ref"),
+    inviter: searchParams.get("inviter"),
+    cohort: searchParams.get("cohort"),
+    organisation: orgData?.organisation_name ?? null,
+  });
+
+  useEffect(() => {
+    if (trackedClick.current || linkInvalid) return;
+    if (searchParams.get("ref") !== COHORT_REF) return;
+    trackedClick.current = true;
+    trackCohortInvite("invite_link_clicked", {
+      ref: COHORT_REF,
+      channel_id: searchParams.get("channel_id") || "",
+    });
+  }, [linkInvalid, searchParams]);
 
   const getInviteRedirectUrl = useCallback(() => {
     const params = new URLSearchParams();
     if (org_id) params.set("org_id", org_id);
     if (invitation_token) params.set("invitation_token", invitation_token);
-    return `/accept_general_invitation?${params.toString()}`;
-  }, [org_id, invitation_token]);
+    return `/accept_general_invitation?${preserveReferralParams(searchParams, params).toString()}`;
+  }, [org_id, invitation_token, searchParams]);
 
   const buildAuthRedirectUrl = useCallback(
     (path: "/auth/sign-up" | "/auth/login", userEmail?: string) => {
@@ -103,6 +126,13 @@ const InviteForm = () => {
         }
       }
 
+      if (searchParams.get("ref") === COHORT_REF) {
+        trackCohortInvite("invite_signup_completed", {
+          ref: COHORT_REF,
+          channel_id: searchParams.get("channel_id") || "",
+        });
+      }
+
       // The welcome page reads org_id to load the organisation's name.
       router.push(
         `/${orgSlug}/invited?org_id=${encodeURIComponent(res.data.data.user.current_org)}`
@@ -113,7 +143,7 @@ const InviteForm = () => {
     setButtonLoading(false);
     setLoading(false);
     return false;
-  }, [invitation_token, marketingOptIn, router]);
+  }, [invitation_token, marketingOptIn, router, searchParams]);
 
   useEffect(() => {
     if (linkInvalid) {
@@ -230,7 +260,17 @@ const InviteForm = () => {
           </div>
         ) : (
           <>
-            <h1 className="mt-14 text-[48px] font-bold leading-tight">
+            {banner && (
+              <p
+                role="status"
+                className="mt-8 max-w-xl rounded-xl bg-white px-5 py-4 text-base font-semibold text-[#5925DC]"
+              >
+                {banner}
+              </p>
+            )}
+            <h1
+              className={`${banner ? "mt-6" : "mt-14"} text-[48px] font-bold leading-tight`}
+            >
               See what{" "}
               <span className="capitalize text-[#6E1EFF]">
                 {orgData?.organisation_name}

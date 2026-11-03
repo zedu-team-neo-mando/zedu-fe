@@ -6,13 +6,11 @@ import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { Button } from "~/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Checkbox } from "~/components/ui/checkbox";
 import Loading from "~/components/ui/loading";
 import { PostRequest } from "~/utils/request";
 import { showError } from "~/components/toast/sonner";
 import { useGoogleLogin } from "@react-oauth/google";
 import { RegisterWebhookRequest } from "~/utils/webhook-request";
-import { Separator } from "~/components/ui/separator";
 import AppleSignin from "react-apple-signin-auth";
 import { Eye, EyeOff, Sparkles } from "lucide-react";
 import {
@@ -20,13 +18,13 @@ import {
   PASSWORD_TOO_SHORT_MESSAGE,
   isPasswordTooShort,
 } from "~/lib/password";
-
 import { isAutoCreatedOrg } from "~/utils/organisation";
 import { getSafeRedirect } from "~/utils/safe-redirect";
+import { AuthWorkspacePanel } from "~/app/(auth)/_components/auth-workspace-panel";
 
 /**
- * User registration page supporting email/password, Google, Apple auth, and template onboarding.
- * @returns Rendered sign-up component.
+ * Modernized user registration page supporting email/password, Google, Apple auth,
+ * workspace design system, and referral attribution.
  */
 function SignUp() {
   const [email, setEmail] = useState("");
@@ -64,11 +62,7 @@ function SignUp() {
       }
     }
   }, [searchParams]);
-  /**
-   * Constructs destination route to the welcome flow preserving any template param.
-   * @param slug Organization slug identifier.
-   * @returns Route path string.
-   */
+
   const toWelcome = (slug: string) => {
     const tmpl = searchParams.get("template")?.trim();
     return tmpl
@@ -76,10 +70,6 @@ function SignUp() {
       : `/${slug}/welcome`;
   };
 
-  /**
-   * Handles successful Apple authentication credential callback.
-   * @param response Apple authentication response payload.
-   */
   const handleAppleSuccess = async (response: any) => {
     setAppleLoading(true);
     try {
@@ -113,8 +103,9 @@ function SignUp() {
             router.push(toWelcome(orgSlug));
           }
         }
-        const message = `\nName: ${user?.username}\\nEmail: ${user?.email}`;
-        RegisterWebhookRequest(
+
+        const message = `\nName: ${user?.username}\nEmail: ${user?.email}`;
+        await RegisterWebhookRequest(
           user?.username,
           "User Registration (Apple)",
           message.trim(),
@@ -128,34 +119,6 @@ function SignUp() {
     }
   };
 
-  useEffect(() => {
-    const fromInvite = new URLSearchParams(window.location.search).get(
-      "invite"
-    );
-
-    if (fromInvite) {
-      const fullUrl = window.location.href;
-      localStorage.setItem("postInviteRedirect", fullUrl);
-    }
-  }, []);
-
-  useEffect(() => {
-    const inviteEmail = searchParams.get("email");
-    if (inviteEmail) {
-      setEmail(inviteEmail.trim());
-    }
-    const template = searchParams.get("template")?.trim();
-    if (template) {
-      localStorage.setItem("selected_template", template);
-    } else {
-      localStorage.removeItem("selected_template");
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    setFormSubmitted(false);
-  }, [password]);
-
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -168,18 +131,16 @@ function SignUp() {
     setPasswordFocused(false);
   };
 
-  // validate form
   const validateForm = () => {
     const newErrors = { email: "", password: "" };
     const trimmedEmail = email.trim();
-
     if (!trimmedEmail) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(trimmedEmail)) {
       newErrors.email = "Invalid email address";
     }
 
-    if (!password || password.trim() === "") {
+    if (!password) {
       newErrors.password = "Password is required";
     } else if (isPasswordTooShort(password)) {
       newErrors.password = PASSWORD_TOO_SHORT_MESSAGE;
@@ -189,82 +150,53 @@ function SignUp() {
     return !newErrors.email && !newErrors.password;
   };
 
-  // email change
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-    if (errors.email) {
-      setErrors((prevErrors) => ({ ...prevErrors, email: "" }));
-    }
-  };
-
-  const handleEmailBlur = () => {
-    setEmail((current) => current.trim());
-  };
-
-  // password change
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-    if (errors.password) {
-      setErrors((prevErrors) => ({ ...prevErrors, password: "" }));
-    }
-  };
-
-  // handle submit
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const trimmedEmail = email.trim();
-    if (trimmedEmail !== email) {
-      setEmail(trimmedEmail);
-    }
+    setFormSubmitted(true);
 
     if (validateForm()) {
       setLoading(true);
-      const payload = {
-        ...campaignPayload(),
+      const redirectUrl = getSafeRedirect(searchParams.get("redirect"));
+      const coworkerId = searchParams.get("coworkerId");
+
+      const trimmedEmail = email.trim();
+      const res = await PostRequest("/auth/register", {
         email: trimmedEmail,
         password,
-        ...(refParam ? { referral_code: refParam } : {}),
-      };
-
-      const redirectUrl = getSafeRedirect(searchParams.get("redirect"));
-      const res = await PostRequest("/auth/register", payload);
+        ...campaignPayload(),
+      });
 
       if (res?.status === 200 || res?.status === 201) {
         localStorage.setItem("token", res?.data?.data?.access_token);
         localStorage.setItem("useremail", res?.data?.data?.user?.email);
         localStorage.setItem("user", JSON.stringify(res?.data?.data?.user));
         localStorage.setItem("orgId", res?.data?.data?.user?.current_org);
+
         const orgSlug = res.data.data.user.current_organisation_slug;
         if (orgSlug) {
           localStorage.setItem("orgSlug", orgSlug);
         }
 
         if (redirectUrl) {
+          const finalRedirectUrl = coworkerId
+            ? `${redirectUrl}?coworkerId=${coworkerId}`
+            : redirectUrl;
           setTimeout(() => {
-            router.push(redirectUrl);
+            router.push(finalRedirectUrl);
           }, 100);
         } else {
           setTimeout(() => {
-            if (
-              res?.data?.data?.user?.is_onboarded &&
-              !isAutoCreatedOrg(res?.data?.data?.user?.organisation?.type)
-            ) {
-              router.push(`/${orgSlug}`);
-            } else {
-              router.push(toWelcome(orgSlug));
-            }
+            router.push(toWelcome(orgSlug));
           }, 100);
         }
 
         const user = res?.data?.data?.user;
-
         const message = `
-          Name: ${user?.username}\\n
-          Email: ${user?.email}
-          `;
+            Name: ${user?.username}\n
+            Email: ${user?.email}
+            `;
 
-        RegisterWebhookRequest(
+        await RegisterWebhookRequest(
           user?.username,
           "User Registration",
           message.trim(),
@@ -274,6 +206,20 @@ function SignUp() {
         setLoading(false);
       }
     }
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    setErrors((prevErrors) => ({ ...prevErrors, email: "" }));
+  };
+
+  const handleEmailBlur = () => {
+    setEmail((current) => current.trim());
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+    setErrors((prevErrors) => ({ ...prevErrors, password: "" }));
   };
 
   const login = useGoogleLogin({
@@ -297,6 +243,7 @@ function SignUp() {
           localStorage.setItem("useremail", user?.email);
           localStorage.setItem("user", JSON.stringify(user));
           localStorage.setItem("orgId", user?.current_org);
+
           const orgSlug = res.data.data.user.current_organisation_slug;
           if (orgSlug) {
             localStorage.setItem("orgSlug", orgSlug);
@@ -316,36 +263,36 @@ function SignUp() {
           }
 
           const message = `
-          Name: ${user?.username}\\n
-          Email: ${user?.email}
-          `;
+            Name: ${user?.username}\n
+            Email: ${user?.email}
+            `;
 
-          RegisterWebhookRequest(
+          await RegisterWebhookRequest(
             user?.username,
-            "User Registration",
+            "User Registration (Google)",
             message.trim(),
             "success"
           );
         }
       } catch (err) {
-        console.error("Google Login Error:", err);
+        console.error("Google Signup Error:", err);
       } finally {
         setGoogleloading(false);
       }
     },
     onError: (error) => {
       setGoogleloading(false);
-      console.error("Google Sign-up Failed:", error);
+      console.error("Google Signup Failed:", error);
       if (error.error !== "access_denied") {
         showError(
           "Google sign-up failed",
-          "Try again, or sign up with email and password instead."
+          "Try again, or use email and password instead."
         );
       }
     },
     onNonOAuthError: (error) => {
       setGoogleloading(false);
-      console.error("Google Sign-up Failed:", error);
+      console.error("Google Signup Failed:", error);
       if (error.type === "popup_failed_to_open") {
         showError(
           "Google sign-up failed",
@@ -355,265 +302,309 @@ function SignUp() {
     },
   });
 
-  //
-
   return (
-    <main className="w-full min-h-screen flex flex-col items-center">
-      <div className="flex items-center justify-between w-full py-6 max-w-7xl px-4 sm:px-6 lg:px-8">
-        <Link href="/">
-          <Image src="/Zedu.png" alt="Zedu home" width={86} height={31} />
-        </Link>
-        <div>
-          Already have an account?{" "}
-          <Link href={"/auth/login"} className="text-[#7141F8]">
-            Sign In
-          </Link>
-        </div>
-      </div>
-      <section className="w-full md:w-[55%] flex flex-col max-w-xs md:max-w-lg mx-auto items-start justify-start pt-[20px] md:pt-0 ">
-        <div className="w-full flex flex-col justify-center mt-10 items-center gap-[8px] mb-[32px]">
-          <h1 className="w-full text-center mt-8 text-[24px] md:text-[28px] font-[600] leading-[30px] md:leading-[35px]">
-            Stay Focused While{" "}
-            <span className="text-[24px] md:text-[28px] font-[600] leading-[30px] md:leading-[35px] bg-gradient-to-t from-[#8860F8] to-[#7141F8] bg-clip-text text-transparent">
-              Zedu Handles The Hustle
-            </span>{" "}
-          </h1>
-        </div>
+    <main className="w-full min-h-screen flex bg-white text-neutral-900">
+      {/* Left Side: Modern Workspace Ambient Panel */}
+      <AuthWorkspacePanel
+        title="Your team has been busy."
+        subtitle="12 new messages are waiting for you in 3 channels."
+        channelName="#team-flamingo"
+      />
 
-        {refParam && (
-          <div
-            data-testid="signup-referral-banner"
-            className="w-full mb-5 flex items-center gap-2.5 rounded-xl bg-primary-50 border border-primary-200/80 px-4 py-3 text-xs text-primary-900 shadow-xs"
+      {/* Right Side: Auth Form Container */}
+      <section className="w-full lg:w-1/2 min-h-screen flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-16 bg-white overflow-y-auto">
+        {/* Header Row: Brand Logo & Navigation */}
+        <div className="flex items-center justify-between w-full">
+          <Link
+            href="/"
+            aria-label="Zedu home"
+            className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2"
           >
-            <Sparkles className="h-4 w-4 text-primary-600 shrink-0" />
-            <span>
-              Invited by <strong>@{refParam}</strong>! Complete sign-up to
-              unlock your 100 starter point bonus.
-            </span>
+            <Image
+              src="/Zedu.png"
+              alt="Zedu home"
+              width={86}
+              height={31}
+              priority
+            />
+          </Link>
+          <div className="text-xs sm:text-sm text-[#475467]">
+            Already have an account?{" "}
+            <Link
+              href="/auth/login"
+              className="text-[#7141F8] font-semibold hover:text-[#5f30e6] hover:underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8]"
+            >
+              Log in
+            </Link>
           </div>
-        )}
+        </div>
 
-        <form onSubmit={handleSubmit} className="w-full pb-[40px]">
-          <div className="flex flex-col gap-[16px] mb-[16px]">
-            <div className="w-full flex flex-col gap-[8px] relative">
+        {/* Form Content */}
+        <div className="w-full max-w-md mx-auto my-auto py-8">
+          <div className="mb-6">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#101828]">
+              Create your account
+            </h1>
+            <p className="mt-2 text-sm text-[#475467]">
+              Get started with your team workspace on Zedu.
+            </p>
+          </div>
+
+          {refParam && (
+            <div
+              data-testid="signup-referral-banner"
+              className="w-full mb-5 flex items-center gap-2.5 rounded-xl bg-[#F4F3FF] border border-[#D0D0FD] px-4 py-3 text-xs text-[#5925DC] shadow-xs"
+            >
+              <Sparkles className="h-4 w-4 text-[#7141F8] shrink-0" />
+              <span>
+                Invited by <strong>@{refParam}</strong>! Complete sign-up to
+                unlock your 100 starter point bonus.
+              </span>
+            </div>
+          )}
+
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4"
+            noValidate
+            aria-label="Sign up form"
+          >
+            {/* Email Address */}
+            <div>
               <label
                 htmlFor="email"
-                className="text-[14px] font-[400] leading-[21px]"
+                className="block text-xs font-medium text-[#344054] mb-1.5"
               >
                 Email address
               </label>
-              <div className="w-full flex flex-col gap-[2px]">
-                <input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={handleEmailChange}
-                  onBlur={handleEmailBlur}
-                  placeholder="Enter your email"
-                  className={`w-full text-[14px] text-[#667085] leading-[15.12px] font-[500] h-[48px] border ${
-                    errors.email ? "border-[#F81404]" : "border-[#D0D0FD]"
-                  } outline-none rounded-md py-[13px] pl-[13px]`}
-                />
-                {errors.email && (
-                  <small className="text-[12px] text-[#F81404]">
-                    {errors.email}
-                  </small>
-                )}
-              </div>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                autoCapitalize="none"
+                spellCheck="false"
+                value={email}
+                onChange={handleEmailChange}
+                onBlur={handleEmailBlur}
+                placeholder="name@company.com"
+                aria-invalid={Boolean(formSubmitted && errors.email)}
+                aria-describedby={
+                  formSubmitted && errors.email ? "email-error" : undefined
+                }
+                className={`w-full h-11 px-3.5 rounded-lg border text-sm text-[#101828] placeholder:text-[#98A2B3] bg-white transition-all outline-none ${
+                  formSubmitted && errors.email
+                    ? "border-[#F04438] ring-1 ring-[#F04438]"
+                    : "border-[#D0D5DD] focus:border-[#7141F8] focus:ring-2 focus:ring-[#7141F8]/15"
+                }`}
+              />
+              {formSubmitted && errors.email && (
+                <small
+                  id="email-error"
+                  role="alert"
+                  aria-live="assertive"
+                  className="block mt-1.5 text-xs text-[#D92D20] font-medium"
+                >
+                  {errors.email}
+                </small>
+              )}
             </div>
-            <div className="w-full flex flex-col gap-[8px] relative">
+
+            {/* Password input */}
+            <div>
               <label
                 htmlFor="password"
-                className="text-[14px] font-[400] leading-[21px]"
+                className="block text-xs font-medium text-[#344054] mb-1.5"
               >
                 Password
               </label>
-              <div className="w-full flex flex-col gap-[2px]">
-                <div className="relative ">
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    autoComplete="new-password"
-                    value={password}
-                    onChange={handlePasswordChange}
-                    placeholder="Password"
-                    aria-describedby="password-help"
-                    aria-invalid={Boolean(errors.password)}
-                    onFocus={handleFocus}
-                    onBlur={handleBlur}
-                    className={`w-full text-[14px] text-[#667085] leading-[15.12px] font-[500] h-[48px] border ${
-                      formSubmitted
-                        ? errors.password
-                          ? "border-[#F81404]"
-                          : "border-[#D0D0FD]"
-                        : passwordFocused
-                          ? errors.password
-                            ? "border-[#F81404]"
-                            : "border-[#D0D0FD]"
-                          : "border-[#D0D0FD]"
-                    } outline-none rounded-md py-[13px] pl-[13px] pr-[10px]`}
-                  />
-                  <button
-                    type="button"
-                    onClick={togglePasswordVisibility}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#667085] focus:outline-none"
-                    aria-label={
-                      showPassword ? "Hide password" : "Show password"
-                    }
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  aria-invalid={Boolean(formSubmitted && errors.password)}
+                  aria-describedby="password-help"
+                  value={password}
+                  onChange={handlePasswordChange}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                  placeholder="Create a password"
+                  className={`w-full h-11 px-3.5 pr-11 rounded-lg border text-sm text-[#101828] placeholder:text-[#98A2B3] bg-white transition-all outline-none ${
+                    formSubmitted && errors.password
+                      ? "border-[#F04438] ring-1 ring-[#F04438]"
+                      : "border-[#D0D5DD] focus:border-[#7141F8] focus:ring-2 focus:ring-[#7141F8]/15"
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute right-0 top-0 h-full px-3.5 flex items-center justify-center text-[#98A2B3] hover:text-[#475467] rounded-r-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8]"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-controls="password"
+                  aria-pressed={showPassword}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
 
+              {formSubmitted && errors.password ? (
+                <small
+                  id="password-error"
+                  role="alert"
+                  aria-live="assertive"
+                  className="block mt-1.5 text-xs text-[#D92D20] font-medium"
+                >
+                  {errors.password}
+                </small>
+              ) : (
                 <small
                   id="password-help"
-                  className={`text-[12px] ${
-                    errors.password ? "text-[#F81404]" : "text-[#667085]"
+                  className={`block mt-1.5 text-xs transition-opacity duration-150 ${
+                    passwordFocused
+                      ? "text-[#7141F8] font-medium"
+                      : "text-[#667085]"
                   }`}
                 >
-                  {errors.password || PASSWORD_HINT}
+                  {PASSWORD_HINT}
                 </small>
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col gap-[12px] mb-3">
-            <div className="flex flex-row gap-[6px] items-center">
-              <Checkbox id="stay-signed-in" className="mt-[2px]" />
-              <label
-                htmlFor="stay-signed-in"
-                className="text-[14px] font-[400] leading-[17.64px]"
-              >
-                Stay Signed In
-              </label>
-            </div>
-          </div>
-          <div className="flex flex-col gap-[24px]">
-            <div className="flex flex-col gap-[16px]">
-              <Button
-                type="submit"
-                variant="default"
-                className="py-6 bg-[#7141F8] hover:bg-[#8760f8] text-white"
-              >
-                {loading ? (
-                  <span className="flex items-center gap-x-2">
-                    <span className="animate-pulse">Creating...</span>{" "}
-                    <Loading width="20" height="20" />
-                  </span>
-                ) : (
-                  <span>Create Account</span>
-                )}
-              </Button>
-            </div>
-            <div className="w-full flex justify-center items-center">
-              <div className="flex items-center justify-center gap-3 max-w-xl w-1/5">
-                <Separator />
-                <p>OR</p>
-                <Separator />
-              </div>
+              )}
             </div>
 
-            {/* Google Login */}
+            {/* Primary Submit Button */}
             <Button
-              type="button"
-              variant="outline"
-              onClick={() => login()}
-              disabled={googleloading || appleLoading}
-              aria-label="Sign up with Google"
-              aria-busy={googleloading}
-              className="w-full h-auto py-[11px] border border-[#D0D0FD] rounded-md justify-center gap-[10px] bg-white text-[#101828] hover:bg-[#F9FAFB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed mb-2 font-[600] text-[16px] leading-[20.16px]"
+              type="submit"
+              variant="default"
+              disabled={googleloading || appleLoading || loading}
+              aria-label="Create account"
+              aria-busy={loading}
+              className="w-full h-11 mt-1 bg-[#7141F8] hover:bg-[#5f30e6] active:bg-[#5022d4] text-white font-medium text-sm rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2"
             >
-              <Image
-                src="/dashboard/google.svg"
-                width={24}
-                height={24}
-                alt=""
-                aria-hidden="true"
-              />
-              {googleloading ? (
-                <span className="flex items-center gap-x-2">
-                  <span className="animate-pulse">Signing up...</span>
-                  <Loading width="20" height="20" color="#7141F8" />
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-pulse">Creating account...</span>
+                  <Loading width="18" height="18" color="#ffffff" />
                 </span>
               ) : (
-                "Sign up with Google"
+                <span>Create account</span>
               )}
             </Button>
-            <div role="status" aria-live="polite" className="sr-only">
-              {googleloading ? "Signing up with Google..." : ""}
-            </div>
-            {/* Apple Login */}
-            <AppleSignin
-              authOptions={{
-                clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || "",
-                scope: "email name",
-                redirectURI:
-                  typeof window !== "undefined"
-                    ? window.location.origin + "/auth/sign-up"
-                    : "",
-                usePopup: true,
-              }}
-              uiType="dark"
-              noDefaultStyle={true}
-              render={(props: { onClick: (e?: React.MouseEvent) => void }) => (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={props.onClick}
-                  disabled={appleLoading || googleloading}
-                  aria-label="Sign up with Apple"
-                  aria-busy={appleLoading}
-                  className="w-full h-auto py-[11px] border border-[#D0D0FD] rounded-md justify-center gap-[10px] bg-white text-[#101828] hover:bg-[#F9FAFB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed font-[600] text-[16px] leading-[20.16px]"
-                >
-                  <Image
-                    src="/dashboard/apple.png"
-                    width={24}
-                    height={24}
-                    alt=""
-                    aria-hidden="true"
-                  />
-                  {appleLoading ? (
-                    <span className="flex items-center gap-x-2">
-                      <span className="animate-pulse">Signing up...</span>
-                      <Loading width="20" height="20" color="#000" />
-                    </span>
-                  ) : (
-                    "Sign up with Apple"
-                  )}
-                </Button>
-              )}
-              onSuccess={handleAppleSuccess}
-              onError={(err: any) => {
-                setAppleLoading(false);
-                console.error("Apple Signup Error:", err);
-              }}
-            />
-            <div role="status" aria-live="polite" className="sr-only">
-              {appleLoading ? "Signing up with Apple..." : ""}
-            </div>
-          </div>
 
-          <p className="text-[14px] font-[400] leading-[17.64px] text-center m-2">
-            By signing up, you agree to our
-            <Link
-              href="/terms-of-service"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-1 font-[500] leading-[21px] text-[#7141F8] hover:text-[#9678e8]"
-            >
-              terms of service
-            </Link>
-            and
-            <Link
-              href="/policy"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-1 font-[500] leading-[21px] text-[#7141F8] hover:text-[#9678e8]"
-            >
-              privacy policy
-            </Link>
-          </p>
-        </form>
+            {/* Divider */}
+            <div className="relative my-4 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-[#EAECF0]" />
+              </div>
+              <span className="relative bg-white px-3 text-xs text-[#667085] lowercase">
+                or
+              </span>
+            </div>
+
+            {/* Social Registration Options */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Google Sign-up */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => login()}
+                disabled={googleloading || appleLoading}
+                aria-label="Sign up with Google"
+                aria-busy={googleloading}
+                className="w-full h-11 border border-[#D0D5DD] bg-white hover:bg-[#F9FAFB] text-[#344054] font-medium text-sm rounded-lg flex items-center justify-center gap-2.5 shadow-xs transition-colors"
+              >
+                <Image
+                  src="/dashboard/google.svg"
+                  width={18}
+                  height={18}
+                  alt=""
+                  aria-hidden="true"
+                />
+                {googleloading ? (
+                  <span className="animate-pulse text-xs">Connecting...</span>
+                ) : (
+                  <span>Google</span>
+                )}
+              </Button>
+
+              {/* Apple Sign-up */}
+              <AppleSignin
+                authOptions={{
+                  clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || "",
+                  scope: "email name",
+                  redirectURI:
+                    typeof window !== "undefined"
+                      ? window.location.origin + "/auth/sign-up"
+                      : "",
+                  usePopup: true,
+                }}
+                uiType="dark"
+                noDefaultStyle={true}
+                render={(props: {
+                  onClick: (e?: React.MouseEvent) => void;
+                }) => (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={props.onClick}
+                    disabled={appleLoading || googleloading}
+                    aria-label="Sign up with Apple"
+                    aria-busy={appleLoading}
+                    className="w-full h-11 border border-[#D0D5DD] bg-white hover:bg-[#F9FAFB] text-[#344054] font-medium text-sm rounded-lg flex items-center justify-center gap-2.5 shadow-xs transition-colors"
+                  >
+                    <Image
+                      src="/dashboard/apple.png"
+                      width={18}
+                      height={18}
+                      alt=""
+                      aria-hidden="true"
+                    />
+                    {appleLoading ? (
+                      <span className="animate-pulse text-xs">
+                        Connecting...
+                      </span>
+                    ) : (
+                      <span>Apple</span>
+                    )}
+                  </Button>
+                )}
+                onSuccess={handleAppleSuccess}
+                onError={(err: any) => {
+                  setAppleLoading(false);
+                  console.error("Apple Signup Error:", err);
+                }}
+              />
+            </div>
+
+            {/* Terms and Privacy Policy notice */}
+            <p className="mt-5 text-center text-xs text-[#667085] leading-relaxed">
+              By creating an account, you agree to our{" "}
+              <Link
+                href="/terms-of-service"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#7141F8] hover:text-[#5f30e6] font-medium underline underline-offset-2"
+              >
+                terms of service
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#7141F8] hover:text-[#5f30e6] font-medium underline underline-offset-2"
+              >
+                privacy policy
+              </Link>
+              .
+            </p>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <footer className="w-full py-2 text-center text-xs text-[#667085]">
+          © {new Date().getFullYear()} Zedu. All rights reserved.
+        </footer>
       </section>
     </main>
   );

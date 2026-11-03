@@ -266,12 +266,18 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user }) => {
             onClick={showProfile}
             className="px-5 py-1.5 cursor-pointer hover:bg-blue-500 hover:text-white"
           >
-            <span className="w-full">Profile...</span>
+            <span className="w-full">Profile</span>
           </DropdownMenuItem>
 
           <Link href={`/${orgSlug}/settings/personal/appearance`}>
             <DropdownMenuItem className="px-5 py-1.5 cursor-pointer hover:bg-blue-500 hover:text-white">
-              <span className="w-full">Preferences...</span>
+              <span className="w-full">Preferences</span>
+            </DropdownMenuItem>
+          </Link>
+
+          <Link href={`/${orgSlug}/settings/personal/account`}>
+            <DropdownMenuItem className="px-5 py-1.5 cursor-pointer hover:bg-blue-500 hover:text-white">
+              <span className="w-full">Account settings</span>
             </DropdownMenuItem>
           </Link>
 
