@@ -1,10 +1,7 @@
 import { FileDetails } from "~/app/(client)/[org]/_components/file-management/FileInfo";
 
 export type FileListViewMode =
-  | "All files"
-  | "My Files"
-  | "Shared with me"
-  | "Deleted Files";
+  "All files" | "My Files" | "Shared with me" | "Deleted Files";
 
 export const FILE_CATEGORY_UI_TO_API: Record<string, string> = {
   document: "documents",

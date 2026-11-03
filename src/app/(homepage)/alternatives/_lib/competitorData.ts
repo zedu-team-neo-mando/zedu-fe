@@ -3,11 +3,7 @@ export type CompetitorKey = "slack" | "discord";
 export type FeatureComparisonItem = {
   feature: string;
   category:
-    | "collaboration"
-    | "organization"
-    | "pricing"
-    | "security"
-    | "communication";
+    "collaboration" | "organization" | "pricing" | "security" | "communication";
   tooltip: string;
   zedu: {
     status: "yes" | "no" | "partial";
