@@ -20,6 +20,7 @@ import {
 } from "~/lib/password";
 import { isAutoCreatedOrg } from "~/utils/organisation";
 import { getSafeRedirect } from "~/utils/safe-redirect";
+import { AuthWorkspacePanel } from "~/app/(auth)/_components/auth-workspace-panel";
 
 /**
  * Modernized user registration page supporting email/password, Google, Apple auth,
@@ -149,28 +150,21 @@ function SignUp() {
     return !newErrors.email && !newErrors.password;
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormSubmitted(true);
 
-    const trimmedEmail = email.trim();
-    if (trimmedEmail !== email) {
-      setEmail(trimmedEmail);
-    }
-
     if (validateForm()) {
       setLoading(true);
+      const redirectUrl = getSafeRedirect(searchParams.get("redirect"));
+      const coworkerId = searchParams.get("coworkerId");
 
-      const payload = {
+      const trimmedEmail = email.trim();
+      const res = await PostRequest("/auth/register", {
         email: trimmedEmail,
         password,
         ...campaignPayload(),
-      };
-
-      const redirectUrl = getSafeRedirect(searchParams.get("redirect"));
-      const coworkerId = searchParams.get("coworkerId") || "";
-
-      const res = await PostRequest("/auth/register", payload);
+      });
 
       if (res?.status === 200 || res?.status === 201) {
         localStorage.setItem("token", res?.data?.data?.access_token);
@@ -181,6 +175,19 @@ function SignUp() {
         const orgSlug = res.data.data.user.current_organisation_slug;
         if (orgSlug) {
           localStorage.setItem("orgSlug", orgSlug);
+        }
+
+        if (redirectUrl) {
+          const finalRedirectUrl = coworkerId
+            ? `${redirectUrl}?coworkerId=${coworkerId}`
+            : redirectUrl;
+          setTimeout(() => {
+            router.push(finalRedirectUrl);
+          }, 100);
+        } else {
+          setTimeout(() => {
+            router.push(toWelcome(orgSlug));
+          }, 100);
         }
 
         const user = res?.data?.data?.user;
@@ -195,15 +202,6 @@ function SignUp() {
           message.trim(),
           "success"
         );
-
-        if (redirectUrl) {
-          const finalRedirectUrl = coworkerId
-            ? `${redirectUrl}?coworkerId=${coworkerId}`
-            : redirectUrl;
-          router.push(finalRedirectUrl);
-        } else {
-          router.push(toWelcome(orgSlug));
-        }
       } else {
         setLoading(false);
       }
@@ -305,38 +303,46 @@ function SignUp() {
   });
 
   return (
-    <main className="w-full min-h-screen flex flex-col justify-between bg-[#F9FAFB] text-neutral-900">
-      {/* Top navigation bar */}
-      <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
-        <Link
-          href="/"
-          aria-label="Zedu home"
-          className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2"
-        >
-          <Image
-            src="/Zedu.png"
-            alt="Zedu home"
-            width={86}
-            height={31}
-            priority
-          />
-        </Link>
-        <div className="text-xs sm:text-sm text-[#475467]">
-          Already have an account?{" "}
-          <Link
-            href="/auth/login"
-            className="text-[#7141F8] font-semibold hover:text-[#5f30e6] hover:underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8]"
-          >
-            Log in
-          </Link>
-        </div>
-      </header>
+    <main className="w-full min-h-screen flex bg-white text-neutral-900">
+      {/* Left Side: Modern Workspace Ambient Panel */}
+      <AuthWorkspacePanel
+        title="Your team has been busy."
+        subtitle="12 new messages are waiting for you in 3 channels."
+        channelName="#team-flamingo"
+      />
 
-      {/* Center Form Card */}
-      <div className="w-full flex-1 flex flex-col justify-center items-center px-4 py-8 sm:py-12">
-        <section className="w-full max-w-[460px] bg-white rounded-2xl border border-[#EAECF0] shadow-sm p-6 sm:p-10">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#101828]">
+      {/* Right Side: Auth Form Container */}
+      <section className="w-full lg:w-1/2 min-h-screen flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-16 bg-white overflow-y-auto">
+        {/* Header Row: Brand Logo & Navigation */}
+        <div className="flex items-center justify-between w-full">
+          <Link
+            href="/"
+            aria-label="Zedu home"
+            className="rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2"
+          >
+            <Image
+              src="/Zedu.png"
+              alt="Zedu home"
+              width={86}
+              height={31}
+              priority
+            />
+          </Link>
+          <div className="text-xs sm:text-sm text-[#475467]">
+            Already have an account?{" "}
+            <Link
+              href="/auth/login"
+              className="text-[#7141F8] font-semibold hover:text-[#5f30e6] hover:underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8]"
+            >
+              Log in
+            </Link>
+          </div>
+        </div>
+
+        {/* Form Content */}
+        <div className="w-full max-w-md mx-auto my-auto py-8">
+          <div className="mb-6">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#101828]">
               Create your account
             </h1>
             <p className="mt-2 text-sm text-[#475467]">
@@ -347,7 +353,7 @@ function SignUp() {
           {refParam && (
             <div
               data-testid="signup-referral-banner"
-              className="w-full mb-6 flex items-center gap-2.5 rounded-xl bg-[#F4F3FF] border border-[#D0D0FD] px-4 py-3 text-xs text-[#5925DC] shadow-xs"
+              className="w-full mb-5 flex items-center gap-2.5 rounded-xl bg-[#F4F3FF] border border-[#D0D0FD] px-4 py-3 text-xs text-[#5925DC] shadow-xs"
             >
               <Sparkles className="h-4 w-4 text-[#7141F8] shrink-0" />
               <span>
@@ -357,95 +363,17 @@ function SignUp() {
             </div>
           )}
 
-          {/* Social Sign-up Options */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            {/* Google Signup */}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => login()}
-              disabled={googleloading || appleLoading}
-              aria-label="Sign up with Google"
-              aria-busy={googleloading}
-              className="w-full h-11 border border-[#D0D5DD] bg-white hover:bg-[#F9FAFB] text-[#344054] font-medium text-sm rounded-lg flex items-center justify-center gap-2.5 shadow-xs transition-colors"
-            >
-              <Image
-                src="/dashboard/google.svg"
-                width={18}
-                height={18}
-                alt=""
-                aria-hidden="true"
-              />
-              {googleloading ? (
-                <span className="animate-pulse text-xs">Connecting...</span>
-              ) : (
-                <span>Google</span>
-              )}
-            </Button>
-
-            {/* Apple Signup */}
-            <AppleSignin
-              authOptions={{
-                clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || "",
-                scope: "email name",
-                redirectURI:
-                  typeof window !== "undefined"
-                    ? window.location.origin + "/auth/sign-up"
-                    : "",
-                usePopup: true,
-              }}
-              uiType="dark"
-              noDefaultStyle={true}
-              render={(props: { onClick: (e?: React.MouseEvent) => void }) => (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={props.onClick}
-                  disabled={appleLoading || googleloading}
-                  aria-label="Sign up with Apple"
-                  aria-busy={appleLoading}
-                  className="w-full h-11 border border-[#D0D5DD] bg-white hover:bg-[#F9FAFB] text-[#344054] font-medium text-sm rounded-lg flex items-center justify-center gap-2.5 shadow-xs transition-colors"
-                >
-                  <Image
-                    src="/dashboard/apple.png"
-                    width={18}
-                    height={18}
-                    alt=""
-                    aria-hidden="true"
-                  />
-                  {appleLoading ? (
-                    <span className="animate-pulse text-xs">Connecting...</span>
-                  ) : (
-                    <span>Apple</span>
-                  )}
-                </Button>
-              )}
-              onSuccess={handleAppleSuccess}
-              onError={(err: any) => {
-                setAppleLoading(false);
-                console.error("Apple Signup Error:", err);
-              }}
-            />
-          </div>
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#EAECF0]" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-3 text-[#667085] font-medium">
-                Or continue with email
-              </span>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} noValidate className="w-full space-y-4">
-            {/* Email input */}
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4"
+            noValidate
+            aria-label="Sign up form"
+          >
+            {/* Email Address */}
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-[#344054] mb-1.5"
+                className="block text-xs font-medium text-[#344054] mb-1.5"
               >
                 Email address
               </label>
@@ -454,19 +382,23 @@ function SignUp() {
                 name="email"
                 type="email"
                 autoComplete="email"
-                aria-invalid={Boolean(errors.email)}
-                aria-describedby={errors.email ? "email-error" : undefined}
+                autoCapitalize="none"
+                spellCheck="false"
                 value={email}
                 onChange={handleEmailChange}
                 onBlur={handleEmailBlur}
                 placeholder="name@company.com"
+                aria-invalid={Boolean(formSubmitted && errors.email)}
+                aria-describedby={
+                  formSubmitted && errors.email ? "email-error" : undefined
+                }
                 className={`w-full h-11 px-3.5 rounded-lg border text-sm text-[#101828] placeholder:text-[#98A2B3] bg-white transition-all outline-none ${
-                  errors.email
+                  formSubmitted && errors.email
                     ? "border-[#F04438] ring-1 ring-[#F04438]"
                     : "border-[#D0D5DD] focus:border-[#7141F8] focus:ring-2 focus:ring-[#7141F8]/15"
                 }`}
               />
-              {errors.email && (
+              {formSubmitted && errors.email && (
                 <small
                   id="email-error"
                   role="alert"
@@ -482,7 +414,7 @@ function SignUp() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-[#344054] mb-1.5"
+                className="block text-xs font-medium text-[#344054] mb-1.5"
               >
                 Password
               </label>
@@ -492,7 +424,7 @@ function SignUp() {
                   name="password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
-                  aria-invalid={Boolean(errors.password)}
+                  aria-invalid={Boolean(formSubmitted && errors.password)}
                   aria-describedby="password-help"
                   value={password}
                   onChange={handlePasswordChange}
@@ -540,14 +472,14 @@ function SignUp() {
               )}
             </div>
 
-            {/* Submit Button */}
+            {/* Primary Submit Button */}
             <Button
               type="submit"
               variant="default"
               disabled={googleloading || appleLoading || loading}
               aria-label="Create account"
               aria-busy={loading}
-              className="w-full h-11 mt-2 bg-[#7141F8] hover:bg-[#5f30e6] active:bg-[#5022d4] text-white font-medium text-sm rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2"
+              className="w-full h-11 mt-1 bg-[#7141F8] hover:bg-[#5f30e6] active:bg-[#5022d4] text-white font-medium text-sm rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7141F8] focus-visible:ring-offset-2"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
@@ -559,9 +491,94 @@ function SignUp() {
               )}
             </Button>
 
-            {/* Terms and Privacy policy */}
-            <p className="mt-5 text-xs text-[#667085] text-center leading-relaxed">
-              By signing up, you agree to our{" "}
+            {/* Divider */}
+            <div className="relative my-4 flex items-center justify-center">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-[#EAECF0]" />
+              </div>
+              <span className="relative bg-white px-3 text-xs text-[#667085] lowercase">
+                or
+              </span>
+            </div>
+
+            {/* Social Registration Options */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Google Sign-up */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => login()}
+                disabled={googleloading || appleLoading}
+                aria-label="Sign up with Google"
+                aria-busy={googleloading}
+                className="w-full h-11 border border-[#D0D5DD] bg-white hover:bg-[#F9FAFB] text-[#344054] font-medium text-sm rounded-lg flex items-center justify-center gap-2.5 shadow-xs transition-colors"
+              >
+                <Image
+                  src="/dashboard/google.svg"
+                  width={18}
+                  height={18}
+                  alt=""
+                  aria-hidden="true"
+                />
+                {googleloading ? (
+                  <span className="animate-pulse text-xs">Connecting...</span>
+                ) : (
+                  <span>Google</span>
+                )}
+              </Button>
+
+              {/* Apple Sign-up */}
+              <AppleSignin
+                authOptions={{
+                  clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || "",
+                  scope: "email name",
+                  redirectURI:
+                    typeof window !== "undefined"
+                      ? window.location.origin + "/auth/sign-up"
+                      : "",
+                  usePopup: true,
+                }}
+                uiType="dark"
+                noDefaultStyle={true}
+                render={(props: {
+                  onClick: (e?: React.MouseEvent) => void;
+                }) => (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={props.onClick}
+                    disabled={appleLoading || googleloading}
+                    aria-label="Sign up with Apple"
+                    aria-busy={appleLoading}
+                    className="w-full h-11 border border-[#D0D5DD] bg-white hover:bg-[#F9FAFB] text-[#344054] font-medium text-sm rounded-lg flex items-center justify-center gap-2.5 shadow-xs transition-colors"
+                  >
+                    <Image
+                      src="/dashboard/apple.png"
+                      width={18}
+                      height={18}
+                      alt=""
+                      aria-hidden="true"
+                    />
+                    {appleLoading ? (
+                      <span className="animate-pulse text-xs">
+                        Connecting...
+                      </span>
+                    ) : (
+                      <span>Apple</span>
+                    )}
+                  </Button>
+                )}
+                onSuccess={handleAppleSuccess}
+                onError={(err: any) => {
+                  setAppleLoading(false);
+                  console.error("Apple Signup Error:", err);
+                }}
+              />
+            </div>
+
+            {/* Terms and Privacy Policy notice */}
+            <p className="mt-5 text-center text-xs text-[#667085] leading-relaxed">
+              By creating an account, you agree to our{" "}
               <Link
                 href="/terms-of-service"
                 target="_blank"
@@ -582,13 +599,13 @@ function SignUp() {
               .
             </p>
           </form>
-        </section>
-      </div>
+        </div>
 
-      {/* Footer */}
-      <footer className="w-full py-6 text-center text-xs text-[#667085]">
-        © {new Date().getFullYear()} Zedu. All rights reserved.
-      </footer>
+        {/* Footer */}
+        <footer className="w-full py-2 text-center text-xs text-[#667085]">
+          © {new Date().getFullYear()} Zedu. All rights reserved.
+        </footer>
+      </section>
     </main>
   );
 }
