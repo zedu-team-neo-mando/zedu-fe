@@ -1,7 +1,9 @@
 import type { PermissionKey } from "~/types/rbac";
 
 export type PermissionRequirement =
-  PermissionKey | { anyOf: PermissionKey[] } | { allOf: PermissionKey[] };
+  | PermissionKey
+  | { anyOf: PermissionKey[] }
+  | { allOf: PermissionKey[] };
 
 export const ORG_SETTINGS_NAV_ITEMS: Array<{
   id: string;
@@ -51,6 +53,12 @@ export const ORG_SETTINGS_NAV_ITEMS: Array<{
     title: "Billing",
     pathSegment: "billing",
     access: { anyOf: ["view:billing", "manage:billing"] },
+  },
+  {
+    id: "demo-bookings",
+    title: "Demo bookings",
+    pathSegment: "demo-bookings",
+    access: "view:analytics",
   },
 ];
 
