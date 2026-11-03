@@ -33,8 +33,11 @@ const renderCellValue = (value: PricingComparisonCellValue) => {
   if (typeof value === "boolean") {
     if (value) {
       return (
-        <span className="inline-flex justify-center" aria-label="Included">
-          <CheckIcon />
+        <span className="inline-flex justify-center">
+          <span className="sr-only">Included</span>
+          <span aria-hidden="true">
+            <CheckIcon />
+          </span>
         </span>
       );
     }
