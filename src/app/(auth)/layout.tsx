@@ -111,7 +111,13 @@ export default function RootLayout({
   if (loading) return;
 
   return (
-    <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+    <GoogleOAuthProvider
+      clientId={
+        process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+        "placeholder-google-client-id"
+      }
+    >
+      <style>{`[aria-label="Campaign measurement preferences"], [data-nextjs-dev-tools-button], nextjs-portal { display: none !important; }`}</style>
       <DataProvider>{children}</DataProvider>
     </GoogleOAuthProvider>
   );
