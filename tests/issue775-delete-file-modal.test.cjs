@@ -49,7 +49,7 @@ test("renders permanent deletion warning stating it cannot be undone", () => {
   );
   assert.match(
     source,
-    /This cannot\s+be undone\./,
+    /This\s+cannot\s+be undone\./,
     "Permanent deletion warning should state 'This cannot be undone.'"
   );
 });
