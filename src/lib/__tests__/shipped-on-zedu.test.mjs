@@ -64,7 +64,7 @@ describe("Shipped on Zedu", () => {
         cohort: "HNG 13",
         ticket: "Fixed: name, avatar",
         platform: "LinkedIn",
-        postUrl: "https://www.linkedin.com/posts/example",
+        postUrl: "www.linkedin.com/posts/example",
         likes: "12",
         reposts: "3",
         signups: "1",
