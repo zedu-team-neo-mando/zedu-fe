@@ -221,13 +221,16 @@ export function ShippedStudio() {
           Shipped on Zedu
         </h1>
         <p className="mt-4 text-lg leading-relaxed text-neutral-600">
-          Fill in the ticket you shipped. The card, the three captions, and
-          the hashtag update as you type. No design tool needed.
+          Fill in the ticket you shipped. The card, the three captions, and the
+          hashtag update as you type. No design tool needed.
         </p>
       </header>
 
       <section className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_420px]">
-        <form className="flex flex-col gap-4" onSubmit={(event) => event.preventDefault()}>
+        <form
+          className="flex flex-col gap-4"
+          onSubmit={(event) => event.preventDefault()}
+        >
           <label className="flex flex-col gap-1.5 text-sm font-bold text-neutral-900">
             Ticket title
             <input
@@ -305,10 +308,12 @@ export function ShippedStudio() {
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-2xl font-black text-neutral-900">Caption templates</h2>
+        <h2 className="text-2xl font-black text-neutral-900">
+          Caption templates
+        </h2>
         <p className="max-w-3xl text-neutral-600">
-          Copy one, then edit it before you post. Every caption already
-          includes {SHIPPED_HASHTAG}.
+          Copy one, then edit it before you post. Every caption already includes{" "}
+          {SHIPPED_HASHTAG}.
         </p>
         <div className="grid gap-4 lg:grid-cols-3">
           {captions.map((caption) => (
@@ -316,13 +321,17 @@ export function ShippedStudio() {
               key={caption.id}
               className="flex flex-col gap-4 rounded-2xl border border-neutral-200 bg-white p-5"
             >
-              <h3 className="text-lg font-bold text-neutral-900">{caption.label}</h3>
+              <h3 className="text-lg font-bold text-neutral-900">
+                {caption.label}
+              </h3>
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-neutral-700">
                 {caption.text}
               </p>
               <button
                 type="button"
-                onClick={() => copyText(caption.text, `${caption.label} caption copied`)}
+                onClick={() =>
+                  copyText(caption.text, `${caption.label} caption copied`)
+                }
                 className="mt-auto inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-neutral-200 text-sm font-bold text-neutral-900 hover:border-primary-500 hover:bg-primary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
               >
                 <Copy className="size-4" aria-hidden="true" />
@@ -336,9 +345,9 @@ export function ShippedStudio() {
       <section className="flex flex-col gap-4">
         <h2 className="text-2xl font-black text-neutral-900">Post tracker</h2>
         <p className="max-w-3xl text-neutral-600">
-          Log each post here, then download the CSV and paste new rows into
-          the team sheet. Columns are date, intern, track, cohort, ticket,
-          platform, post URL, likes, reposts, and sign-ups.
+          Log each post here, then download the CSV and paste new rows into the
+          team sheet. Columns are date, intern, track, cohort, ticket, platform,
+          post URL, likes, reposts, and sign-ups.
         </p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
           <select
@@ -346,7 +355,10 @@ export function ShippedStudio() {
             aria-label="Platform"
             value={log.platform}
             onChange={(event) =>
-              setLog((current) => ({ ...current, platform: event.target.value }))
+              setLog((current) => ({
+                ...current,
+                platform: event.target.value,
+              }))
             }
           >
             <option>LinkedIn</option>
@@ -425,7 +437,10 @@ export function ShippedStudio() {
               </thead>
               <tbody>
                 {rows.map((row) => (
-                  <tr key={`${row.date}-${row.postUrl}`} className="border-t border-neutral-200">
+                  <tr
+                    key={`${row.date}-${row.postUrl}`}
+                    className="border-t border-neutral-200"
+                  >
                     <td className="px-4 py-3">{row.date}</td>
                     <td className="px-4 py-3">{row.platform}</td>
                     <td className="px-4 py-3">{row.ticket}</td>
@@ -450,7 +465,9 @@ function CardPreview({ card }: { card: ShippedCardInput }) {
       className="rounded-[28px] bg-primary-500 p-5 text-neutral-900 shadow-lg sm:p-6"
     >
       <div className="flex min-h-[420px] flex-col rounded-3xl bg-white p-6">
-        <p className="text-sm font-black tracking-wide text-primary-500">ZEDU</p>
+        <p className="text-sm font-black tracking-wide text-primary-500">
+          ZEDU
+        </p>
         <p className="mt-6 text-3xl font-black">Shipped on Zedu</p>
         <p className="mt-4 text-lg font-semibold leading-snug">{card.title}</p>
         {(card.before || card.after) && (

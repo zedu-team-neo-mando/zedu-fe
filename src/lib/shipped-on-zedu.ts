@@ -54,7 +54,10 @@ export const SHIPPED_TRACKER_HEADERS = [
 const MAX_FIELD = 140;
 
 export function cleanField(value: string, max = MAX_FIELD): string {
-  return value.replace(/[\u0000-\u001F\u007F]/g, "").trim().slice(0, max);
+  return value
+    .replace(/[\u0000-\u001F\u007F]/g, "")
+    .trim()
+    .slice(0, max);
 }
 
 export function cardFields(input: ShippedCardInput): ShippedCardInput {
