@@ -1,3 +1,4 @@
+import { gettingStartedWithZedu } from "./getting-started-with-zedu";
 import { managingBootcampCohorts } from "./managing-bootcamp-cohorts";
 import { organizingCoursesWithChannels } from "./organizing-courses-with-channels";
 import { runningActiveClassDiscussions } from "./running-active-class-discussions";
@@ -7,6 +8,7 @@ import type { Article } from "./types";
 export type { Article, ArticleLink } from "./types";
 
 export const articles: Article[] = [
+  gettingStartedWithZedu,
   organizingCoursesWithChannels,
   runningActiveClassDiscussions,
   usingAnAiAssistantForLearning,

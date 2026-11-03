@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { resources } from "~/app/(homepage)/_lib/resources";
+import { articles, articlePath } from "~/app/(homepage)/_lib/articles";
 import { siteUrl } from "~/lib/env-urls";
 import { allComparisonSlugs } from "~/app/(homepage)/_components/compare/comparisonData";
 import { TEMPLATES } from "~/data/templates";
@@ -67,9 +68,15 @@ const RESOURCE_PAGES = resources
   .filter(({ link }) => link.startsWith("/resources/"))
   .map(({ link }) => ({ path: link, priority: 0.5 }));
 
+// Guide articles render at /resources?guide=<slug>, the canonical URL their pages declare.
+const GUIDE_PAGES = articles.map(({ slug }) => ({
+  path: articlePath(slug),
+  priority: 0.5,
+}));
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteUrl();
-  return [...PAGES, ...RESOURCE_PAGES]
+  return [...PAGES, ...RESOURCE_PAGES, ...GUIDE_PAGES]
     .filter(
       ({ path }) =>
         !path.startsWith("/auth/") && path !== "/login" && path !== "/signup"
