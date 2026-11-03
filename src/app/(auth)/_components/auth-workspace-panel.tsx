@@ -112,4 +112,3 @@ export const AuthWorkspacePanel: React.FC<AuthWorkspacePanelProps> = ({
     </div>
   );
 };
-
