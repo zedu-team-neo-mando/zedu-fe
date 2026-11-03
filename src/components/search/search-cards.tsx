@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useContext } from "react";
-import { GetRequest, PostRequest } from "~/utils/new-request";
+import { GetRequest } from "~/utils/new-request";
+import { openDmWithUser } from "~/lib/dm/open-dm-with-user";
 import { Clock, Hash } from "lucide-react";
 import { DataContext } from "~/store/GlobalState";
 import { openSearchMessageResult } from "~/lib/search/navigate";
@@ -37,16 +38,8 @@ export const SearchCards = ({ cardData, query = "" }: CardProps) => {
   const handleUserCardClick = async (user: UserSearchResult) => {
     if (!orgId || !orgSlug) return;
     localStorage.setItem("channelName", user.username);
-    const res = await PostRequest(`/organisations/${orgId}/dms`, {
-      chat_type: "user",
-      participant_id: user.id,
-    });
 
-    if (res?.status === 200 || res?.status === 201) {
-      router.push(
-        `/${orgSlug}/home/people/${res?.data?.data?.channel_id}/${res?.data?.data?.participant_id}/dm`
-      );
-    }
+    await openDmWithUser({ user, orgId, orgSlug, router, dispatch });
   };
 
   const handleMessageCardClick = async (item: MessageSearchResult) => {
