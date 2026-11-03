@@ -8,7 +8,10 @@ import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 
 export type ErrorStateVariant =
-  "not-found" | "no-access" | "network" | "unexpected";
+  | "not-found"
+  | "no-access"
+  | "network"
+  | "unexpected";
 
 const SUPPORT_EMAIL = "support@zedu.chat";
 
