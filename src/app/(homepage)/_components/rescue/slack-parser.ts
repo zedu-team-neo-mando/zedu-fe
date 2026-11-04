@@ -45,7 +45,7 @@ export interface ParsedSlackArchive {
 
 /**
  * Normalizes Slack markdown-style formatting into standard readable text.
- * Replaces <@U12345> user mentions with readable @Name and <http://...|label> links with standard links.
+ * Replaces <@U12345> user mentions with readable @Name and links with standard markdown links.
  */
 export function formatSlackText(
   rawText: string,
@@ -62,7 +62,7 @@ export function formatSlackText(
   // Replace channel mentions <#C12345|general> with #general
   text = text.replace(/<#[A-Z0-9]+\|([^>]+)>/g, "#$1");
 
-  // Replace links <https://example.com|Label> or <https://example.com>
+  // Replace links <url|Label> or <url>
   text = text.replace(
     /<(https?:\/\/[^|>]+)(?:\|([^>]+))?>/g,
     (_, url, label) => {

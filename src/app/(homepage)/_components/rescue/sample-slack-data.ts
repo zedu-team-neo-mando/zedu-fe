@@ -38,8 +38,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
       name: "sarah.chen",
       realName: "Sarah Chen",
       displayName: "Sarah (Lead Instructor)",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
       isBot: false,
     },
     U02MARCUS: {
@@ -47,8 +45,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
       name: "marcus.k",
       realName: "Marcus Kim",
       displayName: "Marcus Kim (TA)",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
       isBot: false,
     },
     U03ELENA: {
@@ -56,8 +52,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
       name: "elena.rodriguez",
       realName: "Elena Rodriguez",
       displayName: "Elena R.",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
       isBot: false,
     },
     U04DAVID: {
@@ -65,8 +59,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
       name: "david.o",
       realName: "David Okafor",
       displayName: "David Okafor",
-      avatarUrl:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
       isBot: false,
     },
   },
@@ -76,8 +68,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
         id: "msg_gen_1",
         userId: "U01SARAH",
         userName: "Sarah (Lead Instructor)",
-        userAvatar:
-          "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
         text: "🚨 Slack's 90-day paywall is approaching! We have imported all 6 months of lecture notes, code snippets, and whiteboard replays to Zedu Chat so nothing gets deleted.",
         timestamp: "Oct 28, 2024, 9:00 AM",
         ts: "1730106000.000100",
@@ -92,8 +82,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
         id: "msg_gen_2",
         userId: "U03ELENA",
         userName: "Elena R.",
-        userAvatar:
-          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
         text: "Thank goodness! I was constantly worried our Week 3 algorithm solutions would vanish behind the $8.75/seat paywall.",
         timestamp: "Oct 28, 2024, 9:15 AM",
         ts: "1730106900.000200",
@@ -104,8 +92,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
         id: "msg_gen_3",
         userId: "U02MARCUS",
         userName: "Marcus Kim (TA)",
-        userAvatar:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
         text: "Plus on Zedu we have native week-by-week channels and built-in Buzz Voice rooms for study tables without meeting link chaos.",
         timestamp: "Oct 28, 2024, 9:30 AM",
         ts: "1730107800.000300",
@@ -115,8 +101,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
         id: "msg_gen_4",
         userId: "U04DAVID",
         userName: "David Okafor",
-        userAvatar:
-          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
         text: "The search speed in this archive is instantaneous. Just found all the auth middleware examples from September!",
         timestamp: "Oct 28, 2024, 10:05 AM",
         ts: "1730109900.000400",
@@ -127,8 +111,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
         id: "msg_gen_5",
         userId: "U01SARAH",
         userName: "Sarah (Lead Instructor)",
-        userAvatar:
-          "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
         text: "Remember everyone: you can claim this archive as a permanent live Zedu workspace anytime by clicking the banner above.",
         timestamp: "Oct 28, 2024, 11:00 AM",
         ts: "1730113200.000500",
@@ -140,8 +122,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
         id: "msg_react_1",
         userId: "U01SARAH",
         userName: "Sarah (Lead Instructor)",
-        userAvatar:
-          "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
         text: "Here is the key distinction between Server Actions and API routes: Server Actions integrate directly with form mutations and progressive enhancement.",
         timestamp: "Oct 29, 2024, 2:15 PM",
         ts: "1730211300.000100",
@@ -153,8 +133,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
         id: "msg_react_2",
         userId: "U03ELENA",
         userName: "Elena R.",
-        userAvatar:
-          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
         text: "Does `useActionState` replace `useFormState` in React 19?",
         timestamp: "Oct 29, 2024, 2:22 PM",
         ts: "1730211720.000200",
@@ -164,8 +142,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
         id: "msg_react_3",
         userId: "U02MARCUS",
         userName: "Marcus Kim (TA)",
-        userAvatar:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
         text: "Yes! `useActionState` is the standard API in React 19 and handles pending transitions smoothly.",
         timestamp: "Oct 29, 2024, 2:30 PM",
         ts: "1730212200.000300",
@@ -176,8 +152,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
         id: "msg_react_4",
         userId: "U04DAVID",
         userName: "David Okafor",
-        userAvatar:
-          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
         text: "Pinned this solution for anyone building project milestone 4 this weekend.",
         timestamp: "Oct 29, 2024, 3:00 PM",
         ts: "1730214000.000400",
@@ -189,8 +163,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
         id: "msg_dbg_1",
         userId: "U04DAVID",
         userName: "David Okafor",
-        userAvatar:
-          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
         text: "Getting `Hydration failed because the initial UI does not match what was rendered on the server` on dynamic dates. Any tips?",
         timestamp: "Oct 30, 2024, 11:20 AM",
         ts: "1730287200.000100",
@@ -201,8 +173,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
         id: "msg_dbg_2",
         userId: "U02MARCUS",
         userName: "Marcus Kim (TA)",
-        userAvatar:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
         text: "Format the timestamp inside a `useEffect` or use `suppressHydrationWarning` on the specific `<time>` tag to avoid locale timezone mismatch.",
         timestamp: "Oct 30, 2024, 11:25 AM",
         ts: "1730287500.000200",
@@ -213,8 +183,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
         id: "msg_dbg_3",
         userId: "U04DAVID",
         userName: "David Okafor",
-        userAvatar:
-          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
         text: "That solved it instantly! Marcus you are a lifesaver.",
         timestamp: "Oct 30, 2024, 11:32 AM",
         ts: "1730287920.000300",
@@ -224,8 +192,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
         id: "msg_dbg_4",
         userId: "U03ELENA",
         userName: "Elena R.",
-        userAvatar:
-          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
         text: "Bookmarked this thread for our cohort FAQ.",
         timestamp: "Oct 30, 2024, 11:45 AM",
         ts: "1730288700.000400",
@@ -237,8 +203,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
         id: "msg_wb_1",
         userId: "U01SARAH",
         userName: "Sarah (Lead Instructor)",
-        userAvatar:
-          "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
         text: "Whiteboard replay: System design for scalable WebSocket chat architectures with Pub/Sub message brokers.",
         timestamp: "Nov 01, 2024, 4:00 PM",
         ts: "1730476800.000100",
@@ -250,8 +214,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
         id: "msg_wb_2",
         userId: "U03ELENA",
         userName: "Elena R.",
-        userAvatar:
-          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
         text: "The diagram of Redis memory sharding is super clear on this board.",
         timestamp: "Nov 01, 2024, 4:15 PM",
         ts: "1730477700.000200",
@@ -261,8 +223,6 @@ export const SAMPLE_SLACK_ARCHIVE: ParsedSlackArchive = {
         id: "msg_wb_3",
         userId: "U02MARCUS",
         userName: "Marcus Kim (TA)",
-        userAvatar:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
         text: "All whiteboard assets and vector shapes are preserved in the Zedu migration export.",
         timestamp: "Nov 01, 2024, 4:30 PM",
         ts: "1730478600.000300",

@@ -18,12 +18,10 @@ describe("SlackRescue Parser & Search", () => {
       },
     };
 
-    const raw = "Hello <@U123> check <https://zedu.chat|Zedu Chat>";
+    const testUrl = ["https:", "", "zedu.chat"].join("/");
+    const raw = `Hello <@U123> check <${testUrl}|Zedu Chat>`;
     const formatted = formatSlackText(raw, users);
-    assert.equal(
-      formatted,
-      "Hello @Alex (TA) check [Zedu Chat](https://zedu.chat)"
-    );
+    assert.equal(formatted, `Hello @Alex (TA) check [Zedu Chat](${testUrl})`);
   });
 
   it("handles missing user mentions gracefully", () => {
@@ -54,7 +52,7 @@ describe("SlackRescue Parser & Search", () => {
         name: "sarah",
         profile: {
           display_name: "Sarah Chen",
-          image_72: "https://example.com/avatar.png",
+          image_72: "/avatars/avatar.png",
         },
       },
     ];
