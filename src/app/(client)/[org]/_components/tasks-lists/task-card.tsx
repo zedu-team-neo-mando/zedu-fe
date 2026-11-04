@@ -8,6 +8,7 @@ import {
   Plus,
   MessageSquare,
   Trash,
+  ListTodo,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
@@ -19,16 +20,36 @@ import {
 } from "~/components/ui/dropdown-menu";
 import DeleteTasksModal from "./delete-tasks";
 import EditTaskModal from "./edit-task";
+import AssignedTaskNextActionChecklist from "./assigned-task-next-action-checklist";
 
 interface TaskProps {
   id: string;
   text: string;
   position: number;
+  role?: "contributor" | "reviewer" | "triager" | "observer";
+  workflowState?:
+    | "offered"
+    | "in_progress"
+    | "delivered"
+    | "review_required"
+    | "requires_confirmation"
+    | "completed";
+  deliverBy?: string;
+  isOwnerTask?: boolean;
 }
 
-const TaskCard = ({ id, text, position }: TaskProps) => {
+const TaskCard = ({
+  id,
+  text,
+  position,
+  role = "contributor",
+  workflowState = "in_progress",
+  deliverBy = "3 hours",
+  isOwnerTask = false,
+}: TaskProps) => {
   const [deleteTask, setDeleteTask] = useState(false);
   const [editTask, setEditTask] = useState(false);
+  const [showChecklist, setShowChecklist] = useState(false);
 
   const renderNameWithVariables = (text: string) => {
     const parts = text?.split(/(\$\S+)/);
@@ -44,7 +65,7 @@ const TaskCard = ({ id, text, position }: TaskProps) => {
   };
 
   return (
-    <div className="w-full py-4">
+    <div className="w-full py-4" data-testid={`task-card-${id}`}>
       <div className="relative border-b-2 border-dashed border-gray-200 pb-4 flex items-center gap-2">
         <GripVertical className="h-4 w-4 text-gray-400" />
         <div className="flex-1 flex flex-col gap-2">
@@ -54,12 +75,21 @@ const TaskCard = ({ id, text, position }: TaskProps) => {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* <Badge
-            variant="outline"
-            className="bg-yellow-100 text-yellow-800 border-yellow-300 font-semibold text-xs px-2 py-1"
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowChecklist(!showChecklist)}
+            className={`h-7 px-2.5 text-xs font-medium border flex items-center gap-1.5 transition-colors ${
+              showChecklist
+                ? "bg-purple-50 text-purple-700 border-purple-200"
+                : "text-gray-600 hover:text-gray-900 border-gray-200"
+            }`}
+            data-testid={`toggle-checklist-${id}`}
+            aria-expanded={showChecklist}
           >
-            Skill not found
-          </Badge> */}
+            <ListTodo className="h-3.5 w-3.5" />
+            <span>Next actions</span>
+          </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -96,6 +126,19 @@ const TaskCard = ({ id, text, position }: TaskProps) => {
           </DropdownMenu>
         </div>
       </div>
+
+      {showChecklist && (
+        <div className="mt-3 pl-6">
+          <AssignedTaskNextActionChecklist
+            taskId={id}
+            taskTitle={text}
+            initialRole={role}
+            workflowState={workflowState}
+            deliverBy={deliverBy}
+            isOwnerTask={isOwnerTask}
+          />
+        </div>
+      )}
 
       {deleteTask && (
         <DeleteTasksModal
