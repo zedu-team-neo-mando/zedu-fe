@@ -58,7 +58,9 @@ const DmPage = () => {
     id: string,
     uuid: string,
     content: string,
-    medias: any
+    medias: any,
+    mentions: any = state?.mentions,
+    isRetry = false
   ) => {
     const optimisticMessage = {
       channels_id: id,
@@ -69,16 +71,18 @@ const DmPage = () => {
       created_at: new Date().toISOString(),
       status: "pending",
       type: "message",
-      media: state.media,
+      media: medias,
       user_id: user?.user_id ?? user?.id,
       reactions: null,
       isOptimistic: true,
     };
 
-    dispatch({
-      type: ACTIONS.CHATS,
-      payload: { newMessage: optimisticMessage },
-    });
+    if (!isRetry) {
+      dispatch({
+        type: ACTIONS.CHATS,
+        payload: { newMessage: optimisticMessage },
+      });
+    }
     dispatch({
       type: ACTIONS.UPDATE_DM_PREVIEW,
       payload: { channelId: id, message: content },
@@ -87,16 +91,19 @@ const DmPage = () => {
     const payload = {
       content: content,
       media: medias,
-      mentions: state?.mentions,
+      mentions: mentions,
     };
-    await PostRequest(`/group-dms/channels/${id}/threads`, payload);
+    const res = await PostRequest(`/group-dms/channels/${id}/threads`, payload);
+    return res?.status === 200 || res?.status === 201;
   };
 
   const handleReplyMessage = async (
     id: string,
     uuid: string,
     content: string,
-    medias: any
+    medias: any,
+    mentions: any = state?.mentions,
+    isRetry = false
   ) => {
     const optimisticMessage = {
       id: uuid,
@@ -108,25 +115,28 @@ const DmPage = () => {
       created_at: new Date().toISOString(),
       status: "pending",
       type: "message",
-      media: state.media,
+      media: medias,
       user_id: user?.user_id ?? user?.id,
       reactions: null,
       isOptimistic: true,
     };
 
-    dispatch({
-      type: ACTIONS.REPLIES,
-      payload: { newMessage: optimisticMessage },
-    });
+    if (!isRetry) {
+      dispatch({
+        type: ACTIONS.REPLIES,
+        payload: { newMessage: optimisticMessage },
+      });
+    }
 
     const payload = {
       content: content,
       thread_id: state?.thread?.thread_id,
       media: medias,
-      mentions: state?.mentions,
+      mentions: mentions,
     };
 
-    await PostRequest(`/group-dms/messages/${id}`, payload);
+    const res = await PostRequest(`/group-dms/messages/${id}`, payload);
+    return res?.status === 200 || res?.status === 201;
   };
 
   //

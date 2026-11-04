@@ -5,6 +5,10 @@ import SettingsLabel from "../../components/settings-label";
 import { GetRequest, PostRequest } from "~/utils/new-request";
 import Loading from "~/components/ui/loading";
 import { NotificationPermissionHelp } from "~/app/(client)/[org]/_components/notification-permission-guidance";
+import {
+  getShowMessagePreviews,
+  setShowMessagePreviews,
+} from "~/lib/notification-preview";
 import { buildTimeRange } from "./time-range";
 
 type Preferences = {
@@ -28,8 +32,18 @@ const NotificationPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [timeError, setTimeError] = useState<string | null>(null);
+  const [showPreviews, setShowPreviews] = useState(true);
 
   const hasChanges = JSON.stringify(prefs) !== JSON.stringify(initialPrefs);
+
+  useEffect(() => {
+    setShowPreviews(getShowMessagePreviews());
+  }, []);
+
+  const handleShowPreviewsChange = (value: boolean) => {
+    setShowPreviews(value);
+    void setShowMessagePreviews(value);
+  };
 
   useEffect(() => {
     const orgId = localStorage.getItem("orgId") || "";
@@ -165,6 +179,33 @@ const NotificationPage = () => {
               </label>
             ))}
           </div>
+        </div>
+
+        <hr className="bg-[#E6EAEF] border my-4" />
+
+        {/* Message previews */}
+        <div className="max-w-2xl">
+          <label
+            htmlFor="show-message-previews"
+            className="flex items-start space-x-2 cursor-pointer"
+          >
+            <input
+              id="show-message-previews"
+              type="checkbox"
+              className="mt-1"
+              checked={showPreviews}
+              onChange={(e) => handleShowPreviewsChange(e.target.checked)}
+            />
+            <span>
+              <span className="block font-semibold text-sm">
+                Show message previews
+              </span>
+              <span className="block text-xs text-gray-500">
+                When off, notifications show who sent a message but not what it
+                says. Applies to notifications on this browser.
+              </span>
+            </span>
+          </label>
         </div>
 
         <hr className="bg-[#E6EAEF] border my-4" />

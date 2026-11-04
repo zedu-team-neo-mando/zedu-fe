@@ -23,6 +23,16 @@ import { isUserDeactivated } from "~/utils/user-deactivation";
 import { useOrganisationDms } from "~/hooks/useOrganisationDms";
 import { PostRequest } from "~/utils/new-request";
 
+const isPersonalDm = (dm: any, userId: string | undefined) => {
+  if (!userId) return false;
+  return (
+    dm.channel_type === "dm" &&
+    (String(dm.participant_id) === String(userId) ||
+      (dm.participants?.length === 1 &&
+        String(dm.participants[0]?.user_id) === String(userId)))
+  );
+};
+
 const dedupeDmList = (dms: any[] | undefined) => {
   const seen = new Set<string>();
   const list: any[] = [];
@@ -37,7 +47,11 @@ const dedupeDmList = (dms: any[] | undefined) => {
   return list;
 };
 
-const filterDmList = (dms: any[] | undefined, rawQuery: string) => {
+const filterDmList = (
+  dms: any[] | undefined,
+  rawQuery: string,
+  userId: string | undefined
+) => {
   const list = dedupeDmList(dms);
   const query = rawQuery.trim().toLowerCase();
   if (!query) return list;
@@ -115,6 +129,10 @@ const filterDmList = (dms: any[] | undefined, rawQuery: string) => {
     })
     .filter((row): row is { dm: any; score: number } => row !== null)
     .sort((a, b) => {
+      const aPersonal = isPersonalDm(a.dm, userId);
+      const bPersonal = isPersonalDm(b.dm, userId);
+      if (aPersonal && !bPersonal) return -1;
+      if (!aPersonal && bPersonal) return 1;
       if (a.score !== b.score) return a.score - b.score;
       return String(a.dm.username || "").localeCompare(
         String(b.dm.username || "")
@@ -135,6 +153,7 @@ export default function DMNav({
   const params = useParams();
   const id = params.id as string;
   const { orgSlug } = state;
+  const userId = state?.user?.user_id;
   const sidebarScrollRef = useRef<HTMLDivElement | null>(null);
 
   const orgId =
@@ -207,8 +226,8 @@ export default function DMNav({
   };
 
   const searchData = useMemo(
-    () => filterDmList(state?.dms, searchInput),
-    [state?.dms, searchInput]
+    () => filterDmList(state?.dms, searchInput, state?.user?.user_id),
+    [state?.dms, searchInput, state?.user?.user_id]
   );
 
   return (
@@ -309,6 +328,7 @@ export default function DMNav({
                         <div className="relative flex justify-between items-start mb-1">
                           <span className="text-[15px] font-semibold text-white break-words max-w-[200px] line-clamp-2">
                             {dm.username}
+                            {isPersonalDm(dm, userId) ? " (you)" : ""}
                           </span>
 
                           <div className="">
@@ -322,7 +342,9 @@ export default function DMNav({
                               </div>
                             )}
                             <span className="text-[12px] text-[#BABAFB]">
-                              {moment(dm.last_read_at).format("LT")}
+                              {dm.last_read_at
+                                ? moment(dm.last_read_at).format("LT")
+                                : ""}
                             </span>
                           </div>
                         </div>

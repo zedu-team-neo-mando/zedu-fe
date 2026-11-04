@@ -164,6 +164,11 @@ export default function ChannelsTab() {
     localStorage.setItem("channelId", item?.channels_id);
     localStorage.setItem("channelName", item?.name);
     dispatch({ type: ACTIONS.CHANNEL_NAME, payload: item?.name || "" });
+    // Keep the unread count of the channel being opened for the unread divider
+    dispatch({
+      type: ACTIONS.CHANNEL_UNREAD_COUNT,
+      payload: item?.thread_count || 0,
+    });
     router.push(`/${orgSlug}/home/channels/${item.channels_id}`);
   };
 

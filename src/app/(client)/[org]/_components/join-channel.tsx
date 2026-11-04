@@ -32,7 +32,7 @@ const JoinChannel = () => {
     const res = await PostRequest(`/channels/${id}/join`, {
       username: user?.username,
     });
-    if (res?.status === 200 || res?.status === 200) {
+    if (res?.status === 200 || res?.status === 201) {
       dispatch({
         type: ACTIONS.CHANNEL_CALLBACK,
       });

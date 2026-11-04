@@ -48,6 +48,13 @@ export const ChannelCard = (props: ComponentProps) => {
     localStorage.setItem("channelName", props?.name);
     dispatch({ type: ACTIONS.CHANNEL_NAME, payload: props?.name });
 
+    // Keep the unread count of the channel being opened. The count is cleared
+    // below, so capture it first for the unread divider.
+    dispatch({
+      type: ACTIONS.CHANNEL_UNREAD_COUNT,
+      payload: props.thread_count || 0,
+    });
+
     // Clear Nav unread highlight immediately on open
     dispatch({
       type: ACTIONS.UPDATE_THREAD_COUNT,

@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useEffect, useId, useRef, useState } from "react";
 import type { Contributor } from "../_lib/contributors";
 
-const OSPREY_AVATAR = "/TelexIcon.svg";
+const OSPREY_AVATAR = "/zedu-icon.png";
 
 export const ContributorCard = ({ name, username }: Contributor) => {
   const [open, setOpen] = useState(false);

@@ -1,70 +1,112 @@
 import { useParams } from "next/navigation";
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { ACTIONS } from "~/store/Actions";
 import { DataContext } from "~/store/GlobalState";
 import { GetRequest } from "~/utils/new-request";
 import { prefetchAvatars } from "~/utils/prefetch-avatars";
+
+type ChannelRequest = {
+  id: string;
+  token: string;
+  page: number;
+  pending: boolean;
+  hasMore: boolean;
+  active: boolean;
+};
 
 const UseChannel = () => {
   const params = useParams();
   const id = params.id as string;
   const { state, dispatch } = useContext(DataContext);
   const token = localStorage.getItem("token") || "";
-  const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [loading, setLoading] = useState(true);
+  const requestRef = useRef<ChannelRequest | null>(null);
 
-  const fetchThreads = async (newPage: number = 1) => {
-    try {
-      const res = await GetRequest(
-        `/threads/channels/${id}?page=${newPage}&limit=40`
-      );
+  const fetchThreads = useCallback(
+    async (request: ChannelRequest, newPage: number) => {
+      if (!request.active || request.pending) return;
+      request.pending = true;
 
-      if (res?.status === 200 || res?.status === 201) {
-        const newThreads = Array.isArray(res.data?.data) ? res.data?.data : [];
+      try {
+        const res = await GetRequest(
+          `/threads/channels/${request.id}?page=${newPage}&limit=40`
+        );
+        // Cleanup invalidates this request on channel, session or refresh changes.
+        if (!request.active || requestRef.current !== request) return;
 
-        dispatch({
-          type: ACTIONS.MESSAGES,
-          payload: { newThreads, newPage },
-        });
+        if (res?.status === 200 || res?.status === 201) {
+          const newThreads = Array.isArray(res.data?.data) ? res.data.data : [];
 
-        prefetchAvatars(newThreads);
+          dispatch({
+            type: ACTIONS.MESSAGES,
+            payload: { newThreads, newPage },
+          });
+          prefetchAvatars(newThreads);
 
-        // Set hasMore true only if messages exceed 40 and user scrolls
-        if (newPage > 1 && newThreads.length > 0) {
-          setHasMore(true);
+          request.page = newPage;
+          request.hasMore = newThreads.length >= 40;
         } else {
-          setHasMore(newThreads.length >= 40);
+          request.hasMore = false;
+        }
+        setHasMore(request.hasMore);
+      } catch (error) {
+        if (request.active && requestRef.current === request) {
+          console.error("Error fetching threads:", error);
+          request.hasMore = false;
+          setHasMore(false);
+        }
+      } finally {
+        if (request.active && requestRef.current === request) {
+          request.pending = false;
+          setLoading(false);
+          dispatch({ type: ACTIONS.MESSAGE_LOADING, payload: false });
         }
       }
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching threads:", error);
-      setHasMore(false);
-    } finally {
-      setPage(newPage);
-    }
-  };
+    },
+    [dispatch]
+  );
 
   useEffect(() => {
-    if (id && token) {
-      const isInitialLoad =
-        !Array.isArray(state?.messages) || state.messages.length === 0;
-      if (isInitialLoad) {
-        setLoading(true);
-      }
-      setHasMore(true);
-      setPage(1);
-      fetchThreads(1).finally(() =>
-        dispatch({ type: ACTIONS.MESSAGE_LOADING, payload: false })
-      );
+    const previous = requestRef.current;
+    const channelChanged = previous?.id !== id || previous?.token !== token;
+    const request: ChannelRequest = {
+      id,
+      token,
+      page: 1,
+      pending: false,
+      hasMore: true,
+      active: true,
+    };
+    requestRef.current = request;
+
+    // Do not show the previous conversation while the next one is loading.
+    if (channelChanged) {
+      dispatch({
+        type: ACTIONS.MESSAGES,
+        payload: { newThreads: [], newPage: 1 },
+      });
     }
-  }, [id, token, state?.countCallback]);
+
+    if (id && token) {
+      if (channelChanged) setLoading(true);
+      setHasMore(true);
+      void fetchThreads(request, 1);
+    } else {
+      request.hasMore = false;
+      setHasMore(false);
+      setLoading(false);
+    }
+
+    return () => {
+      request.active = false;
+    };
+  }, [id, token, state?.countCallback, dispatch, fetchThreads]);
 
   const fetchMoreData = () => {
-    if (hasMore) {
-      const nextPage = page + 1;
-      fetchThreads(nextPage);
+    const request = requestRef.current;
+    if (request?.id === id && request.token === token && request.hasMore) {
+      void fetchThreads(request, request.page + 1);
     }
   };
 

@@ -8,6 +8,8 @@ import {
   SmilePlus,
   Bookmark,
   BookmarkCheck,
+  UserMinus,
+  UserPlus,
 } from "lucide-react";
 import MessageItem from "./message-item";
 import { AppleEmojiText } from "~/app/(client)/[org]/_components/apple-emoji/apple-emoji-text";
@@ -25,12 +27,8 @@ import data from "@emoji-mart/data";
 import More from "./more";
 import ShareFileModal from "./share-file-modal";
 import UserHoverCard from "../hover-card/user";
-import {
-  DeleteSavedMessage,
-  GetRequest,
-  PostRequest,
-  SaveMessage,
-} from "~/utils/new-request";
+import { GetRequest, PostRequest } from "~/utils/new-request";
+import { useSavedMessageActions } from "~/hooks/useSavedMessages";
 import {
   Tooltip,
   TooltipContent,
@@ -41,6 +39,10 @@ import { TooltipArrow } from "@radix-ui/react-tooltip";
 import { cn } from "~/lib/utils";
 import UserAvatar from "~/components/layout/user-avatar";
 import { formatReactionUsers } from "~/utils/format-reaction-users";
+import {
+  membershipNames,
+  type MembershipNotice,
+} from "~/utils/membership-notices";
 
 interface MessageProps {
   item: any;
@@ -56,13 +58,14 @@ const Message = ({
   popupId,
 }: MessageProps) => {
   const { state, dispatch } = useContext(DataContext);
-  const { bookmarks, user, orgMembers } = state;
+  const { user, orgMembers } = state;
   const pathname = usePathname();
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const params = useParams();
   const id = params.id as string;
-  const isSaved = bookmarks?.some((b: any) => b.thread_id === item.thread_id);
+  const { isThreadSaved, saveThread, removeThread } = useSavedMessageActions();
+  const isSaved = isThreadSaved(item.thread_id);
   const [usernames, setUsernames] = useState<any>([]);
   const [showMobileActions, setShowMobileActions] = useState(false);
   const [isForwardOpen, setIsForwardOpen] = useState(false);
@@ -116,38 +119,9 @@ const Message = ({
     dispatch({ type: ACTIONS.HOVER_PROFILE, payload: true });
   };
 
-  const toggleSave = async () => {
-    const updatedIds = [
-      ...bookmarks,
-      { id: item.id, thread_id: item.thread_id },
-    ];
+  const toggleSave = () => saveThread(item);
 
-    dispatch({ type: ACTIONS.BOOKMARKS, payload: updatedIds });
-
-    const orgId = localStorage.getItem("orgId") || "";
-
-    const payload = {
-      channels_id: item?.channels_id,
-      thread_id: item.thread_id,
-      type: "message",
-    };
-
-    await SaveMessage(`/organisations/${orgId}/thread/save`, payload);
-  };
-
-  const toggleRemove = async () => {
-    const updatedIds = bookmarks.filter(
-      (bookmark: any) => bookmark.thread_id !== item.thread_id
-    );
-
-    dispatch({ type: ACTIONS.BOOKMARKS, payload: updatedIds });
-
-    const orgId = localStorage.getItem("orgId") || "";
-
-    await DeleteSavedMessage(
-      `/organisations/${orgId}/saved/message/${item.thread_id}`
-    );
-  };
+  const toggleRemove = () => removeThread(item.thread_id);
 
   // get reactions users
   const reactionUsers = async (reactionId: string) => {
@@ -215,6 +189,53 @@ const Message = ({
       setShowMobileActions(!showMobileActions);
     }
   };
+
+  const membership: MembershipNotice | undefined = item?.membership;
+  if (item?.type === "system" && membership) {
+    const { shown, others } = membershipNames(membership.names);
+    const channelName = state?.channelName || state?.channelDetails?.name;
+    const Icon = membership.kind === "joined" ? UserPlus : UserMinus;
+    const time = new Date(item?.created_at).toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+    const names = [
+      ...shown.map((name) => (
+        <span key={name} className="font-medium text-[#344054]">
+          {name}
+        </span>
+      )),
+      ...(others
+        ? [
+            <span key="others" className="font-medium text-[#344054]">
+              {others} {others === 1 ? "other" : "others"}
+            </span>,
+          ]
+        : []),
+    ];
+
+    return (
+      <div className="message-row flex items-center gap-2 px-5 py-1">
+        <Icon aria-hidden="true" className="size-4 shrink-0 text-[#98A2B3]" />
+        <p className="min-w-0 text-[13px] leading-[18px] text-[#667085]">
+          {names.map((name, index) => (
+            <React.Fragment key={index}>
+              {index > 0 && (index === names.length - 1 ? " and " : ", ")}
+              {name}
+            </React.Fragment>
+          ))}{" "}
+          {membership.kind} {channelName ? `#${channelName}` : "this channel"}.{" "}
+          <time
+            dateTime={item?.created_at}
+            className="whitespace-nowrap text-[11px] text-[#98A2B3]"
+          >
+            {time}
+          </time>
+        </p>
+      </div>
+    );
+  }
 
   if (item?.type === "system") {
     return (

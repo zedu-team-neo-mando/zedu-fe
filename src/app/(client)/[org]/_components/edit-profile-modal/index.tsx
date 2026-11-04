@@ -51,6 +51,7 @@ const EditProfileDialog = ({ isOpen, onClose }: any) => {
   const [title, setTitle] = useState("");
   const [avatar, setAvatar] = useState<any>("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarRemoved, setAvatarRemoved] = useState(false);
   const [namePronunciation, setNamePronunciation] = useState("");
   const [timezone, setTimezone] = useState(user?.timezone);
   const [avatarKey, setAvatarKey] = useState(Date.now());
@@ -75,36 +76,49 @@ const EditProfileDialog = ({ isOpen, onClose }: any) => {
     setTitle(user?.title || "");
     setNamePronunciation(user?.name_pronounciation);
   }, [user]);
+  // Discard pending photo changes when the dialog is closed.
+  useEffect(() => {
+    if (!isOpen) {
+      setAvatar(user?.avatar_url || user?.default_avatar_url || images?.user);
+      setAvatarFile(null);
+      setAvatarRemoved(false);
 
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  }, [isOpen, user]);
   const handleSave = async () => {
-    // Preserve a legacy stored value when the user edits a different field.
     const phoneChanged = phone !== originalPhoneRef.current;
+
     if (phoneChanged && !isValidPhone(phone)) {
       setPhoneError("Please enter a valid phone number");
       return;
     }
+
     setPhoneError("");
-
-    const formData = new FormData();
-    formData.append("full_name", fullName);
-    formData.append("display_name", displayName);
-    formData.append("username", username);
-    formData.append("email", email);
-    formData.append(
-      "phone",
-      phoneChanged ? phone.trim() : originalPhoneRef.current
-    );
-    formData.append("title", title);
-    formData.append("timezone", timezone);
-    formData.append("name_pronounciation", namePronunciation);
-    if (avatarFile) {
-      const compressedAvatar = await compressImage(avatarFile);
-      formData.append("avatar_file", compressedAvatar);
-    }
-
     setButtonLoading(true);
 
     try {
+      const formData = new FormData();
+
+      formData.append("full_name", fullName);
+      formData.append("display_name", displayName);
+      formData.append("username", username);
+      formData.append("email", email);
+      formData.append(
+        "phone",
+        phoneChanged ? phone.trim() : originalPhoneRef.current
+      );
+      formData.append("title", title);
+      formData.append("timezone", timezone);
+      formData.append("name_pronounciation", namePronunciation);
+
+      if (avatarFile) {
+        const compressedAvatar = await compressImage(avatarFile);
+        formData.append("avatar_file", compressedAvatar);
+      }
+
       const res = await axios.patch(BASE_URL + "/profile", formData, {
         headers: {
           Authorization: `Bearer ${state?.token}`,
@@ -112,64 +126,84 @@ const EditProfileDialog = ({ isOpen, onClose }: any) => {
         },
       });
 
-      if (res?.status === 200 || res?.status === 201) {
-        dispatch({
-          type: ACTIONS.PROFILE_CALLBACK,
-          payload: !state?.profileCallback,
-        });
-        showSuccess(res?.data?.message);
+      if (res?.status !== 200 && res?.status !== 201) {
+        throw new Error("Failed to update profile");
       }
 
-      setTimeout(() => {
-        setButtonLoading(false);
-        onClose();
-      }, 1000);
-    } catch (err) {
-      setButtonLoading(false);
-    }
-  };
+      if (avatarRemoved) {
+        try {
+          await axios.delete(BASE_URL + "/profile/image", {
+            headers: {
+              Authorization: `Bearer ${state?.token}`,
+              "Content-Type": "application/json",
+            },
+          });
+        } catch (error) {
+          console.error("Error removing profile photo:", error);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+          dispatch({
+            type: ACTIONS.PROFILE_CALLBACK,
+            payload: !state?.profileCallback,
+          });
 
-    if (file?.type !== "image/jpeg" && file?.type !== "image/png") {
-      return showError("Image type is not supported");
-    }
+          showError(
+            "Your profile was updated, but your photo could not be removed. Please try again."
+          );
 
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setAvatar(url);
-      setAvatarKey(Date.now());
-      setAvatarFile(file);
-    }
-  };
-
-  const handleRemovePhoto = async () => {
-    try {
-      await axios.delete(BASE_URL + "/profile/image", {
-        headers: {
-          Authorization: `Bearer ${state?.token}`,
-          "Content-Type": "application/json",
-        },
-      });
+          return;
+        }
+      }
 
       dispatch({
         type: ACTIONS.PROFILE_CALLBACK,
         payload: !state?.profileCallback,
       });
 
-      setAvatar(images?.user);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      showSuccess(
+        avatarRemoved
+          ? "Profile updated and photo removed successfully"
+          : res?.data?.message || "Profile updated successfully"
+      );
+
+      setAvatarRemoved(false);
+      setAvatarFile(null);
+      onClose();
     } catch (error) {
-      setAvatar(images?.user);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      console.error("Error saving profile:", error);
+      showError("Unable to save your changes. Please try again.");
+    } finally {
+      setButtonLoading(false);
     }
   };
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
 
+    if (!file) return;
+
+    if (file.type !== "image/jpeg" && file.type !== "image/png") {
+      showError("Image type is not supported");
+      e.target.value = "";
+      return;
+    }
+
+    const url = URL.createObjectURL(file);
+
+    setAvatar(url);
+    setAvatarKey(Date.now());
+    setAvatarFile(file);
+    setAvatarRemoved(false);
+  };
+
+  const handleRemovePhoto = () => {
+    setAvatar(images?.user);
+    setAvatarKey(Date.now());
+    setAvatarFile(null);
+    setAvatarRemoved(true);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
   const triggerFileInput = () => {
     fileInputRef.current?.click();
   };

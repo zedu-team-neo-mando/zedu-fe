@@ -16,6 +16,14 @@ keywords = [
   "var",
 ]
 
+  # Browser storage keys and cache names are public identifiers, not credentials.
+  [[rules.allowlists]]
+  description = "Zedu-prefixed storage keys and cache names"
+  regexTarget = "secret"
+  regexes = [
+    '''^zedu[_-][a-z0-9_-]+$''',
+  ]
+
 [allowlist]
 description = "Allow known test fixtures and generated files"
 paths = [

@@ -1,16 +1,19 @@
 import { Metadata } from "next";
-import { ogImageUrl, siteUrl } from "~/lib/env-urls";
+import { siteUrl } from "~/lib/env-urls";
 import Image from "next/image";
 import { ArrowBtn } from "../../_components/ui/Button";
 import { FeaturedCard } from "../../_components/ui/FeaturedCard";
 import { DynamicFooter } from "../../_components/footer/dynamic-footer";
+import { getProductBreadcrumbJsonLd } from "../../_lib/productStructuredData";
 import { FAQSection } from "../../_components/home/FAQSection";
 import type { HomeFAQ } from "../../_lib/faqData";
 
+const description =
+  "Manage course files in one structured workspace with Zedu File Management. Organize resources, share securely, and collaborate across classes, cohorts, and departments.";
+
 export const metadata: Metadata = {
   title: "File Management for Classes and Cohorts",
-  description:
-    "Manage course files in one structured workspace with Zedu File Management. Organize resources, share securely, and collaborate across classes, cohorts, and departments.",
+  description,
   keywords: [
     "Zedu file management",
     "education file sharing",
@@ -23,26 +26,15 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Zedu File Management - Organize and Share Learning Materials",
-    description:
-      "Store lectures, assignments, and class resources in organized spaces while keeping collaboration connected to the right learning context.",
+    description,
     url: siteUrl("/products/file-management"),
     siteName: "Zedu",
-    images: [
-      {
-        url: ogImageUrl("og-image-5.png"),
-        width: 1200,
-        height: 630,
-        alt: "Zedu file management for structured learning resources",
-      },
-    ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "Zedu File Management - Structured Learning Resources",
-    description:
-      "Keep course files organized, searchable, and secure with a collaboration-ready workspace built for education.",
-    images: [ogImageUrl("og-image-5.png")],
+    description,
   },
   alternates: {
     canonical: siteUrl("/products/file-management"),
@@ -55,7 +47,7 @@ export const metadata: Metadata = {
 
 const featureCards = [
   {
-    image: "/images/homepage/products/files/image-1.png",
+    image: "/images/homepage/products/files/image-1.jpg",
     title: "Store Course Materials in Organized Spaces",
     points: [
       "Organize files by courses, departments, or cohorts for easy access",
@@ -63,7 +55,7 @@ const featureCards = [
     ],
   },
   {
-    image: "/images/homepage/products/files/image-2.png",
+    image: "/images/homepage/products/files/image-2.jpg",
     title: "Collaborate on Files with Your Class",
     points: [
       "Share files directly in channels to keep context and discussions connected",
@@ -99,7 +91,7 @@ const otherFeatures = [
   {
     title: "Channels",
     description: "Share course files directly inside class discussions.",
-    icon: "/images/homepage/icons/file-management.png",
+    icon: "/images/homepage/icons/messaging-system.png",
   },
   {
     icon: "/images/homepage/icons/AI-class-note.png",
@@ -143,6 +135,15 @@ const fileManagementFAQs: HomeFAQ[] = [
 const FileManagementProductsPage = () => {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: getProductBreadcrumbJsonLd(
+            "File Management",
+            "/products/file-management"
+          ),
+        }}
+      />
       <section className="relative isolate flex w-full flex-col items-center gap-4 overflow-hidden px-4 py-10 text-center sm:gap-6 sm:px-8 sm:py-16  lg:gap-8 lg:px-12 mt-10">
         <div
           aria-hidden="true"
@@ -168,7 +169,7 @@ const FileManagementProductsPage = () => {
           <div className="relative aspect-[16/10]  w-full sm:aspect-[16/9] lg:aspect-[2/1] ">
             <Image
               src="/images/homepage/products/files-hero.png"
-              alt="Preview of the learning communication interface"
+              alt="Zedu file management interface showing course materials, lecture folders, and shared cohort resources"
               fill
               priority
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 92vw, 1200px"
@@ -178,9 +179,9 @@ const FileManagementProductsPage = () => {
         </div>
       </section>
       <section className="relative isolate flex w-full flex-col items-center gap-4 overflow-hidden px-4 py-10 text-center sm:gap-6 sm:px-8 sm:py-16  lg:gap-8 lg:px-12">
-        <h1 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-4xl md:text-5xl text-center">
+        <h2 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-4xl md:text-5xl text-center">
           Organize and Collaborate on Learning Files
-        </h1>
+        </h2>
         <p className="max-w-[95%] text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
           Structure course materials and work together seamlessly in one
           connected workspace
@@ -226,9 +227,9 @@ const FileManagementProductsPage = () => {
         </div>
       </section>
       <section className="relative isolate flex w-full flex-col items-center gap-4 overflow-hidden px-4 py-10 text-center sm:gap-6 sm:px-8 sm:py-16  lg:gap-8 lg:px-12">
-        <h1 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-4xl md:text-5xl text-center">
+        <h2 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-4xl md:text-5xl text-center">
           Smart, Secure, and Scalable File Management
-        </h1>
+        </h2>
         <p className="max-w-[95%] text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
           Zedu brings together powerful search, secure sharing, and education
           focused workflows into one system
@@ -251,10 +252,10 @@ const FileManagementProductsPage = () => {
       </section>
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16 mt-5 bg-blue-50/30">
         <div className="flex flex-col items-center gap-4">
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
             Connected to the{" "}
             <span className="text-primary-500">Rest of Zedu</span>
-          </h1>
+          </h2>
           <p className="max-w-[95%] text-center text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
             File management integrates seamlessly with other features.
           </p>
@@ -271,7 +272,6 @@ const FileManagementProductsPage = () => {
                 alt={`${feature.title} icon`}
                 height={40}
                 width={40}
-                preload
                 className="h-8 w-8 sm:h-10 sm:w-10"
               />
               <h3 className="text-base font-semibold text-neutral-900 sm:text-lg">

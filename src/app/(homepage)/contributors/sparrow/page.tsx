@@ -10,11 +10,15 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { siteUrl } from "~/lib/env-urls";
 import { TEAM } from "./team";
 
 export const metadata: Metadata = {
   title: `${TEAM.name} Contributors`,
   description: `Meet the ${TEAM.name} team contributing to Zedu.`,
+  alternates: {
+    canonical: siteUrl("/contributors/sparrow"),
+  },
 };
 
 const getInitials = (name: string) =>

@@ -12,7 +12,13 @@ import { useParams } from "next/navigation";
 import InfiniteScroll from "react-infinite-scroll-component";
 import moment from "moment";
 import Image from "next/image";
-import { File as FileIcon, Film, Music, Play } from "lucide-react";
+import {
+  File as FileIcon,
+  Film,
+  Link as LinkIcon,
+  Music,
+  Play,
+} from "lucide-react";
 import { DataContext } from "~/store/GlobalState";
 import { GetRequest } from "~/utils/new-request";
 import Loading from "~/components/ui/loading";
@@ -27,13 +33,15 @@ import {
 } from "~/utils/document-files";
 import { getFileIconClass } from "../file-management/FileList";
 import ChannelFileMediaPreview from "./channel-file-media-preview";
+import { extractLinks } from "../ChannelMessage/preview-links";
 
 export type ChannelFileFilter =
   | "all"
   | "images"
   | "videos"
   | "audio"
-  | "documents";
+  | "documents"
+  | "links";
 
 type ChannelFileEntry = Media & {
   thread_id?: string;
@@ -43,7 +51,7 @@ type ChannelFileEntry = Media & {
   created_at: string;
 };
 
-type MediaCategory = "image" | "video" | "audio" | "document" | "file";
+type MediaCategory = "image" | "video" | "audio" | "document" | "file" | "link";
 
 const FILTER_OPTIONS: { id: ChannelFileFilter; label: string }[] = [
   { id: "all", label: "All" },
@@ -51,6 +59,7 @@ const FILTER_OPTIONS: { id: ChannelFileFilter; label: string }[] = [
   { id: "videos", label: "Videos" },
   { id: "audio", label: "Audio" },
   { id: "documents", label: "Documents" },
+  { id: "links", label: "Links" },
 ];
 
 const IMAGE_EXTENSIONS = new Set([
@@ -91,6 +100,7 @@ const normalizeExtension = (fileType: string, fileName: string): string => {
 };
 
 export const getChannelFileCategory = (media: Media): MediaCategory => {
+  if (media.file_type === "link") return "link";
   const mime = (media.mime_type || "").toLowerCase().split(";")[0].trim();
   const ext = normalizeExtension(media.file_type, media.file_name);
 
@@ -109,6 +119,11 @@ const decodeFileName = (name: string) => {
     return name;
   }
 };
+
+const DEFAULT_PROTOCOL = "https:";
+
+const ensureScheme = (url: string) =>
+  /^https?:\/\//i.test(url) ? url : `${DEFAULT_PROTOCOL}//${url}`;
 
 const isThreadFileBundle = (item: Record<string, unknown>) =>
   Array.isArray(item.media) &&
@@ -275,7 +290,17 @@ export function FilesTabContainer() {
 
   const fetchPage = useCallback(
     async (pageNumber: number, replace: boolean) => {
-      if (!channelId || fetchInFlightRef.current) return;
+      if (!channelId) return;
+
+      if (filter === "links") {
+        setFiles([]);
+        setHasMore(false);
+        setLoading(false);
+        setInitialLoading(false);
+        return;
+      }
+
+      if (fetchInFlightRef.current) return;
 
       fetchInFlightRef.current = true;
       setLoading(true);
@@ -334,9 +359,54 @@ export function FilesTabContainer() {
     fetchPage(page + 1, false);
   };
 
+  const extractedLinks = useMemo<ChannelFileEntry[]>(() => {
+    if (filter !== "links") return [];
+    const links: ChannelFileEntry[] = [];
+    for (const thread of state.messages || []) {
+      // state.messages is replaced on channel change, guard the stale window
+      if (
+        String(thread?.channels_id ?? thread?.channel_id ?? "") !==
+        String(channelId)
+      )
+        continue;
+      const urls = extractLinks(thread?.message || "");
+      urls.forEach((url, index) => {
+        const href = ensureScheme(url);
+        links.push({
+          id: `link-${thread.thread_id}-${index}`,
+          file_name: href,
+          file_type: "link",
+          mime_type: "text/uri-list",
+          file_link: href,
+          size: 0,
+          organisation_id: "",
+          user_id: String(thread.user_id ?? ""),
+          folder_id: null,
+          channel_id: channelId ?? null,
+          message_id: String(thread.thread_id ?? ""),
+          created_at: String(thread.created_at ?? ""),
+          updated_at: String(thread.created_at ?? ""),
+          last_accessed_at: String(thread.created_at ?? ""),
+          deleted_at: null,
+          access_type: "link",
+          is_shareable: true,
+          thread_id: String(thread.thread_id ?? ""),
+          username: String(thread.username ?? "Member"),
+          avatar_url: thread.avatar_url,
+        });
+      });
+    }
+    links.sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+    return links;
+  }, [filter, state.messages, channelId]);
+
   const groupedFiles = useMemo(() => {
+    const source = filter === "links" ? extractedLinks : files;
     const groups = new Map<string, ChannelFileEntry[]>();
-    const sorted = [...files].sort(
+    const sorted = [...source].sort(
       (a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
@@ -349,7 +419,7 @@ export function FilesTabContainer() {
     }
 
     return Array.from(groups.entries());
-  }, [files]);
+  }, [files, extractedLinks, filter]);
 
   const openPreview = (file: ChannelFileEntry) => {
     const category = getChannelFileCategory(file);
@@ -414,15 +484,23 @@ export function FilesTabContainer() {
           <div className="flex justify-center py-16">
             <Loading color="#1264A3" />
           </div>
-        ) : files.length === 0 ? (
+        ) : (
+            filter === "links"
+              ? extractedLinks.length === 0
+              : files.length === 0
+          ) ? (
           <p className="py-12 text-center text-sm text-[#667085]">
-            No files shared in this channel yet.
+            {filter === "links"
+              ? "No links shared in this channel yet."
+              : "No files shared in this channel yet."}
           </p>
         ) : (
           <InfiniteScroll
-            dataLength={files.length}
-            next={loadMore}
-            hasMore={hasMore && !loading}
+            dataLength={
+              filter === "links" ? extractedLinks.length : files.length
+            }
+            next={filter === "links" ? () => {} : loadMore}
+            hasMore={filter === "links" ? false : hasMore && !loading}
             loader={
               <div className="flex justify-center py-4">
                 <Loading color="#1264A3" />
@@ -488,7 +566,8 @@ export function FilesTabContainer() {
                         return (
                           cat === "audio" ||
                           cat === "document" ||
-                          cat === "file"
+                          cat === "file" ||
+                          cat === "link"
                         );
                       })
                       .map((file) => {
@@ -512,6 +591,11 @@ export function FilesTabContainer() {
                                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-[#E6EAEF] bg-white">
                                   {category === "audio" ? (
                                     <Music
+                                      size={18}
+                                      className="text-[#667085]"
+                                    />
+                                  ) : category === "link" ? (
+                                    <LinkIcon
                                       size={18}
                                       className="text-[#667085]"
                                     />

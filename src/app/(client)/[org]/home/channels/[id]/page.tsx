@@ -105,7 +105,9 @@ const ChannelsPage = () => {
     id: string,
     uuid: string,
     content: string,
-    medias: any
+    medias: any,
+    mentions: any = state?.mentions,
+    isRetry = false
   ) => {
     // send client side update
     const optimisticMessage = {
@@ -117,22 +119,24 @@ const ChannelsPage = () => {
       created_at: new Date().toISOString(),
       status: "pending",
       type: "message",
-      media: state.media,
+      media: medias,
       user_id: user?.user_id,
       reactions: null,
       isOptimistic: true,
     };
 
-    dispatch({
-      type: ACTIONS.MESSAGES,
-      payload: { newMessage: optimisticMessage },
-    });
+    if (!isRetry) {
+      dispatch({
+        type: ACTIONS.MESSAGES,
+        payload: { newMessage: optimisticMessage },
+      });
+    }
 
     const payload = {
       content: content,
       thread_id: uuid,
       media: medias,
-      mentions: state?.mentions,
+      mentions: mentions,
     };
 
     const res = await PostRequest(`/threads/${id}`, payload);
@@ -145,7 +149,9 @@ const ChannelsPage = () => {
     id: string,
     uuid: string,
     content: string,
-    medias: any
+    medias: any,
+    mentions: any = state?.mentions,
+    isRetry = false
   ) => {
     const optimisticMessage = {
       id: uuid,
@@ -157,16 +163,18 @@ const ChannelsPage = () => {
       created_at: new Date().toISOString(),
       status: "pending",
       type: "message",
-      media: state.media,
+      media: medias,
       user_id: user?.user_id ?? user?.id,
       reactions: null,
       isOptimistic: true,
     };
 
-    dispatch({
-      type: ACTIONS.REPLIES,
-      payload: { newMessage: optimisticMessage },
-    });
+    if (!isRetry) {
+      dispatch({
+        type: ACTIONS.REPLIES,
+        payload: { newMessage: optimisticMessage },
+      });
+    }
 
     const payload = {
       content: content,
@@ -174,10 +182,11 @@ const ChannelsPage = () => {
       user_id: state?.user?.id,
       thread_id: state?.thread?.thread_id,
       media: medias,
-      mentions: state?.mentions,
+      mentions: mentions,
     };
 
-    await PostRequest(`/channels/${id}/messages`, payload);
+    const res = await PostRequest(`/channels/${id}/messages`, payload);
+    return res?.status === 200 || res?.status === 201;
   };
 
   if (state?.channelloading) return null;

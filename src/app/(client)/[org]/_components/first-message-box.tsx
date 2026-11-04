@@ -15,8 +15,8 @@ import {
   SendHorizonal,
   Upload,
 } from "lucide-react";
-import { useParams } from "next/navigation";
 import { uuidv7 } from "uuidv7";
+import { useRouter } from "next/navigation";
 import { EditorContent } from "@tiptap/react";
 import {
   Dialog,
@@ -43,18 +43,39 @@ import { AttachmentList } from "./message-box/attachment-list";
 import { useAttachments } from "./message-box/use-attachments";
 import { CHAT_FILE_ACCEPT } from "~/utils/document-files";
 import { localGifToFile, type LocalGif } from "~/lib/gifs/local-pack";
+import { showError } from "~/components/toast/sonner";
 
-const FirstMessageBox = ({ sendMessage }: any) => {
-  const { editor, isEmpty } = UseTextEditor();
-  const params = useParams();
-  const id = params.id as string;
-  const uuid = uuidv7();
+interface FirstMessageBoxProps {
+  sendMessage: (
+    uuid: string,
+    content: string,
+    medias: unknown[]
+  ) => Promise<{ destination: string } | false>;
+  placeholder?: string;
+  disabled?: boolean;
+}
+
+const FirstMessageBox = ({
+  sendMessage,
+  placeholder,
+  disabled,
+}: FirstMessageBoxProps) => {
+  const { editor, isEmpty } = UseTextEditor(
+    undefined,
+    undefined,
+    undefined,
+    placeholder
+  );
+  const router = useRouter();
+  const uuid = useRef(uuidv7());
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [url, setUrl] = useState("");
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isGifPickerOpen, setIsGifPickerOpen] = useState(false);
   const [showFormatting, setShowformatting] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { attachments, uploaded, readyToSend, add, remove, retry, clear } =
     useAttachments();
@@ -85,9 +106,10 @@ const FirstMessageBox = ({ sendMessage }: any) => {
   // Handle message submission (no need to upload images here)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (disabled || submittingRef.current) return;
 
     const editorText = editor?.getText() ?? "";
-    let content = normalizeOutgoingMessageHtml(
+    const content = normalizeOutgoingMessageHtml(
       editor?.getHTML() ?? "",
       editorText
     );
@@ -97,10 +119,22 @@ const FirstMessageBox = ({ sendMessage }: any) => {
     if (!strippedContent && attachments.length === 0) return;
     if (!readyToSend()) return;
 
-    editor?.commands?.clearContent();
-    clear();
-
-    sendMessage(id, uuid, content, uploaded);
+    submittingRef.current = true;
+    setIsSubmitting(true);
+    try {
+      const result = await sendMessage(uuid.current, content, uploaded);
+      if (result) {
+        editor?.commands?.clearContent();
+        clear();
+        uuid.current = uuidv7();
+        router.push(result.destination);
+      }
+    } catch {
+      showError("Could not send your message. Your draft is saved. Try again.");
+    } finally {
+      submittingRef.current = false;
+      setIsSubmitting(false);
+    }
   };
 
   const handleKeyDown = (event: any) => {
@@ -109,7 +143,9 @@ const FirstMessageBox = ({ sendMessage }: any) => {
         return;
       } else {
         event.preventDefault();
-        handleSubmit(event);
+        if (!disabled) {
+          handleSubmit(event);
+        }
       }
     }
   };
@@ -151,17 +187,26 @@ const FirstMessageBox = ({ sendMessage }: any) => {
     }
   }, [editor]);
 
+  useEffect(() => {
+    editor?.setEditable(!isSubmitting);
+  }, [editor, isSubmitting]);
+
   //
 
   return (
     <>
       <div
         onClick={() => editor && editor.commands.focus()}
-        className={`bg-white border rounded-xl mx-3 md:mx-5 border-[#E6EAEF]`}
+        aria-busy={isSubmitting}
+        className={`bg-white border rounded-xl mx-3 md:mx-5 border-[#E6EAEF] ${
+          isSubmitting ? "pointer-events-none" : ""
+        }`}
       >
         {showFormatting && (
           <div className="border-b border-[#E6EAEF] flex items-center gap-2 bg-[#F9FAFB] pl-3 pr-4 py-[5px]">
             <button
+              aria-label="Bold"
+              aria-pressed={editor?.isActive("bold") ?? false}
               onClick={() => editor?.chain().focus().toggleBold().run()}
               className={`p-1.5 hover:bg-gray-100 rounded ${
                 editor?.isActive("bold")
@@ -176,6 +221,8 @@ const FirstMessageBox = ({ sendMessage }: any) => {
             </button>
 
             <button
+              aria-label="Italic"
+              aria-pressed={editor?.isActive("italic") ?? false}
               onClick={() => editor?.chain().focus().toggleItalic().run()}
               className={`p-1.5 hover:bg-gray-100 rounded ${
                 editor?.isActive("italic")
@@ -190,6 +237,8 @@ const FirstMessageBox = ({ sendMessage }: any) => {
             </button>
 
             <button
+              aria-label="Strikethrough"
+              aria-pressed={editor?.isActive("strike") ?? false}
               onClick={() => editor?.chain().focus().toggleStrike().run()}
               className={`p-1.5 hover:bg-gray-100 rounded ${
                 editor?.isActive("strike")
@@ -208,6 +257,7 @@ const FirstMessageBox = ({ sendMessage }: any) => {
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <button
+                  aria-label="Add link"
                   onClick={() => setOpen(true)}
                   className={`p-1.5 hover:bg-gray-100 rounded ${editor?.isActive("link") ? "bg-gray-200 font-semibold text-black" : ""}`}
                 >
@@ -256,6 +306,8 @@ const FirstMessageBox = ({ sendMessage }: any) => {
             </Dialog>
 
             <button
+              aria-label="Numbered list"
+              aria-pressed={editor?.isActive("orderedList") ?? false}
               onClick={() => editor?.chain().focus().toggleOrderedList().run()}
               className={`p-1.5 hover:bg-gray-100 rounded ${
                 editor?.isActive("orderedList")
@@ -270,6 +322,8 @@ const FirstMessageBox = ({ sendMessage }: any) => {
             </button>
 
             <button
+              aria-label="Bulleted list"
+              aria-pressed={editor?.isActive("bulletList") ?? false}
               onClick={() => editor?.chain().focus().toggleBulletList().run()}
               className={`p-1.5 hover:bg-gray-100 rounded ${
                 editor?.isActive("bulletList")
@@ -286,6 +340,8 @@ const FirstMessageBox = ({ sendMessage }: any) => {
             <div className="w-px h-5 bg-[#E6EAEF]" />
 
             <button
+              aria-label="Inline code"
+              aria-pressed={editor?.isActive("code") ?? false}
               onClick={() => editor?.chain().focus().toggleCode().run()}
               className={`p-1.5 hover:bg-gray-100 rounded ${
                 editor?.isActive("code")
@@ -319,6 +375,7 @@ const FirstMessageBox = ({ sendMessage }: any) => {
           <div className="flex items-center gap-2 py-2 pl-3 pr-4">
             <Tooltips text="Upload from your computer">
               <button
+                aria-label="Upload from your computer"
                 onClick={() => fileInputRef.current?.click()}
                 className="p-1.5 hover:bg-gray-100 rounded-full bg-[#F2F4F7]"
               >
@@ -339,6 +396,9 @@ const FirstMessageBox = ({ sendMessage }: any) => {
               text={!showFormatting ? "Show formatting" : "Hide formatting"}
             >
               <button
+                aria-label={
+                  showFormatting ? "Hide formatting" : "Show formatting"
+                }
                 onClick={() => setShowformatting((prev) => !prev)}
                 className="p-1.5 hover:bg-gray-100 rounded text-[#606060] underline"
               >
@@ -357,6 +417,7 @@ const FirstMessageBox = ({ sendMessage }: any) => {
                 >
                   <PopoverTrigger asChild>
                     <button
+                      aria-label="Emoji"
                       onClick={(e) => e.stopPropagation()}
                       className="p-1.5 hover:bg-gray-100 rounded"
                     >
@@ -403,6 +464,7 @@ const FirstMessageBox = ({ sendMessage }: any) => {
 
             <Tooltips text="Mention someone">
               <button
+                aria-label="Mention someone"
                 onClick={handleMentionClick}
                 className="p-1.5 hover:bg-gray-100 rounded"
               >
@@ -412,6 +474,7 @@ const FirstMessageBox = ({ sendMessage }: any) => {
 
             <Tooltips text="Mention a channel">
               <button
+                aria-label="Mention a channel"
                 onClick={handleChannelMentionClick}
                 className="p-1.5 hover:bg-gray-100 rounded"
               >
@@ -421,6 +484,7 @@ const FirstMessageBox = ({ sendMessage }: any) => {
 
             <Tooltips text="Slash commands">
               <button
+                aria-label="Slash commands"
                 onClick={handleSlashCommandClick}
                 className="p-1.5 hover:bg-gray-100 rounded"
               >
@@ -431,10 +495,15 @@ const FirstMessageBox = ({ sendMessage }: any) => {
 
           <div className="flex items-center gap-1 py-2 pl-3 pr-4">
             <button
+              aria-label="Send message"
               type="submit"
-              className="p-1.5 hover:bg-gray-100 rounded size-8 flex items-center justify-center"
+              className="p-1.5 hover:bg-gray-100 rounded size-8 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleSubmit}
-              disabled={isEmpty && attachments.length === 0}
+              disabled={
+                disabled ||
+                isSubmitting ||
+                (isEmpty && attachments.length === 0)
+              }
             >
               <SendHorizonal
                 className={

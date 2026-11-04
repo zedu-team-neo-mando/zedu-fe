@@ -44,47 +44,51 @@ const escapeHtmlAttribute = (value: string) =>
 function emojiImageTag(emoji: string, unified: string) {
   const src = appleEmojiImageUrl(unified);
   if (!src) return emoji;
-  return `<img class="apple-emoji-img" alt="${escapeHtmlAttribute(
-    emoji
-  )}" src="${escapeHtmlAttribute(src)}" draggable="false" />`;
+  const safeAlt = escapeHtmlAttribute(emoji);
+  return `<img class="apple-emoji-img" alt="${safeAlt}" src="${src}" draggable="false" />`;
 }
 
-/**
- * Split text into literal text and Apple emoji image tokens.
- *
- * Unlike `replaceEmojiWithImages`, this never returns HTML. Callers render the
- * tokens as React nodes, so message text is escaped by React rather than
- * injected into the DOM.
- */
-export function tokenizeAppleEmoji(value: string): AppleEmojiToken[] {
+export type EmojiToken =
+  | { type: "text"; text: string }
+  | { type: "emoji"; emoji: string; unified?: string; src?: string };
+
+export function tokenizeAppleEmoji(value: string): EmojiToken[] {
   if (!value) return [];
 
-  const tokens: AppleEmojiToken[] = [];
-  let cursor = 0;
-
-  EMOJI_PATTERN.lastIndex = 0;
+  const tokens: EmojiToken[] = [];
+  const regex = new RegExp(EMOJI_PATTERN.source, EMOJI_PATTERN.flags);
+  let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  while ((match = EMOJI_PATTERN.exec(value)) !== null) {
+  while ((match = regex.exec(value)) !== null) {
+    const matchIndex = match.index;
     const emoji = match[0];
-    if (!emoji) continue;
 
-    const unified = lookupAppleEmoji(emoji);
-    if (!unified) continue;
-
-    const src = appleEmojiImageUrl(unified);
-    if (!src) continue;
-
-    if (match.index > cursor) {
-      tokens.push({ type: "text", value: value.slice(cursor, match.index) });
+    if (matchIndex > lastIndex) {
+      tokens.push({
+        type: "text",
+        text: value.slice(lastIndex, matchIndex),
+      });
     }
 
-    tokens.push({ type: "emoji", emoji, src });
-    cursor = match.index + emoji.length;
+    const unified = lookupAppleEmoji(emoji);
+    const src = unified ? appleEmojiImageUrl(unified) : undefined;
+
+    tokens.push({
+      type: "emoji",
+      emoji,
+      unified,
+      src,
+    });
+
+    lastIndex = matchIndex + emoji.length;
   }
 
-  if (cursor < value.length) {
-    tokens.push({ type: "text", value: value.slice(cursor) });
+  if (lastIndex < value.length) {
+    tokens.push({
+      type: "text",
+      text: value.slice(lastIndex),
+    });
   }
 
   return tokens;

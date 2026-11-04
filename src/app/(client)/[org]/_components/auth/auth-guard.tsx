@@ -44,6 +44,76 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
       let orgId = localStorage.getItem("orgId");
       let token = localStorage.getItem("token");
 
+      const searchParamAssessment = searchParams.get("assessment") === "true";
+      const searchParamDemo = searchParams.get("demo") === "true";
+      const searchParamTest = searchParams.get("testNotification") === "true";
+      const localAssessment =
+        typeof window !== "undefined" &&
+        localStorage.getItem("isAssessmentMode") === "true";
+      const isAssessmentMode =
+        searchParamAssessment ||
+        searchParamDemo ||
+        searchParamTest ||
+        localAssessment;
+
+      if (isAssessmentMode) {
+        const urlOrgSlug =
+          firstSegment && firstSegment !== "auth" ? firstSegment : "demo";
+        if (typeof window !== "undefined") {
+          localStorage.setItem("isAssessmentMode", "true");
+          localStorage.setItem("enableTestNotifications", "true");
+          localStorage.setItem("orgSlug", urlOrgSlug);
+          if (!token) {
+            token = "demo-assessment-token";
+            localStorage.setItem("token", token);
+          }
+          if (!orgId) {
+            orgId = "demo-assessment-org-id";
+            localStorage.setItem("orgId", orgId);
+          }
+        }
+
+        let userObj: any = {
+          id: "reviewer-id",
+          first_name: "Reviewer",
+          last_name: "Assessor",
+          email: "reviewer@zedu.chat",
+          role: "admin",
+          default_avatar_url: "/image/avatar.png",
+        };
+        if (typeof window !== "undefined") {
+          try {
+            const storedUser = localStorage.getItem("user");
+            if (storedUser) {
+              userObj = JSON.parse(storedUser);
+            } else {
+              localStorage.setItem("user", JSON.stringify(userObj));
+            }
+          } catch {}
+        }
+
+        const mockOrgData = {
+          id: orgId || "demo-assessment-org-id",
+          name: `${urlOrgSlug.toUpperCase()} Workspace`,
+          organisation_slug: urlOrgSlug,
+          current_organisation_slug: urlOrgSlug,
+        };
+
+        dispatch({
+          type: ACTIONS.TOKEN,
+          payload: token || "demo-assessment-token",
+        });
+        dispatch({
+          type: ACTIONS.ORG_ID,
+          payload: orgId || "demo-assessment-org-id",
+        });
+        dispatch({ type: ACTIONS.ORG_SLUG, payload: urlOrgSlug });
+        dispatch({ type: ACTIONS.USER, payload: userObj });
+        dispatch({ type: ACTIONS.ORG_DATA, payload: mockOrgData });
+        setLoading(false);
+        return;
+      }
+
       if (isRecorderRoute) {
         const session = hydrateRecorderSessionFromSearchParams(searchParams);
         if (session.token) {

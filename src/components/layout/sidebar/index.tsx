@@ -1,42 +1,47 @@
 "use client";
 
 import { PhoneCallIcon } from "lucide-react";
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { DataContext } from "~/store/GlobalState";
 import { ACTIONS } from "~/store/Actions";
-import {
-  BellIcon,
-  DMsIcon,
-  GearIcon,
-  HomeIcon,
-  PeopleIcon,
-  AgentsIcon,
-  FileIcon,
-} from "~/svgs";
+import { DMsIcon, HomeIcon, PeopleIcon, AgentsIcon, FileIcon } from "~/svgs";
 import ProfileDropdown from "~/app/(client)/[org]/_components/profile-dropdown";
 import UseHomeChannel from "~/app/(client)/[org]/home/channels/hooks/home-channels";
 import SidebarPopouts from "./popouts/sidebar-popouts";
 import {
   clearNotificationBadgeRegistry,
-  isHomeRoute,
   isNotificationsRoute,
 } from "~/lib/notifications/notification-badge";
+import { markNotificationsSeen } from "~/lib/notifications/notification-store";
+import { formatUnreadBadge, getDmUnreadTotal } from "./dm-unread";
 
 const SideBar: React.FC = () => {
   const pathname = usePathname();
   const { state, dispatch } = useContext(DataContext);
-  const { user, orgSlug, notificationBadgeState } = state;
+  const { user, orgSlug, orgId } = state;
   const channelId = localStorage.getItem("channelId") || "";
-  const notificationBadgeCount = notificationBadgeState?.count ?? 0;
+  const dmUnreadCount = useMemo(
+    () => getDmUnreadTotal(state?.homeDms, state?.dms),
+    [state?.homeDms, state?.dms]
+  );
 
   useEffect(() => {
-    if (!isHomeRoute(pathname) && !isNotificationsRoute(pathname)) return;
+    if (!isNotificationsRoute(pathname)) return;
 
+    let userId = user?.id || user?.user_id || null;
+    if (!userId && typeof window !== "undefined") {
+      try {
+        const stored = JSON.parse(localStorage.getItem("user") || "{}");
+        userId = stored?.id || stored?.user_id || null;
+      } catch {}
+    }
+
+    markNotificationsSeen(userId, orgId);
     clearNotificationBadgeRegistry();
     dispatch({ type: ACTIONS.CLEAR_NOTIFICATION_BADGE });
-  }, [pathname, dispatch]);
+  }, [pathname, dispatch, user, orgId]);
 
   // set channel name to empty string
   const searchValue = () => {
@@ -100,6 +105,11 @@ const SideBar: React.FC = () => {
                       <Link
                         href={`/${orgSlug}/dm`}
                         data-sidebar-preview="dms"
+                        aria-label={
+                          dmUnreadCount > 0
+                            ? `DMs, ${dmUnreadCount} unread`
+                            : undefined
+                        }
                         className={`flex flex-col group items-center justify-center p-1 ${
                           pathname === `/${orgSlug}`
                             ? "font-medium scale-[1.05]"
@@ -107,13 +117,22 @@ const SideBar: React.FC = () => {
                         } `}
                       >
                         <span
-                          className={` rounded-[7px] p-2 ${
+                          className={`relative overflow-visible rounded-[7px] p-2 ${
                             pathname?.includes(`/${orgSlug}/dm`)
                               ? "bg-blue-200"
                               : "group-hover:bg-blue-200"
                           }`}
                         >
                           <DMsIcon />
+                          {dmUnreadCount > 0 && (
+                            <span
+                              aria-hidden="true"
+                              data-dm-unread-badge
+                              className="pointer-events-none absolute -right-1 -top-1 z-10 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-blue-300 bg-[#F04438] px-1 text-[10px] font-semibold leading-none text-white"
+                            >
+                              {formatUnreadBadge(dmUnreadCount)}
+                            </span>
+                          )}
                         </span>
                         <span className="text-white  text-[12px]">DMs</span>
                       </Link>
@@ -223,54 +242,6 @@ const SideBar: React.FC = () => {
                     </div>
 
                     <div className="relative flex flex-col items-center overflow-visible">
-                      <Link
-                        href={`/${orgSlug}/notifications`}
-                        aria-label="Notifications"
-                        title="Notifications"
-                        className={`flex flex-col group z-50 cursor-pointer items-center justify-center w-full p-1 ${
-                          pathname === `/${orgSlug}/notifications`
-                            ? "font-medium scale-[1.05]"
-                            : "hover:font-medium "
-                        } `}
-                      >
-                        <span
-                          className={`relative overflow-visible p-2 rounded-[7px]  ${
-                            pathname?.includes(`/${orgSlug}/notifications`)
-                              ? "bg-blue-200"
-                              : "group-hover:bg-blue-200"
-                          }`}
-                        >
-                          <BellIcon />
-                          {notificationBadgeCount > 0 && (
-                            <span className="pointer-events-none absolute -right-1 -top-1 z-10 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-blue-300 bg-[#F04438] px-1 text-[10px] font-semibold leading-none text-white">
-                              {notificationBadgeCount > 99
-                                ? "99+"
-                                : notificationBadgeCount}
-                            </span>
-                          )}
-                        </span>
-                      </Link>
-
-                      <Link
-                        href={`/${orgSlug}/settings/personal/account`}
-                        aria-label="Settings"
-                        className={`flex flex-col group z-50 cursor-pointer mb-2 items-center justify-center w-full ${
-                          pathname === `/${orgSlug}/settings`
-                            ? "font-medium scale-[1.05]"
-                            : "hover:font-medium "
-                        } `}
-                      >
-                        <span
-                          className={`p-2 rounded-[7px]  ${
-                            pathname?.includes(`/${orgSlug}/settings`)
-                              ? "bg-blue-200"
-                              : "group-hover:bg-blue-200"
-                          }`}
-                        >
-                          <GearIcon />
-                        </span>
-                      </Link>
-
                       <ProfileDropdown user={user} />
                     </div>
                   </div>

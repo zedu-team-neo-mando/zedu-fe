@@ -19,6 +19,7 @@ import { PostRequest } from "~/utils/new-request";
 import { showError, showSuccess } from "~/components/toast/sonner";
 import { useParams } from "next/navigation";
 import { StarIcon } from "~/svgs";
+import { InvitePeersButton } from "../invite-peers/invite-peers-button";
 import {
   DEACTIVATED_AVATAR_SRC,
   isUserDeactivated,
@@ -231,6 +232,11 @@ const ChannelHeader = () => {
                 )}
               </div>
 
+              <InvitePeersButton
+                channelId={id}
+                cohortName={displayName || "this cohort"}
+              />
+
               <div className="w-px h-5 bg-[#E6EAEF] hidden lg:block" />
 
               {/* avatar badge group */}
@@ -289,6 +295,7 @@ const ChannelHeader = () => {
                 <Tooltips side="bottom" text="More actions">
                   <Button
                     variant="outline"
+                    aria-label="More actions"
                     className={`p-2 border-[#E6EAEF] h-9 ${
                       isMenuDropdownOpen ? "bg-[#F6F7F9]" : ""
                     }`}

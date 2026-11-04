@@ -49,7 +49,11 @@ import DocumentPreviewModal from "./document-preview-modal";
 import { Media } from "~/types/channel";
 import { linkifyText } from "~/utils/linkify-text";
 import { replaceEmojiWithImages } from "~/lib/apple-emoji";
-import { messageSanitizeSchema } from "~/lib/sanitize-message-schema";
+import { appleEmojiDatasourceBaseUrl } from "~/lib/env-urls";
+import {
+  messageSanitizeSchema,
+  rehypeEmojiImagesOnly,
+} from "~/lib/sanitize-message-schema";
 import {
   getDocumentCategory,
   isPreviewableDocument,
@@ -387,7 +391,11 @@ const MessageItem: React.FC<MessageItemProps> = ({ item }) => {
         >
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeRaw, [rehypeSanitize, messageSanitizeSchema]]}
+            rehypePlugins={[
+              rehypeRaw,
+              [rehypeSanitize, messageSanitizeSchema],
+              rehypeEmojiImagesOnly(appleEmojiDatasourceBaseUrl()),
+            ]}
             components={{
               p: ({ children }) => {
                 return (

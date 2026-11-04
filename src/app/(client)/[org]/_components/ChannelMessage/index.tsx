@@ -11,6 +11,7 @@ import React, {
 import UseChannel from "../../home/channels/hooks/channel-message";
 import { DataContext } from "~/store/GlobalState";
 import { groupMessagesByDate } from "~/utils/group-messages";
+import { groupMembershipNotices } from "~/utils/membership-notices";
 import InfiniteScroll from "react-infinite-scroll-component";
 import ChannelIntro from "../channel-intro";
 import Thread from "./thread";
@@ -27,11 +28,13 @@ import { BookmarkFilledIcon } from "@radix-ui/react-icons";
 import { useMessageHighlight } from "~/hooks/use-message-highlight";
 import { useMessageDeepLink } from "~/hooks/use-message-deep-link";
 import { ScrollToLatestButton } from "~/components/ui/scroll-to-latest-button";
+import { showError, showSuccess } from "~/components/toast/sonner";
 
 const ChannelsMessage = () => {
   const { fetchMoreData, hasMore, loading } = UseChannel();
   const { state, dispatch } = useContext(DataContext);
   const { messages, user, isEdit, thread, notify, bookmarks, dataId } = state;
+  const channelUnreadCount = state?.channelUnreadCount ?? 0;
   const groupedMessages = groupMessagesByDate(messages);
   const params = useParams();
   const id = params.id as string;
@@ -44,12 +47,18 @@ const ChannelsMessage = () => {
   const hasDispatchedRef = useRef(false);
   const unreadCountRef = useRef<number>(0);
   const threadCountRef = useRef<number>(0);
+  const channelUnreadCountRef = useRef<number>(0);
   const capturedRef = useRef(false);
 
   // Keep threadCount in a ref so getData's identity stays stable
   useEffect(() => {
     threadCountRef.current = state?.threadCount || 0;
   }, [state?.threadCount]);
+
+  // Keep the per-channel unread count in a ref for the same reason.
+  useEffect(() => {
+    channelUnreadCountRef.current = channelUnreadCount;
+  }, [channelUnreadCount]);
 
   const clearChannelUnread = useCallback(() => {
     dispatch({
@@ -68,7 +77,10 @@ const ChannelsMessage = () => {
     // Capture unread count once per channel opening (before clearing)
     if (!capturedRef.current) {
       capturedRef.current = true;
-      unreadCountRef.current = threadCountRef.current;
+      // Prefer the per-channel count captured when the channel was opened;
+      // fall back to the live notification count.
+      unreadCountRef.current =
+        channelUnreadCountRef.current || threadCountRef.current;
     }
     await GetRequest(`/threads/channels/${id}?page=1&limit=1`);
     clearChannelUnread();
@@ -92,7 +104,9 @@ const ChannelsMessage = () => {
     if (!container) return;
 
     const handleScroll = () => {
-      const isAtBottom = container.scrollTop >= -1;
+      const isAtBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight <
+        100;
 
       if (isAtBottom) {
         getData();
@@ -168,14 +182,42 @@ const ChannelsMessage = () => {
   }, [unreadDividerId]);
 
   const handleEditMessage = async (content: any) => {
-    const payload = {
-      content: content,
-    };
-    await PutRequest(`/threads/${thread?.thread_id}/channels/${id}`, payload);
-    dispatch({
-      type: ACTIONS.IS_EDIT,
-      payload: false,
-    });
+    try {
+      const payload = {
+        content: content,
+      };
+      const res = await PutRequest(
+        `/threads/${thread?.thread_id}/channels/${id}`,
+        payload
+      );
+      if (res?.status === 200 || res?.status === 201) {
+        const updatedMessages = (messages || []).map((msg: any) =>
+          msg.thread_id === thread?.thread_id
+            ? { ...msg, content: content }
+            : msg
+        );
+        dispatch({
+          type: ACTIONS.MESSAGES,
+          payload: {
+            newThreads: updatedMessages,
+            newPage: 1,
+          },
+        });
+        dispatch({
+          type: ACTIONS.IS_EDIT,
+          payload: false,
+        });
+        showSuccess("Message updated");
+      } else {
+        const errorMsg =
+          res?.response?.data?.message ||
+          res?.data?.message ||
+          "Failed to update message";
+        showError(errorMsg);
+      }
+    } catch (err: any) {
+      showError(err?.message || "Failed to update message");
+    }
   };
 
   useMessageDeepLink({
@@ -251,119 +293,127 @@ const ChannelsMessage = () => {
           scrollableTarget="scrollableDivs"
           inverse={true}
         >
-          {Object.entries(groupedMessages)?.map(([dateLabel, threads]: any) => (
-            <div key={dateLabel} className="flex flex-col-reverse">
-              {threads?.map((item: any, index: number) => {
-                const nextMessage = threads[index + 1];
-                const shouldShowAvatar =
-                  !nextMessage ||
-                  nextMessage.user_id !== item.user_id ||
-                  nextMessage.type === "system";
+          {Object.entries(groupedMessages)?.map(
+            ([dateLabel, dayThreads]: any) => {
+              // Consecutive join or leave notices read as one quiet line.
+              const threads = groupMembershipNotices(dayThreads);
+              return (
+                <div key={dateLabel} className="flex flex-col-reverse">
+                  {threads?.map((item: any, index: number) => {
+                    const nextMessage = threads[index + 1];
+                    const shouldShowAvatar =
+                      !nextMessage ||
+                      nextMessage.user_id !== item.user_id ||
+                      nextMessage.type === "system";
 
-                const isSaved = bookmarks?.some(
-                  (b: any) => b.thread_id === item.thread_id
-                );
+                    const isSaved = bookmarks?.some(
+                      (b: any) => b.thread_id === item.thread_id
+                    );
 
-                // Check if this is the first unread message
-                const isFirstUnread =
-                  unreadDividerId === `unread-divider-${item.thread_id}`;
+                    // Check if this is the first unread message
+                    const isFirstUnread = [
+                      item.thread_id,
+                      ...(item.membership?.threadIds ?? []),
+                    ].some((id) => unreadDividerId === `unread-divider-${id}`);
 
-                const unreadDividerEl = isFirstUnread ? (
-                  <div
-                    id={unreadDividerId}
-                    className="flex items-center gap-3 my-3 px-5"
-                  >
-                    <div
-                      className="flex-1 h-px"
-                      style={{ backgroundColor: "#e5e7eb" }}
-                    ></div>
-                    <span
-                      className="text-[11px] font-semibold uppercase tracking-wide"
-                      style={{ color: "#9CA3AF" }}
-                    >
-                      Unread messages
-                    </span>
-                    <div
-                      className="flex-1 h-px"
-                      style={{ backgroundColor: "#e5e7eb" }}
-                    ></div>
-                  </div>
-                ) : null;
-
-                return (
-                  <React.Fragment key={index}>
-                    {isFirstUnread && !dividerOnTop && unreadDividerEl}
-                    {isEdit && thread?.thread_id === item?.thread_id ? (
+                    const unreadDividerEl = isFirstUnread ? (
                       <div
-                        className={`flex mb-5 mt-2 z-10 px-5 py-3 bg-blue-50 w-full`}
+                        id={unreadDividerId ?? undefined}
+                        className="flex items-center gap-3 my-3 px-5"
                       >
-                        <div className="mb-2 mr-3">
-                          <UserAvatar item={item} size="md" />
-                        </div>
-
-                        <EditMessageBox
-                          subscription={state?.channelSubscription}
-                          sendMessage={handleEditMessage}
-                        />
+                        <div
+                          className="flex-1 h-px"
+                          style={{ backgroundColor: "#e5e7eb" }}
+                        ></div>
+                        <span
+                          className="text-[11px] font-semibold uppercase tracking-wide"
+                          style={{ color: "#9CA3AF" }}
+                        >
+                          Unread messages
+                        </span>
+                        <div
+                          className="flex-1 h-px"
+                          style={{ backgroundColor: "#e5e7eb" }}
+                        ></div>
                       </div>
-                    ) : (
-                      <div
-                        id={`thread-${item.thread_id}`}
-                        className={`${item.is_pinned ? "bg-yellow-50" : isSaved ? "bg-primary-50" : item?.type === "thread" ? "" : "hover:bg-gray-50"} duration-500 ease-in-out`}
-                      >
-                        {item?.is_pinned ? (
-                          <div className="flex items-center gap-2 bg-yellow-50 pl-10 text-[13px] font-semibold text-blue-100 pt-2">
-                            <Pin
-                              size={13}
-                              className="text-[#667085] mt-[3px]"
+                    ) : null;
+
+                    return (
+                      <React.Fragment key={index}>
+                        {isFirstUnread && !dividerOnTop && unreadDividerEl}
+                        {isEdit && thread?.thread_id === item?.thread_id ? (
+                          <div
+                            className={`flex mb-5 mt-2 z-10 px-5 py-3 bg-blue-50 w-full`}
+                          >
+                            <div className="mb-2 mr-3">
+                              <UserAvatar item={item} size="md" />
+                            </div>
+
+                            <EditMessageBox
+                              subscription={state?.channelSubscription}
+                              sendMessage={handleEditMessage}
                             />
-                            Pinned by{" "}
-                            {user?.email === item?.pinned_details?.email
-                              ? "you"
-                              : item?.pinned_details?.username}
                           </div>
-                        ) : isSaved ? (
+                        ) : (
                           <div
                             id={`thread-${item.thread_id}`}
-                            className={`flex items-center gap-2 pl-10 text-[13px] font-bold text-blue-100 pt-2`}
+                            className={`${item.is_pinned ? "bg-yellow-50" : isSaved ? "bg-primary-50" : item?.type === "thread" ? "" : "hover:bg-gray-50"} duration-500 ease-in-out`}
                           >
-                            <BookmarkFilledIcon
-                              fontSize={13}
-                              className="text-[#667085]"
-                            />
-                            Saved for Later
+                            {item?.is_pinned ? (
+                              <div className="flex items-center gap-2 bg-yellow-50 pl-10 text-[13px] font-semibold text-blue-100 pt-2">
+                                <Pin
+                                  size={13}
+                                  className="text-[#667085] mt-[3px]"
+                                />
+                                Pinned by{" "}
+                                {user?.email === item?.pinned_details?.email
+                                  ? "you"
+                                  : item?.pinned_details?.username}
+                              </div>
+                            ) : isSaved ? (
+                              <div
+                                id={`thread-${item.thread_id}`}
+                                className={`flex items-center gap-2 pl-10 text-[13px] font-bold text-blue-100 pt-2`}
+                              >
+                                <BookmarkFilledIcon
+                                  fontSize={13}
+                                  className="text-[#667085]"
+                                />
+                                Saved for Later
+                              </div>
+                            ) : null}
+
+                            {item?.type === "thread" ? (
+                              <Thread item={item} />
+                            ) : (
+                              <Message
+                                item={item}
+                                shouldShowAvatar={shouldShowAvatar}
+                                setPopupId={setPopupId}
+                                popupId={popupId}
+                              />
+                            )}
                           </div>
-                        ) : null}
-
-                        {item?.type === "thread" ? (
-                          <Thread item={item} />
-                        ) : (
-                          <Message
-                            item={item}
-                            shouldShowAvatar={shouldShowAvatar}
-                            setPopupId={setPopupId}
-                            popupId={popupId}
-                          />
                         )}
-                      </div>
-                    )}
-                    {isFirstUnread && dividerOnTop && unreadDividerEl}
-                  </React.Fragment>
-                );
-              })}
+                        {isFirstUnread && dividerOnTop && unreadDividerEl}
+                      </React.Fragment>
+                    );
+                  })}
 
-              <div className="sticky top-0 z-10 my-2">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-dotted border-[#E6EAEF]"></div>
+                  <div className="sticky top-0 z-10 my-2">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-dotted border-[#E6EAEF]"></div>
+                    </div>
+                    <div className="relative flex justify-center">
+                      <span className="bg-white px-4 py-1 text-[13px] text-[#101828] border border-[#E6EAEF] rounded-[30px]">
+                        {dateLabel}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="relative flex justify-center">
-                  <span className="bg-white px-4 py-1 text-[13px] text-[#101828] border border-[#E6EAEF] rounded-[30px]">
-                    {dateLabel}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
+              );
+            }
+          )}
         </InfiniteScroll>
 
         {/* ChannelIntro typically appears when all older messages are loaded */}

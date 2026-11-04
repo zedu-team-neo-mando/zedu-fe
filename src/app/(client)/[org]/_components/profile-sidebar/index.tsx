@@ -1,24 +1,82 @@
-import { LucidePhone, Phone, Star, X } from "lucide-react";
-import { useContext } from "react";
+import { Phone, Star, X } from "lucide-react";
+import { useContext, useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
-import {
-  BellSimpleSlashIcon,
-  ClockIcon,
-  CopyIcon,
-  FilesIcon,
-  HideUserIcon,
-  MailIcon,
-} from "~/svgs";
+import { BellSimpleSlashIcon, ClockIcon, CopyIcon, MailIcon } from "~/svgs";
 import { DataContext } from "~/store/GlobalState";
 import { ACTIONS } from "~/store/Actions";
+import { PostRequest } from "~/utils/new-request";
+import { showSuccess } from "~/components/toast/sonner";
+import { cn } from "~/lib/utils";
 
 import { CopyToClipboardWithTooltip } from "../copy-to-clipboard";
 import ProfileStatus from "./profile-status";
 import UserAvatar from "~/components/layout/user-avatar";
 import { isUserDeactivated } from "~/utils/user-deactivation";
 
-const ProfileSidebar = ({ user }: any) => {
-  const { dispatch } = useContext(DataContext);
+const ProfileSidebar = ({
+  user,
+  channelId,
+  isFavourite: initialIsFavourite,
+}: {
+  user: any;
+  channelId?: string;
+  isFavourite?: boolean;
+}) => {
+  const { state, dispatch } = useContext(DataContext);
+  const [localIsFavourite, setLocalIsFavourite] = useState<boolean | null>(
+    initialIsFavourite ?? null
+  );
+  const [isToggling, setIsToggling] = useState(false);
+
+  useEffect(() => {
+    setLocalIsFavourite(initialIsFavourite ?? null);
+  }, [initialIsFavourite]);
+
+  const orgId = state?.orgId || "";
+
+  // The Home sidebar lists homeDms, not dms — check both so reopening the
+  // panel after a toggle reads the updated shared entry instead of the stale
+  // prop captured when the page first mounted.
+  const findDmIn = (list: any[]) =>
+    (list || []).find(
+      (dm: any) =>
+        String(dm.channel_id || dm.channels_id) === String(channelId || "")
+    );
+  const dmInStore = findDmIn(state?.dms) ?? findDmIn(state?.homeDms);
+  const isFavouriteKnown = Boolean(dmInStore) || localIsFavourite !== null;
+  const isFavourite =
+    !isToggling && dmInStore
+      ? Boolean(dmInStore.is_favourite)
+      : (localIsFavourite ?? false);
+
+  const handleToggleFavourite = async () => {
+    if (!channelId || !orgId || isToggling || !isFavouriteKnown) return;
+
+    const next = !isFavourite;
+    setIsToggling(true);
+    setLocalIsFavourite(next);
+
+    const res = await PostRequest(
+      `/organisations/${orgId}/dms/${channelId}/favourite`
+    );
+
+    if (res?.status === 200 || res?.status === 201) {
+      const serverState = Boolean(res?.data?.data?.is_favourite);
+      setLocalIsFavourite(serverState);
+      dispatch({
+        type: ACTIONS.UPDATE_DM_FAVOURITE,
+        payload: { channelId, isFavourite: serverState },
+      });
+      dispatch({ type: ACTIONS.DM_RENDER_CALLBACK });
+      showSuccess(
+        serverState ? "Added to favourites" : "Removed from favourites"
+      );
+    } else {
+      setLocalIsFavourite(!next);
+    }
+
+    setIsToggling(false);
+  };
 
   const onClose = () => {
     dispatch({ type: ACTIONS.USER_DATA });
@@ -93,12 +151,31 @@ const ProfileSidebar = ({ user }: any) => {
           </div>
 
           <div className="flex gap-3 items-center">
-            <Button
-              variant={"outline"}
-              className="h-fit p-[7px] border-[#E6EAEF]"
-            >
-              <Star size={20} strokeWidth={1.5} color="#667085" />
-            </Button>
+            {channelId && (
+              <Button
+                variant={"outline"}
+                className={cn(
+                  "h-fit p-[7px] border-[#E6EAEF]",
+                  isFavourite && "border-[#F59E0B] bg-[#FFFBEB]"
+                )}
+                onClick={handleToggleFavourite}
+                disabled={isToggling || !isFavouriteKnown}
+                aria-pressed={isFavourite}
+                aria-label={
+                  isFavourite ? "Remove from favourites" : "Add to favourites"
+                }
+                title={
+                  isFavourite ? "Remove from favourites" : "Add to favourites"
+                }
+              >
+                <Star
+                  size={20}
+                  strokeWidth={1.5}
+                  color={isFavourite ? "#F59E0B" : "#667085"}
+                  fill={isFavourite ? "#F59E0B" : "none"}
+                />
+              </Button>
+            )}
 
             <Button
               variant={"outline"}

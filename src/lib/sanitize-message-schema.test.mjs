@@ -28,7 +28,7 @@ const compiled = outputText.replace(
   `from ${JSON.stringify(import.meta.resolve("rehype-sanitize"))}`
 );
 const encoded = Buffer.from(compiled).toString("base64");
-const { messageSanitizeSchema } = await import(
+const { messageSanitizeSchema, rehypeEmojiImagesOnly } = await import(
   `data:text/javascript;base64,${encoded}`
 );
 
@@ -148,4 +148,45 @@ test("keeps apple emoji images but not arbitrary classes", () => {
 
   const other = render(fixtures.arbitraryClassSpan);
   assert.doesNotMatch(other, /fixed|inset-0|z-50/);
+});
+
+// Same plugin chain as the channel message and delete-message renderers.
+const renderWithImageFilter = (
+  markdown,
+  emojiBase = fixtures.emojiDatasourceBase
+) =>
+  renderToStaticMarkup(
+    React.createElement(
+      ReactMarkdown,
+      {
+        remarkPlugins: [remarkGfm],
+        rehypePlugins: [
+          rehypeRaw,
+          [rehypeSanitize, messageSanitizeSchema],
+          rehypeEmojiImagesOnly(emojiBase),
+        ],
+      },
+      markdown
+    )
+  );
+
+test("keeps apple emoji images from the emoji datasource only", () => {
+  const emoji = `<img class="apple-emoji-img" alt="😀" src="${fixtures.emojiSrc}" draggable="false" />`;
+  const html = renderWithImageFilter(
+    `<p>hi ${emoji}${fixtures.foreignImages.join("")}</p>\n\n${fixtures.markdownImage}`
+  );
+  assert.ok(html.includes(`src="${fixtures.emojiSrc}"`));
+  for (const foreign of [...fixtures.foreignImages, fixtures.markdownImage]) {
+    const src = foreign.match(/(?:src="|\()([^")]+)/)[1];
+    assert.ok(!html.includes(src), `${src} should be removed`);
+  }
+  assert.equal((html.match(/<img/g) ?? []).length, 1);
+});
+
+test("removes every image when no emoji datasource is configured", () => {
+  const html = renderWithImageFilter(
+    `<img class="apple-emoji-img" alt="😀" src="${fixtures.emojiSrc}" />`,
+    ""
+  );
+  assert.doesNotMatch(html, /<img/);
 });

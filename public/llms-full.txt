@@ -1,0 +1,78 @@
+# Zedu — Full Product Context
+
+> Zedu is an AI-powered education platform built for bootcamps, schools, universities, and other learning communities. This document is the extended version of llms-full context for AI assistants: full feature breakdowns, pricing tier comparisons, and integration specifications.
+
+Zedu is a per-organization workspace that brings communication, live classes, files, and AI assistance into a single product. It is designed for teams that currently run cohorts across separate chat, video, and file tools.
+
+## Platform overview
+
+- Workspace model: each organization gets its own workspace with channels, members, direct messages, and files.
+- Audience: bootcamps, schools, universities, training teams, and cohort-based learning communities.
+- Access: web app plus native iOS and Android apps (see https://zedu.chat/download).
+- Sign-in: email plus Google and Apple sign-in options.
+
+## Core modules
+
+### Structured channels
+- Channels for cohorts, classes, topics, and teams, with threads to keep discussions in context.
+- Direct messages and group DMs for one-to-one and small-group communication.
+- Channel details, membership management, and moderation tools for admins and teachers.
+- Product page: https://zedu.chat/products/channels
+
+### Buzz video calls
+- Instant voice and video conversations for quick check-ins.
+- Live classes and meetings for cohorts, with recording support.
+- Product page: https://zedu.chat/products/buzz
+
+### File management
+- Upload files into the workspace, organize them in folders, and share them into channels.
+- Pin/favourite important files, search and filter by name, type, uploader, and date.
+- Preview common document and media types in the browser.
+- Product page: https://zedu.chat/products/file-management
+
+### AI coworkers
+- AI assistants that live in the workspace and help teachers and cohort managers with everyday tasks.
+- Overview: https://zedu.chat
+
+## Cohort workflows
+
+1. Create a workspace for the organization and invite teachers/admins.
+2. Create a channel per cohort or class and invite students (bulk invitations are supported).
+3. Run live sessions with Buzz, keep discussion in channels and threads.
+4. Share slides, recordings, and documents through file management.
+5. Use AI coworkers for drafting, summarizing, and study support.
+
+## Pricing
+
+Prices are in Nigerian naira (₦) and billed monthly per workspace (not per student). US dollar equivalents are approximate. Annual billing for Pro is available on request via sales.
+
+| Plan | Price | Cohorts | Members | Teachers/Admins | Notes |
+| --- | --- | --- | --- | --- | --- |
+| Starter | Free | Up to 3 | Up to 100 in total | Up to 5 | No credit card required |
+| Pro | ₦20,000 / month per workspace | Unlimited | Up to 500 students per cohort | Up to 50 | Adds live classes, AI study assistants, admin moderation |
+| Enterprise | Custom | Custom student limits per cohort | Custom | Unlimited | Custom billing and dedicated onboarding |
+
+- Move from Starter to Pro when a workspace needs more than 3 cohorts, 100 members, or 5 teachers/admins.
+- Enterprise is intended for universities and large bootcamps; see https://zedu.chat/contact-sales
+- Full pricing page: https://zedu.chat/pricing
+
+## Integrations and technical specifications
+
+- Video and voice: powered by the Agora real-time communication SDK for Buzz calls.
+- Push notifications: web push plus OneSignal for mobile/web notifications.
+- Authentication: email/password with Google and Apple sign-in.
+- Automation: outbound webhooks for events such as registration, login, page visits, success, and errors.
+- Realtime transport: WebSocket-based live updates for messages and presence.
+- Media: files and images are stored in cloud object storage and served over HTTPS.
+
+## Support and legal
+
+- Resources and guides: https://zedu.chat/resources
+- About Zedu: https://zedu.chat/about
+- Privacy policy: https://zedu.chat/policy
+- Terms of service: https://zedu.chat/terms-of-service
+- Contact sales: https://zedu.chat/contact-sales
+
+## Related
+
+- Short index: https://zedu.chat/llms.txt

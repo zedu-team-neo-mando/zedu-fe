@@ -71,9 +71,18 @@ jobs:
               --output review-report.json
           fi
 
+      - name: Publish review summary
+        if: always()
+        run: |
+          if [ -f review-report.md ]; then
+            cat review-report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Post PR comment
         uses: marocchino/sticky-pull-request-comment@v2
-        if: github.event_name == 'pull_request' && always()
+        # Fork PR tokens are read-only. Keep the review and its failure gate,
+        # and publish fork results in the job summary without requesting write access.
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && always()
         with:
           header: pr-review-bot
           path: review-report.md

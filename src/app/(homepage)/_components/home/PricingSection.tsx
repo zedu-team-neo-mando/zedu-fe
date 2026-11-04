@@ -7,21 +7,26 @@ import Link from "next/link";
 import { PurpleArrowRight } from "../svgs";
 import { SlackZeduCalculator } from "../pricing/SlackZeduCalculator";
 import { Dialog, DialogTrigger } from "~/components/ui/dialog";
+import { useCelebration } from "./CelebrationThemeContext";
+import { CelebrationThemeIcon } from "./CelebrationBanner";
 
 type PricingSectionProps = {
   showSubtitle?: boolean;
+  headingLevel?: "h1" | "h2";
 };
 
 export const PricingSection = ({
   showSubtitle = true,
+  headingLevel = "h2",
 }: PricingSectionProps) => {
+  const Heading = headingLevel;
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
     "monthly"
   );
   const [calculatorOpen, setCalculatorOpen] = useState(false);
-  // Button outside the dialog that opened it, so focus can return there
   const externalOpenerRef = useRef<HTMLElement | null>(null);
   const plans = pricingCardsByCycle[billingCycle];
+  const { celebration } = useCelebration();
 
   // Listen for the custom event dispatched by the "Calculate Your Savings" button
   useEffect(() => {
@@ -46,14 +51,27 @@ export const PricingSection = ({
   return (
     <Dialog open={calculatorOpen} onOpenChange={setCalculatorOpen}>
       <section className="relative isolate flex w-full flex-col items-center gap-6 overflow-hidden px-4 py-12 text-center sm:gap-6 sm:px-8 sm:py-16 lg:gap-8 lg:px-12">
+        {/* Festive celebration seasonal pricing highlight */}
+        {celebration && (
+          <div
+            className={`w-full max-w-4xl px-4 py-3 rounded-2xl flex items-center justify-center gap-2.5 text-xs sm:text-sm font-semibold shadow-sm transition-all ${celebration.pricingBannerClass}`}
+          >
+            <CelebrationThemeIcon
+              id={celebration.id}
+              className="w-5 h-5 shrink-0"
+            />
+            <span>{celebration.pricingBannerText}</span>
+          </div>
+        )}
+
         <div
           className={`flex flex-col items-center ${
             showSubtitle ? "gap-4 sm:gap-6" : "gap-3"
           }`}
         >
-          <h1 className="text-2xl font-bold leading-tight text-neutral-900 sm:text-3xl md:text-4xl text-center">
+          <Heading className="text-2xl font-bold leading-tight text-neutral-900 sm:text-3xl md:text-4xl text-center">
             Simple, Flexible Pricing for Education
-          </h1>
+          </Heading>
           {showSubtitle ? (
             <p className="max-w-2xl text-sm text-neutral-600 sm:text-base">
               Flexible plans for educators, bootcamps, and institutions building
@@ -92,7 +110,7 @@ export const PricingSection = ({
         </div>
 
         {/* Pricing Cards Grid */}
-        <div className="grid w-full max-w-7xl grid-cols-1 mt-6 place-items-stretch justify-center gap-8 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-8">
+        <div className="grid w-full max-w-7xl grid-cols-1 mt-4 place-items-stretch justify-center gap-8 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 lg:gap-8">
           {plans.map((plan) => (
             <div key={plan.key} className="flex justify-center">
               <PricingCard
@@ -106,7 +124,11 @@ export const PricingSection = ({
                 ctaHref={plan.ctaHref}
                 ctaVariant={plan.ctaVariant}
                 variant={plan.variant}
-                badgeText={plan.badgeText}
+                badgeText={
+                  celebration && plan.variant === "popular"
+                    ? "Holiday Favorite"
+                    : plan.badgeText
+                }
               />
             </div>
           ))}
@@ -130,13 +152,13 @@ export const PricingSection = ({
           </span>
         </Link>
 
-        {/* New CTA: open Slack vs. Zedu comparison calculator */}
+        {/* CTA: open Slack vs. Zedu comparison calculator */}
         <DialogTrigger asChild>
           <button
             type="button"
             className="group flex items-center -mt-4 gap-1.5 text-sm font-semibold text-primary-500 hover:text-primary-400 transition-colors duration-150 focus:outline-none focus-visible:underline"
           >
-            Compare Zedu with other platform
+            Compare Zedu with other platforms
             <span className="inline-flex transition-transform duration-300 ease-out group-hover:translate-x-1">
               <PurpleArrowRight />
             </span>
@@ -177,5 +199,8 @@ export const PricingSection = ({
         </span>
       </Link>
     </section>
+      {/* Calculator modal */}
+      <SlackZeduCalculator onCloseAutoFocus={handleCalculatorCloseAutoFocus} />
+    </Dialog>
   );
 };

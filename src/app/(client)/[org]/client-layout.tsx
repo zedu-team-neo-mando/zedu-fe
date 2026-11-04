@@ -4,7 +4,8 @@ import { ACTIONS } from "~/store/Actions";
 import { bootstrapOrganisationAccess } from "~/utils/org-access-api";
 import { DataContext } from "~/store/GlobalState";
 import { GetRequest } from "~/utils/new-request";
-import { usePathname, useRouter } from "next/navigation";
+import { showError } from "~/components/toast/sonner";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Topbar from "~/components/layout/topbar";
 import { ChannelBuzzProvider } from "~/hooks/buzz/ChannelBuzzContext";
 import {
@@ -32,6 +33,7 @@ import {
   resolveChannelIdForOrgSwitch,
 } from "~/utils/org-switch";
 import { useOrganisationUsers } from "~/hooks/useOrganisationUsers";
+import { useLoadSavedMessages } from "~/hooks/useSavedMessages";
 import { isReservedPathSegment } from "~/lib/reserved-paths";
 import ErrorState, {
   ErrorStateVariant,
@@ -43,6 +45,7 @@ const ClientLayout = ({
   children,
 }: Readonly<{ children: React.ReactNode }>) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
   const [orgError, setOrgError] = useState<ErrorStateVariant | null>(null);
@@ -59,6 +62,7 @@ const ClientLayout = ({
     (typeof window !== "undefined" ? localStorage.getItem("orgId") || "" : "");
 
   useOrganisationUsers(orgId, { enabled: isInitialized && !!orgId });
+  useLoadSavedMessages(orgId, { enabled: isInitialized && !!orgId });
 
   useEffect(() => {
     if (
@@ -66,6 +70,7 @@ const ClientLayout = ({
       prevPathnameRef.current !== pathname
     ) {
       dispatch({ type: ACTIONS.REPLY, payload: false });
+      dispatch({ type: ACTIONS.IS_EDIT, payload: false });
       dispatch({ type: ACTIONS.IS_EDIT_REPLY, payload: false });
       dispatch({ type: ACTIONS.HOVER_PROFILE, payload: false });
       dispatch({ type: ACTIONS.SHOW_USER_PROFILE, payload: false });
@@ -117,6 +122,28 @@ const ClientLayout = ({
 
     // Marketing routes such as /contributors must not be treated as org slugs.
     if (isReservedPathSegment(slug)) {
+      finish();
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    // Assessment / demo mode bypass
+    const isAssessment =
+      searchParams.get("assessment") === "true" ||
+      searchParams.get("demo") === "true" ||
+      searchParams.get("testNotification") === "true" ||
+      (typeof window !== "undefined" &&
+        (localStorage.getItem("isAssessmentMode") === "true" ||
+          localStorage.getItem("enableTestNotifications") === "true"));
+
+    if (isAssessment) {
+      if (slug && slug !== "undefined") {
+        localStorage.setItem("orgSlug", slug);
+        if (state.orgSlug !== slug) {
+          dispatch({ type: ACTIONS.ORG_SLUG, payload: slug });
+        }
+      }
       finish();
       return () => {
         cancelled = true;
@@ -248,6 +275,16 @@ const ClientLayout = ({
 
   // Bootstrap organisation invites and access after init
   useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      localStorage.getItem("isAssessmentMode") === "true"
+    ) {
+      dispatch({ type: ACTIONS.PERMISSIONS_CATALOG, payload: [] });
+      dispatch({ type: ACTIONS.ORG_ROLES, payload: [] });
+      dispatch({ type: ACTIONS.ORG_INVITES, payload: [] });
+      return;
+    }
+
     const resolvedOrgId = localStorage.getItem("orgId");
 
     const getOrganisationInvites = async () => {
@@ -272,6 +309,7 @@ const ClientLayout = ({
         dispatch({ type: ACTIONS.ORG_ROLES, payload: roles });
       } catch (error) {
         console.error("Failed to load organisation access data:", error);
+        showError("Failed to load organisation access data");
       } finally {
         dispatch({ type: ACTIONS.ORG_ACCESS_LOADING, payload: false });
       }
@@ -339,7 +377,11 @@ const ClientLayout = ({
           <Topbar />
           <div className="w-full flex relative">
             <SideBar />
-            <div className={`w-full relative`}>
+            <div
+              className={`w-full relative ${
+                state.showUserProfile ? "sm:mr-[408px]" : ""
+              }`}
+            >
               {children}
               <UserSidebar />
             </div>

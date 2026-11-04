@@ -1,4 +1,5 @@
 import { ACTIONS } from "./Actions";
+import { updateSavedBookmarks } from "~/utils/saved-bookmarks";
 
 type TypingPayload = { userId?: string; username?: string; typing?: boolean };
 
@@ -212,6 +213,14 @@ const reducers = (state: any, action: any) => {
       return {
         ...state,
         orgId: payload,
+        ...(state.orgId !== payload
+          ? {
+              bookmarks: [],
+              bookmarkPending: {},
+              bookmarkVersions: {},
+              bookmarkOrgVersion: (state.bookmarkOrgVersion || 0) + 1,
+            }
+          : {}),
       };
     case ACTIONS.CALLBACK:
       return {
@@ -356,6 +365,34 @@ const reducers = (state: any, action: any) => {
         ],
       };
     }
+    case ACTIONS.UPDATE_DM_FAVOURITE: {
+      const { channelId, isFavourite } = action.payload;
+
+      const updateDm = (dm: any) => {
+        const dmId = dm?.channel_id || dm?.channels_id;
+        if (String(dmId) !== String(channelId)) return dm;
+        return { ...dm, is_favourite: isFavourite };
+      };
+
+      const dmsList = state.dms || [];
+      const homeDmsList = state.homeDms || [];
+
+      const dmsMatch = dmsList.some((dm: any) => updateDm(dm) !== dm);
+      const homeDmsMatch = homeDmsList.some((dm: any) => updateDm(dm) !== dm);
+
+      if (!dmsMatch && !homeDmsMatch) return state;
+
+      return {
+        ...state,
+        dms: dmsList.map(updateDm),
+        homeDms: homeDmsList.map(updateDm),
+      };
+    }
+    case ACTIONS.DM_RENDER_CALLBACK:
+      return {
+        ...state,
+        dmRenderCallback: !state.dmRenderCallback,
+      };
     case ACTIONS.HOME_DMS:
       return {
         ...state,
@@ -373,11 +410,48 @@ const reducers = (state: any, action: any) => {
           count: (state.notificationBadgeState?.count ?? 0) + 1,
         },
       };
+    case ACTIONS.DECREMENT_NOTIFICATION_BADGE:
+      return {
+        ...state,
+        notificationBadgeState: {
+          count: Math.max(
+            0,
+            (state.notificationBadgeState?.count ?? 0) -
+              (typeof payload === "number" ? payload : 1)
+          ),
+        },
+      };
+    case ACTIONS.SET_NOTIFICATION_BADGE:
+      return {
+        ...state,
+        notificationBadgeState: {
+          count: Math.max(
+            0,
+            typeof payload === "number" ? payload : (payload?.count ?? 0)
+          ),
+        },
+      };
     case ACTIONS.CLEAR_NOTIFICATION_BADGE:
       return {
         ...state,
         notificationBadgeState: { count: 0 },
       };
+    case ACTIONS.MESSAGE_DELIVERY: {
+      const update = (messages: any[] = []) =>
+        messages.map((message) =>
+          message.isOptimistic &&
+          (message.id === action.payload.id ||
+            message.thread_id === action.payload.id)
+            ? { ...message, status: action.payload.status }
+            : message
+        );
+      return {
+        ...state,
+        messages: update(state.messages),
+        chats: update(state.chats),
+        replies: update(state.replies),
+      };
+    }
     case ACTIONS.MESSAGES:
       if (action.payload?.newMessage?.isOptimistic) {
         return {
@@ -1117,6 +1191,12 @@ const reducers = (state: any, action: any) => {
       }
       return state;
     }
+    case ACTIONS.CHANNEL_UNREAD_COUNT:
+      return {
+        ...state,
+        channelUnreadCount:
+          typeof payload === "number" ? payload : state.channelUnreadCount,
+      };
     case ACTIONS.UPDATE_DM_COUNT: {
       const updatedChannelId = action.payload.channel_id;
 
@@ -1239,6 +1319,8 @@ const reducers = (state: any, action: any) => {
         ...state,
         bookmarks: payload,
       };
+    case ACTIONS.UPDATE_SAVED_BOOKMARK:
+      return updateSavedBookmarks(state, payload);
     case ACTIONS.DATA_ID:
       return {
         ...state,
@@ -1390,6 +1472,7 @@ const reducers = (state: any, action: any) => {
           threadMentions: null,
           threadMentionsHasMore: false,
           unseenThreadCount: 0,
+          unseenThreadCountRevision: (state.unseenThreadCountRevision || 0) + 1,
         };
       }
       if (action.payload?.isRealTime) {
@@ -1430,17 +1513,38 @@ const reducers = (state: any, action: any) => {
         threadMentionsHasMore: hasMore,
         ...(action.payload.newPage === 1 &&
         typeof action.payload.unseenThreadCount === "number"
-          ? { unseenThreadCount: action.payload.unseenThreadCount }
+          ? {
+              unseenThreadCount: action.payload.unseenThreadCount,
+              unseenThreadCountRevision:
+                (state.unseenThreadCountRevision || 0) + 1,
+            }
           : {}),
       };
     }
 
     case ACTIONS.UNSEEN_THREAD_COUNT:
+      if (typeof payload !== "number") return state;
       return {
         ...state,
-        unseenThreadCount:
-          typeof payload === "number" ? payload : state.unseenThreadCount,
+        unseenThreadCount: payload,
+        unseenThreadCountRevision: (state.unseenThreadCountRevision || 0) + 1,
       };
+
+    case ACTIONS.SYNC_UNSEEN_THREAD_COUNT: {
+      const { unseenThreadCount, expectedRevision } = action.payload || {};
+      if (
+        typeof unseenThreadCount !== "number" ||
+        expectedRevision !== (state.unseenThreadCountRevision || 0)
+      ) {
+        return state;
+      }
+
+      return {
+        ...state,
+        unseenThreadCount,
+        unseenThreadCountRevision: (state.unseenThreadCountRevision || 0) + 1,
+      };
+    }
 
     case ACTIONS.MUTE_PARTICIPANT:
       return {

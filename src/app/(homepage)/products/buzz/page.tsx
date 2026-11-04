@@ -1,11 +1,15 @@
 import { Metadata } from "next";
-import { ogImageUrl, siteUrl } from "~/lib/env-urls";
+import { siteUrl } from "~/lib/env-urls";
 import Image from "next/image";
 import { ArrowBtn, OutlineBtn } from "../../_components/ui/Button";
 import { BuzzPageHeroSVG } from "../../_components/svgs";
 import { FAQSection } from "../../_components/home/FAQSection";
 import type { HomeFAQ } from "../../_lib/faqData";
 import { DynamicFooter } from "../../_components/footer/dynamic-footer";
+import { getProductBreadcrumbJsonLd } from "../../_lib/productStructuredData";
+
+const description =
+  "Use Zedu Buzz to start instant voice conversations inside learning channels. Collaborate in real time, clarify lessons faster, and review AI-generated session summaries.";
 
 export const metadata: Metadata = {
   title: "Zedu Buzz - Instant Voice Conversations for Learning Teams",
@@ -24,26 +28,15 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Zedu Buzz - Instant Voice Conversations for Learning Teams",
-    description:
-      "Launch live voice discussions directly in channels and keep every session useful with AI-powered recap summaries.",
+    description,
     url: siteUrl("/products/buzz"),
     siteName: "Zedu",
-    images: [
-      {
-        url: ogImageUrl("og-image-5.png"),
-        width: 1200,
-        height: 630,
-        alt: "Zedu Buzz live voice collaboration for education",
-      },
-    ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "Zedu Buzz - Real-Time Voice Collaboration",
-    description:
-      "Start instant voice sessions in your learning channels and keep everyone aligned with AI-generated summaries.",
-    images: [ogImageUrl("og-image-5.png")],
+    description,
   },
   alternates: {
     canonical: siteUrl("/products/buzz"),
@@ -57,7 +50,7 @@ export const metadata: Metadata = {
 const featureCardData = [
   {
     title: "Talk in Real Time Inside Learning Channels",
-    desc: "Start a Buzz instantly from any course or cohort channel without leaving the conversation. With just one click, students and instructors can jump into a live voice discussion to talk through ideas, ask questions, or collaborate",
+    desc: "Start a Buzz instantly from any course or cohort channel without leaving the conversation. With just one click, students and instructors can jump into a live voice discussion to talk through ideas, ask questions, or collaborate.",
     image: "/images/homepage/products/buzz/image-1.png",
   },
   {
@@ -107,6 +100,12 @@ const buzzFAQs: HomeFAQ[] = [
 const BuzzProductsPage = () => {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: getProductBreadcrumbJsonLd("Buzz", "/products/buzz"),
+        }}
+      />
       <section className="relative isolate overflow-hidden px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div
           aria-hidden="true"
@@ -118,7 +117,7 @@ const BuzzProductsPage = () => {
           <div className="flex flex-col items-center gap-5 text-center lg:max-w-[470px] lg:items-start lg:text-left">
             <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
               <span className="text-primary-500">Start a Buzz</span> Talk
-              Instantly with Your Team .
+              Instantly with Your Class.
             </h1>
             <p className="max-w-[46ch] text-sm leading-relaxed text-[#5a6170] sm:text-base">
               Buzz lets students, educators, and teams jump into quick voice
@@ -183,7 +182,15 @@ const BuzzProductsPage = () => {
           ))}
         </div>
       </section>
-      <FAQSection faqs={buzzFAQs} />
+      <FAQSection
+        faqs={buzzFAQs}
+        answerFragments={{
+          "buzz-item-1": "when-to-use-buzz",
+          "buzz-item-2": "what-can-i-do-in-a-buzz-session",
+          "buzz-item-3": "how-to-start-a-buzz",
+          "buzz-item-4": "are-buzz-sessions-summarized-automatically",
+        }}
+      />
       <DynamicFooter
         text="Start a Buzz with Your Class Today"
         description="Quick voice discussions designed for learning communities."

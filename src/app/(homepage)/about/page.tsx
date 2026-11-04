@@ -1,11 +1,14 @@
 import { Metadata } from "next";
-import { ogImageUrl, siteUrl } from "~/lib/env-urls";
+import { siteUrl } from "~/lib/env-urls";
 import Image from "next/image";
 import { ArrowBtn, OutlineBtn } from "../_components/ui/Button";
 import { WhyCard } from "../_components/ui/WhyCard";
 import { BoardIcon, BookIcon, SchoolIcon } from "../_components/svgs";
 import { DynamicFooter } from "../_components/footer/dynamic-footer";
 import { Building2, ShieldCheck, UserRoundCog } from "lucide-react";
+
+const description =
+  "Learn how Zedu brings educators and learning communities together through structured communication and AI-assisted collaboration.";
 
 export const metadata: Metadata = {
   title: "About Zedu - Structured Learning Communication Built for Education",
@@ -23,26 +26,15 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "About Zedu - Structured Learning Communication Built for Education",
-    description:
-      "See Zedu's mission, product philosophy, and approach to building secure, organized, and AI-assisted communication for modern learning teams.",
+    description,
     url: siteUrl("/about"),
     siteName: "Zedu",
-    images: [
-      {
-        url: ogImageUrl("og-image-5.png"),
-        width: 1200,
-        height: 630,
-        alt: "About Zedu and its education-first platform philosophy",
-      },
-    ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "About Zedu - Built for Structured Learning",
-    description:
-      "Discover how Zedu helps educators and learners communicate clearly with structured channels, AI assistance, and secure collaboration.",
-    images: [ogImageUrl("og-image-5.png")],
+    description,
   },
   alternates: {
     canonical: siteUrl("/about"),
@@ -154,9 +146,9 @@ const AboutPage = () => {
         </div>
       </section>
       <section className="relative isolate flex w-full flex-col items-center gap-4 overflow-hidden px-4 pt-10 text-center sm:gap-6 sm:px-8 sm:pt-16  lg:gap-8 lg:px-12">
-        <h1 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-4xl md:text-5xl text-center">
+        <h2 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-4xl md:text-5xl text-center">
           Our Philosophy
-        </h1>
+        </h2>
 
         <div className="grid w-full max-w-7xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {philosophyCards.map((card) => (
@@ -167,6 +159,7 @@ const AboutPage = () => {
               showBadge
               showArrow
               className="h-full"
+              headingLevel="h3"
             />
           ))}
         </div>
@@ -180,15 +173,16 @@ const AboutPage = () => {
             </h2>
 
             <p className="max-w-2xl text-sm text-neutral-600 sm:text-base">
-              Modern learning programs were forced to rely on tools built for
-              workplaces or social chat. Important messages got buried. Cohort
-              discussions became messy. Structure was missing.
+              General chat tools weren&apos;t built for learning. When
+              announcements, assignment questions, and cohort chatter all live
+              in one noisy feed, students disengage and instructors spend more
+              time managing the conversation than teaching.
             </p>
 
             <p className="max-w-2xl text-sm text-neutral-600 sm:text-base">
-              We built Zedu to give educators a workspace designed specifically
-              for organized learning where every channel, cohort, and
-              conversation has purpose.
+              Zedu replaces that chaos with dedicated channels per subject and
+              lets educators control permissions. AI helps with moderation, so
+              the community stays organized as it grows.
             </p>
 
             <ArrowBtn text="Contact Sales" href="/contact-sales" inverted />
@@ -209,9 +203,9 @@ const AboutPage = () => {
         </div>
       </section>
       <section className="relative isolate flex w-full flex-col items-center gap-4 overflow-hidden px-4 py-10 text-center sm:gap-6 sm:px-8 sm:py-16  lg:gap-8 lg:px-12">
-        <h1 className="text-xl font-semibold leading-tight text-neutral-900 sm:text-3xl md:text-4xl text-center">
+        <h2 className="text-xl font-semibold leading-tight text-neutral-900 sm:text-3xl md:text-4xl text-center">
           Designed for Modern Learning Teams{" "}
-        </h1>
+        </h2>
 
         <div className="grid w-full max-w-7xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {learningTeamCards.map((card) => (
@@ -281,9 +275,9 @@ const AboutPage = () => {
         </div>
 
         <div className="relative z-10 flex w-full max-w-4xl flex-col items-center justify-center gap-3 text-center text-white sm:gap-4">
-          <h1 className="text-xl font-semibold leading-tight sm:text-2xl md:text-3xl">
+          <h2 className="text-xl font-semibold leading-tight sm:text-2xl md:text-3xl">
             Our Vision
-          </h1>
+          </h2>
           <p className="max-w-[95%] text-sm leading-relaxed text-neutral-100 sm:max-w-[90%] sm:text-base md:max-w-[75%] lg:max-w-[60%] lg:text-lg">
             We believe the future of education is structured, AI-assisted, and
             built for engagement. Zedu exists to make organized learning the

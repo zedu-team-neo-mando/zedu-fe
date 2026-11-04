@@ -26,6 +26,7 @@ import { isUserDeactivated } from "~/utils/user-deactivation";
 import { useMessageHighlight } from "~/hooks/use-message-highlight";
 import { useMessageDeepLink } from "~/hooks/use-message-deep-link";
 import { ScrollToLatestButton } from "~/components/ui/scroll-to-latest-button";
+import { showError, showSuccess } from "~/components/toast/sonner";
 
 const PeopleMessage = ({ participant }: any) => {
   const { fetchMoreData, hasMore, loading } = UsePeopleMessage();
@@ -34,6 +35,7 @@ const PeopleMessage = ({ participant }: any) => {
   const groupedMessages = groupMessagesByDate(chats);
   const params = useParams();
   const id = params.id as string;
+  const isPersonalDm = participant?.user_id === user?.user_id;
   const [showBadge, setShowBadge] = useState(false);
   const [popupId, setPopupId] = useState<any>(null);
 
@@ -102,19 +104,43 @@ const PeopleMessage = ({ participant }: any) => {
 
   // edit message
   const handleEditMessage = async (content: any) => {
-    // payload
-    const payload = {
-      content: content,
-    };
+    try {
+      const payload = {
+        content: content,
+      };
 
-    await PutRequest(
-      `/dms/thread/${thread?.thread_id}/channels/${id}`,
-      payload
-    );
-    dispatch({
-      type: ACTIONS.IS_EDIT,
-      payload: false,
-    });
+      const res = await PutRequest(
+        `/dms/thread/${thread?.thread_id}/channels/${id}`,
+        payload
+      );
+      if (res?.status === 200 || res?.status === 201) {
+        const updatedChats = (chats || []).map((msg: any) =>
+          msg.thread_id === thread?.thread_id
+            ? { ...msg, content: content }
+            : msg
+        );
+        dispatch({
+          type: ACTIONS.CHATS,
+          payload: {
+            newThreads: updatedChats,
+            newPage: 1,
+          },
+        });
+        dispatch({
+          type: ACTIONS.IS_EDIT,
+          payload: false,
+        });
+        showSuccess("Message updated");
+      } else {
+        const errorMsg =
+          res?.response?.data?.message ||
+          res?.data?.message ||
+          "Failed to update message";
+        showError(errorMsg);
+      }
+    } catch (err: any) {
+      showError(err?.message || "Failed to update message");
+    }
   };
 
   useMessageDeepLink({
@@ -131,7 +157,6 @@ const PeopleMessage = ({ participant }: any) => {
   });
 
   //
-
   return (
     <div className="relative w-full flex-1 min-h-0 flex flex-col">
       {showBadge && state?.dmCount > 0 && (
@@ -284,12 +309,19 @@ const PeopleMessage = ({ participant }: any) => {
               </div>
               <h3 className="text-lg font-bold text-[#1D2939]">
                 {participant?.username}
+                {isPersonalDm ? " (you)" : ""}
               </h3>
             </div>
             <p className="text-[17px] text-[#344054] mb-2">
-              This conversation is just between you and
-              <UsernameHover item={participant} />. Check out their profile to
-              learn about them.
+              {isPersonalDm ? (
+                "Your personal space. Save messages, notes, links, and anything you want to come back to later."
+              ) : (
+                <>
+                  This conversation is just between you and{" "}
+                  <UsernameHover item={participant} />. Check out their profile
+                  to learn about them.
+                </>
+              )}
             </p>
             <Button
               variant={"outline"}

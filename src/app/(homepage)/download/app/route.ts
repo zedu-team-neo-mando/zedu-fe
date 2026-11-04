@@ -1,6 +1,8 @@
 import type { NextRequest } from "next/server";
 
-import { appStoreUrl, playStoreUrl } from "~/lib/env-urls";
+import { storeLink } from "~/lib/env-urls";
+
+const QR_LINK = { campaign: "download-page", content: "qr-code" };
 
 // Read the store URLs and the user agent on every request, not at build time.
 export const dynamic = "force-dynamic";
@@ -13,9 +15,9 @@ export function GET(request: NextRequest) {
 
   let storeUrl = "";
   if (/iphone|ipad|ipod/i.test(userAgent)) {
-    storeUrl = appStoreUrl();
+    storeUrl = storeLink("app", QR_LINK);
   } else if (/android/i.test(userAgent)) {
-    storeUrl = playStoreUrl();
+    storeUrl = storeLink("play", QR_LINK);
   }
 
   return new Response(null, {

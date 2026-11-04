@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
-import { X, AlertCircle, LinkIcon } from "lucide-react";
+import { X, AlertCircle, LinkIcon, MessageCircle, Share2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { DataContext } from "~/store/GlobalState";
 import { ACTIONS } from "~/store/Actions";
@@ -133,27 +133,97 @@ const InviteModal = () => {
     setButtonLoading(false);
   };
 
-  const handleCopyInviteLink = async () => {
-    if (!orgId) return;
+  // One invite link per modal session, shared by Copy, WhatsApp and Share, so
+  // each click doesn't create another invite. Cleared on close or org change.
+  const inviteLinkRef = useRef<{ key: string; link: string } | null>(null);
+  const [canNativeShare, setCanNativeShare] = useState(false);
 
-    const payload = {
-      organisation_id: orgId,
-      role_id: roleId,
-    };
+  useEffect(() => {
+    setCanNativeShare(typeof navigator.share === "function");
+  }, []);
+
+  useEffect(() => {
+    if (!inviteModal) inviteLinkRef.current = null;
+  }, [inviteModal, orgId]);
+
+  const getInviteLink = async (): Promise<string | null> => {
+    if (!orgId) return null;
+    const key = `${orgId}:${roleId}`;
+    if (inviteLinkRef.current?.key === key) return inviteLinkRef.current.link;
 
     try {
-      const res = await PostRequest("/invite/general", payload);
-
-      if (res?.status === 200 || res?.status === 201) {
-        const link = res?.data?.data?.invitation_link;
-        await navigator.clipboard.writeText(link);
-        showSuccess("Invite link copied to clipboard");
-      } else {
-        showError("Failed to generate invite link");
+      const res = await PostRequest("/invite/general", {
+        organisation_id: orgId,
+        role_id: roleId,
+      });
+      const link = res?.data?.data?.invitation_link;
+      if ((res?.status === 200 || res?.status === 201) && link) {
+        inviteLinkRef.current = { key, link };
+        return link;
       }
     } catch (error) {
       console.error(error);
+    }
+    showError("Failed to generate invite link");
+    return null;
+  };
+
+  const inviteMessage = (link: string) =>
+    `You're invited to join ${state?.orgData?.name || "our workspace"} on Zedu, where we share updates, resources and discussions. Join here: ${link}`;
+
+  const trackShare = (method: "copy" | "whatsapp" | "native") => {
+    const { gtag } = window as {
+      gtag?: (...args: unknown[]) => void;
+    };
+    gtag?.("event", "share", { method, content_type: "workspace_invite" });
+  };
+
+  const handleCopyInviteLink = async () => {
+    const link = await getInviteLink();
+    if (!link) return;
+
+    try {
+      await navigator.clipboard.writeText(link);
+      showSuccess("Invite link copied to clipboard");
+      trackShare("copy");
+    } catch (error) {
+      console.error(error);
       showError("An error occurred while copying the invite link");
+    }
+  };
+
+  const handleShareWhatsApp = async () => {
+    // Open the tab inside the click so popup blockers allow it, then point it
+    // at WhatsApp once the link is ready.
+    const whatsappTab = window.open("", "_blank");
+    if (whatsappTab) whatsappTab.opener = null;
+
+    const link = await getInviteLink();
+    if (!link) {
+      whatsappTab?.close();
+      return;
+    }
+
+    const url = `https://wa.me/?text=${encodeURIComponent(inviteMessage(link))}`;
+    if (whatsappTab) whatsappTab.location.href = url;
+    else window.location.href = url;
+    trackShare("whatsapp");
+  };
+
+  const handleNativeShare = async () => {
+    const link = await getInviteLink();
+    if (!link) return;
+
+    try {
+      await navigator.share({
+        title: `Join ${state?.orgData?.name || "us"} on Zedu`,
+        text: inviteMessage(link),
+      });
+      trackShare("native");
+    } catch (error) {
+      // Closing the share sheet is not an error
+      if ((error as Error)?.name === "AbortError") return;
+      await handleCopyInviteLink();
     }
   };
 
@@ -235,18 +305,40 @@ const InviteModal = () => {
           <div className="w-full h-[0.5px] bg-[#D6DAE0]" />
         </div>
 
-        <div className="flex justify-between gap-3 mt-6">
-          <Button
-            variant="outline"
-            className="h-9 border border-[#101828]/40"
-            onClick={handleCopyInviteLink}
-          >
-            <LinkIcon size={16} />
-            <span className="ml-2">Copy invite link</span>
-          </Button>
+        <div className="flex flex-wrap justify-between gap-3 mt-6">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              className="h-9 border border-[#101828]/40"
+              onClick={handleCopyInviteLink}
+            >
+              <LinkIcon size={16} />
+              <span className="ml-2">Copy invite link</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              className="h-9 border border-[#101828]/40"
+              onClick={handleShareWhatsApp}
+            >
+              <MessageCircle size={16} className="text-[#25D366]" />
+              <span className="ml-2">Share on WhatsApp</span>
+            </Button>
+
+            {canNativeShare && (
+              <Button
+                variant="outline"
+                className="h-9 w-9 p-0 border border-[#101828]/40"
+                onClick={handleNativeShare}
+                aria-label="Share invite link"
+              >
+                <Share2 size={16} />
+              </Button>
+            )}
+          </div>
 
           <Button
-            className="bg-[#7141F8] h-9 text-white px-7"
+            className="bg-[#7141F8] h-9 text-white px-7 w-full sm:w-auto"
             disabled={invitees.length === 0 && inputValue.trim() === ""}
             onClick={handleSubmit}
           >

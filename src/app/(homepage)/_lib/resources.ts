@@ -24,14 +24,34 @@ export const tabs: ResourceTab[] = [
 
 export const resources: ResourceItem[] = [
   {
+    id: 11,
+    tab: "guides",
+    category: "Guides",
+    title: "Getting Started with Zedu",
+    description:
+      "A step-by-step tutorial: create your organisation, set up channels, invite learners and run your first cohort.",
+    image: "/images/homepage/resources/getting-started/cover.png",
+    link: "/resources?guide=getting-started-with-zedu",
+  },
+  {
+    id: 10,
+    tab: "guides",
+    category: "Guides",
+    title: "Zedu vs WhatsApp and Telegram for Bootcamps",
+    description:
+      "A fair comparison for bootcamps running cohorts in WhatsApp or Telegram groups.",
+    image: "/images/homepage/resources/zedu-vs-whatsapp-telegram.png",
+    link: "/resources?guide=zedu-vs-whatsapp-telegram-for-bootcamps",
+  },
+  {
     id: 1,
     tab: "guides",
     category: "Guides",
     title: "Organizing Courses with Channels",
     description:
       "How universities structure course discussions using Zedu to keep topics clear and accessible.",
-    image: "/images/homepage/resources/image-1.png",
-    link: "#",
+    image: "/images/homepage/resources/organizing-courses-with-channels.png",
+    link: "/resources?guide=organizing-courses-with-channels",
   },
   {
     id: 2,
@@ -40,8 +60,8 @@ export const resources: ResourceItem[] = [
     title: "Running Active Class Discussions",
     description:
       "Tips for teachers to encourage student participation and build a thriving online classroom.",
-    image: "/images/homepage/resources/image-2.png",
-    link: "#",
+    image: "/images/homepage/resources/running-active-class-discussions.jpg",
+    link: "/resources?guide=running-active-class-discussions",
   },
   {
     id: 3,
@@ -51,17 +71,47 @@ export const resources: ResourceItem[] = [
     description:
       "How bootcamps organize fast-paced learning programs, coordinate mentors, and track progress.",
     image: "/images/homepage/resources/image-3.png",
-    link: "#",
+    link: "/resources?guide=managing-bootcamp-cohorts",
   },
   {
     id: 4,
     tab: "guides",
     category: "Guides",
-    title: "Using AI assistant for Learning",
+    title: "Using an AI Assistant for Learning",
     description:
       "Discover how AI helps summarize discussions, answer questions, and support students in the Zedu workspace.",
-    image: "/images/homepage/resources/image-4.png",
-    link: "#",
+    image: "/images/homepage/resources/using-an-ai-assistant-for-learning.jpg",
+    link: "/resources?guide=using-an-ai-assistant-for-learning",
+  },
+  {
+    id: 5,
+    tab: "guides",
+    category: "Tools",
+    title: "Cohort Communication Planner",
+    description:
+      "Answer four questions about your cohort and get a downloadable playbook with channels, a weekly roadmap, and a communication schedule.",
+    image: "/images/homepage/resources/image-3.png",
+    link: "/resources/cohort-communication-planner",
+  },
+  {
+    id: 11,
+    tab: "guides",
+    category: "Tools",
+    title: "Shipped on Zedu",
+    description:
+      "Fill in the fix you shipped and download a branded card, three captions, and the #ShippedOnZedu hashtag.",
+    image: "/images/homepage/resources/image-2.png",
+    link: "/shipped",
+  },
+  {
+    id: 9,
+    tab: "guides",
+    category: "Tools",
+    title: "Email Signature Generator",
+    description:
+      "Make a clean email signature for your school or cohort, with a link that invites learners to your Zedu community.",
+    image: "/images/homepage/resources/image-2.png",
+    link: "/resources/email-signature-generator",
   },
   {
     id: 6,
@@ -85,7 +135,7 @@ export const resources: ResourceItem[] = [
     id: 8,
     tab: "webinars",
     category: "Webinar",
-    title: "Using AI assistants in Simplifying Education",
+    title: "Using AI Assistants to Simplify Education",
     image: "/images/homepage/resources/webinar-3.png",
     duration: "30 min",
     link: "#",

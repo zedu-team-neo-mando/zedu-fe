@@ -171,12 +171,8 @@ export const downloadInvoice = async (invoiceUrl: string) => {
   }
 };
 
-export function stripHtmlTags(html: string = ""): string {
-  if (typeof window === "undefined") return html; // SSR safety
-  const div = document.createElement("div");
-  div.innerHTML = html;
-  return div.textContent || div.innerText || "";
-}
+// Lives in its own module so it can be tested without the rest of utils.
+export { stripHtmlTags } from "./strip-html";
 
 export function getStatusColor(status: string) {
   switch (status) {

@@ -50,4 +50,10 @@ pnpm dev
 
 ## Contributing
 
+See [Save for Later consistency](docs/saved-message-consistency.md) for concurrent
+message actions, error recovery and the focused regression workflow.
+
+The public [Cohort Communication Planner's weekly-topic rules](docs/cohort-planner-topics.md)
+explain explicit week numbers, mixed inputs and conflict notices.
+
 Please see [CONTRIBUTING](./CONTRIBUTING.md)

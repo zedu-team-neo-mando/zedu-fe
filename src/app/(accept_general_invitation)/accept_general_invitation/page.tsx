@@ -1,6 +1,15 @@
-"use client";
 import React, { Suspense } from "react";
+import type { Metadata } from "next";
 import InviteForm from "./invite-form";
+import { invitePreviewMetadata } from "~/lib/invite-preview-metadata";
+
+export function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}): Promise<Metadata> {
+  return invitePreviewMetadata("/accept_general_invitation", searchParams);
+}
 
 const AcceptOrgInvite = () => {
   return (

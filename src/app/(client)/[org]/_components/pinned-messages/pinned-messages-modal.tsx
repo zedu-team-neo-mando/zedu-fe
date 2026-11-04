@@ -10,6 +10,7 @@ import { AppleEmojiText } from "~/app/(client)/[org]/_components/apple-emoji/app
 import ReplyCard from "../reply-card";
 import { DataContext } from "~/store/GlobalState";
 import { ACTIONS } from "~/store/Actions";
+import { useRBAC } from "~/hooks/useRBAC";
 import { DeleteSavedMessage, GetRequest } from "~/utils/new-request";
 import { showError } from "~/components/toast/sonner";
 import {
@@ -110,6 +111,7 @@ const PinnedMessagesModal = ({
   scope,
 }: PinnedMessagesModalProps) => {
   const { state, dispatch } = useContext(DataContext);
+  const { hasPermission } = useRBAC();
   const [pins, setPins] = useState<ResolvedPin[]>([]);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -128,6 +130,12 @@ const PinnedMessagesModal = ({
     scope === "channel"
       ? state?.channelName || state?.channelDetails?.name || "this channel"
       : "this conversation";
+
+  // channelDetails.is_restricted is the current user's write restriction, the
+  // same flag that swaps the composer for the "only admins can send" banner.
+  const restrictedHere =
+    scope === "channel" && state?.channelDetails?.is_restricted === true;
+  const canUnpin = !restrictedHere || hasPermission("manage:channels");
 
   useEffect(() => {
     if (!open || !channelId) return;
@@ -349,6 +357,7 @@ const PinnedMessagesModal = ({
                     state?.user?.email
                   )}
                   unpinning={unpinningId === pin.pinId}
+                  canUnpin={canUnpin}
                   onJump={() => jumpToMessage(pin)}
                   onUnpin={() => unpin(pin)}
                   onOpenThread={openThread}
@@ -366,6 +375,7 @@ function PinnedMessageCard({
   pin,
   caption,
   unpinning,
+  canUnpin,
   onJump,
   onUnpin,
   onOpenThread,
@@ -373,6 +383,7 @@ function PinnedMessageCard({
   pin: ResolvedPin;
   caption: string;
   unpinning: boolean;
+  canUnpin: boolean;
   onJump: () => void;
   onUnpin: () => void;
   onOpenThread: (message: Record<string, any>) => void;
@@ -469,15 +480,17 @@ function PinnedMessageCard({
             <ArrowUpRight className="size-3.5" />
             Jump
           </button>
-          <button
-            type="button"
-            onClick={onUnpin}
-            disabled={unpinning}
-            className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[13px] font-medium text-[#344054] hover:bg-[#F6F7F9] disabled:opacity-50"
-          >
-            <PinOff className="size-3.5" />
-            {unpinning ? "Unpinning" : "Unpin"}
-          </button>
+          {canUnpin ? (
+            <button
+              type="button"
+              onClick={onUnpin}
+              disabled={unpinning}
+              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[13px] font-medium text-[#344054] hover:bg-[#F6F7F9] disabled:opacity-50"
+            >
+              <PinOff className="size-3.5" />
+              {unpinning ? "Unpinning" : "Unpin"}
+            </button>
+          ) : null}
         </div>
       </div>
     </li>

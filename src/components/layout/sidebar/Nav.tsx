@@ -112,6 +112,18 @@ export default function ChannelNav({
       })
     : [];
 
+  /** Returns the DM list with favourited entries first, stable order within each group. */
+  const sortHomeDmsFavouritesFirst = (dms: any[]) => {
+    const favourites: any[] = [];
+    const rest: any[] = [];
+
+    for (const dm of dms) {
+      (dm?.is_favourite ? favourites : rest).push(dm);
+    }
+
+    return [...favourites, ...rest];
+  };
+
   return (
     <>
       <div
@@ -358,14 +370,16 @@ export default function ChannelNav({
                   </Tooltips>
                 </div>
                 <AccordionContent onClick={handleClose}>
-                  {state.homeDms.map((item: any, index: number) => (
-                    <div
-                      className="mb-1"
-                      key={item?.channel_id || item?.channels_id || index}
-                    >
-                      <PeopleHomeCard {...item} />
-                    </div>
-                  ))}
+                  {sortHomeDmsFavouritesFirst(state.homeDms).map(
+                    (item: any, index: number) => (
+                      <div
+                        className="mb-1"
+                        key={item?.channel_id || item?.channels_id || index}
+                      >
+                        <PeopleHomeCard {...item} />
+                      </div>
+                    )
+                  )}
 
                   {state.homeDms.length === 0 && (
                     <p className="text-xs text-center text-blue-50">

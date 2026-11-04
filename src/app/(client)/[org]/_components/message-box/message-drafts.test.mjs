@@ -19,6 +19,8 @@ const {
   saveMessageDraft,
   loadMessageDraft,
   clearMessageDraft,
+  finishMessageDraftSend,
+  messageDraftKey,
 } = await import(
   `data:text/javascript;base64,${Buffer.from(outputText).toString("base64")}`
 );
@@ -66,4 +68,39 @@ test("clearing a conversation with no draft changes nothing", () => {
 test("ignores a corrupt saved value", () => {
   store.set(MESSAGE_DRAFTS_KEY, "{not json");
   assert.equal(loadMessageDraft("conversation:a"), "");
+});
+
+test("a failed send after navigation preserves the unsent message", () => {
+  finishMessageDraftSend("conversation:a", "<p>retry me</p>", false);
+  assert.equal(loadMessageDraft("conversation:a"), "<p>retry me</p>");
+  saveMessageDraft("conversation:a", "<p>newer text</p>", false);
+  finishMessageDraftSend("conversation:a", "<p>retry me</p>", false);
+  finishMessageDraftSend("conversation:a", "<p>retry me</p>", true);
+  assert.equal(loadMessageDraft("conversation:a"), "<p>newer text</p>");
+});
+
+test("isolates drafts by account, organisation and conversation", () => {
+  const key = messageDraftKey("alice", "school", "conversation:a");
+  saveMessageDraft(key, "<p>private draft</p>", false);
+  assert.equal(
+    loadMessageDraft(messageDraftKey("bob", "school", "conversation:a")),
+    ""
+  );
+  assert.equal(
+    loadMessageDraft(messageDraftKey("alice", "other", "conversation:a")),
+    ""
+  );
+  assert.equal(loadMessageDraft(key), "<p>private draft</p>");
+  assert.equal(messageDraftKey("", "school", "conversation:a"), "");
+});
+
+test("ignores non-text draft values and array-shaped storage", () => {
+  store.set(
+    MESSAGE_DRAFTS_KEY,
+    JSON.stringify({ bad: { text: "oops" }, good: "<p>ok</p>" })
+  );
+  assert.equal(loadMessageDraft("bad"), "");
+  assert.equal(loadMessageDraft("good"), "<p>ok</p>");
+  store.set(MESSAGE_DRAFTS_KEY, JSON.stringify(["not a draft map"]));
+  assert.equal(loadMessageDraft("0"), "");
 });

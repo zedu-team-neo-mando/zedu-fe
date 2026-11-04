@@ -24,7 +24,7 @@ export const GetRequest = async (url: string) => {
     return res;
   } catch (error: any) {
     handleUnauthorizedIfNeeded(error);
-    // showError(error?.response?.data?.message);
+    showError(error?.response?.data?.message);
     return error;
   }
 };
@@ -60,7 +60,10 @@ export const PostRequest = async (url: string, data?: any) => {
 
     return res;
   } catch (error: any) {
-    showError(error?.response?.data?.message);
+    showError(
+      error?.response?.data?.message ||
+        "Something went wrong. Please try again."
+    );
     handleUnauthorizedIfNeeded(error);
     return error;
   }
