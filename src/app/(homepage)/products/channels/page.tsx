@@ -26,9 +26,6 @@ export const metadata: Metadata = {
     "university discussion channels",
     "bootcamp class communication",
   ],
-  icons: {
-    icon: "/TelexIcon.svg",
-  },
   openGraph: {
     title: "Zedu Channels - Organized Communication for Learning Teams",
     description:
@@ -101,14 +98,14 @@ const otherFeatures = [
   },
   {
     icon: "/images/homepage/icons/AI-class-note.png",
-    title: "Ai Agents",
+    title: "AI Agents",
     description:
       "AI assistants that summarize discussions and answer questions.",
   },
   {
     icon: "/images/homepage/icons/whiteboard.png",
     title: "Assignments",
-    description: "Share and organize learning materials and resources.",
+    description: "Create, share and track assignments for your team or class.",
   },
 ];
 
@@ -121,13 +118,13 @@ const channelsFAQs: HomeFAQ[] = [
   },
   {
     id: "channels-item-2",
-    question: "What can I do in a Channels?",
+    question: "What can I do in a Channel?",
     answer:
       "You can share updates, ask questions, post resources, and collaborate through threaded discussions with students, educators, or teams.",
   },
   {
     id: "channels-item-3",
-    question: "How do I start a Channels?",
+    question: "How do I start a Channel?",
     answer:
       "Create a new channel from your workspace, give it a clear name based on purpose, and invite the right participants to begin the conversation.",
   },
@@ -251,7 +248,7 @@ const ChannelProductPage = () => {
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16 mt-5 bg-blue-50/30">
         <div className="flex flex-col items-center gap-4">
           <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
-            More That Just <span className="text-primary-500">Channels</span>
+            More Than Just <span className="text-primary-500">Channels</span>
           </h1>
           <p className="max-w-[95%] text-center text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
             Channels work together with the rest of the Zedu platform.
