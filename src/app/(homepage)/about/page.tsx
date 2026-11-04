@@ -8,7 +8,7 @@ import { DynamicFooter } from "../_components/footer/dynamic-footer";
 import { Building2, ShieldCheck, UserRoundCog } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "About",
+  title: "About Zedu - Structured Learning Communication Built for Education",
   description:
     "Learn how Zedu helps schools, universities, and bootcamps run structured, AI-assisted learning communication with organized channels, collaboration tools, and educator-first workflows.",
   keywords: [
