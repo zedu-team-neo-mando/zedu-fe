@@ -122,12 +122,15 @@ function ResetPassword() {
 
   // resend otp
   const handleResend = async () => {
-    if (!email || loading) return;
+    const cleanEmail = email?.trim().toLowerCase();
+    if (!cleanEmail || loading) return;
     setLoading(true);
 
     // Same endpoint as Forgot Password, so the user gets a new reset code.
     // /auth/email-request is the account verification email.
-    const res = await PostRequest("/auth/password-reset", { email });
+    const res = await PostRequest("/auth/password-reset", {
+      email: cleanEmail,
+    });
 
     if (res?.status === 200 || res?.status === 201) {
       setTimeLeft(1 * 60);

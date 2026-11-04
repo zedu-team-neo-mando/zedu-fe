@@ -17,10 +17,11 @@ function ForgotPassword() {
   const [buttonloading, setButtonloading] = useState(false);
 
   const validateForm = () => {
+    const cleanEmail = email.trim();
     const newErrors = { email: "" };
-    if (!email) {
+    if (!cleanEmail) {
       newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
+    } else if (!/\S+@\S+\.\S+/.test(cleanEmail)) {
       newErrors.email = "Invalid email address";
     }
 
@@ -34,11 +35,16 @@ function ForgotPassword() {
     if (validateForm()) {
       setButtonloading(true);
 
-      const res = await PostRequest("/auth/password-reset", { email });
+      const cleanEmail = email.trim().toLowerCase();
+      const res = await PostRequest("/auth/password-reset", {
+        email: cleanEmail,
+      });
 
       if (res?.status === 200 || res?.status === 201) {
         showSuccess(res?.data.message);
-        router.push(`/auth/reset-password?email=${encodeURIComponent(email)}`);
+        router.push(
+          `/auth/reset-password?email=${encodeURIComponent(cleanEmail)}`
+        );
       } else {
         setButtonloading(false);
       }
