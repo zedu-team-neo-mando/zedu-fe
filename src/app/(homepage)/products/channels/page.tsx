@@ -13,7 +13,7 @@ import { DynamicFooter } from "../../_components/footer/dynamic-footer";
 import type { HomeFAQ } from "../../_lib/faqData";
 
 export const metadata: Metadata = {
-  title: "Channels",
+  title: "Zedu Channels - Organized Communication for Learning Teams",
   description:
     "Explore Zedu Channels for structured classroom and cohort communication. Organize discussions by subject, share updates clearly, and scale collaboration across learning teams.",
   keywords: [
