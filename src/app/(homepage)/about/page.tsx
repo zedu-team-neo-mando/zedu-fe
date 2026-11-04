@@ -21,9 +21,6 @@ export const metadata: Metadata = {
     "school learning platform",
     "educator-first technology",
   ],
-  icons: {
-    icon: "/TelexIcon.svg",
-  },
   openGraph: {
     title: "About Zedu - Structured Learning Communication Built for Education",
     description:
@@ -101,7 +98,7 @@ const privacyCards = [
   {
     title: "Secure data infrastructure",
     Icon: ShieldCheck,
-    iconClassName: "text-emerald-500",
+    iconClassName: "text-primary-500",
   },
   {
     title: "Role-based permissions",
@@ -125,7 +122,7 @@ const AboutPage = () => {
         />
         <h1 className="text-2xl font-semibold leading-tight text-neutral-900 sm:text-4xl md:text-5xl text-center">
           Built for Structured{" "}
-          <span className="text-primary-500">Learning</span> Not Noise
+          <span className="text-primary-500">Learning</span>, Not Noise
         </h1>
         <p className="max-w-[95%] text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
           Zedu was created to help educators and learning teams run organized,
@@ -276,7 +273,7 @@ const AboutPage = () => {
         <div className="pointer-events-none absolute inset-0">
           <Image
             src="/images/homepage/about-svg-bg.png"
-            alt="Decorative stars background"
+            alt=""
             fill
             sizes="100vw"
             className="object-cover object-center"
@@ -290,7 +287,7 @@ const AboutPage = () => {
           <p className="max-w-[95%] text-sm leading-relaxed text-neutral-100 sm:max-w-[90%] sm:text-base md:max-w-[75%] lg:max-w-[60%] lg:text-lg">
             We believe the future of education is structured, AI-assisted, and
             built for engagement. Zedu exists to make organized learning the
-            standard not the exception.
+            standard, not the exception.
           </p>
         </div>
       </section>
@@ -305,10 +302,12 @@ const AboutPage = () => {
             {privacyCards.map((card) => (
               <article
                 key={card.title}
-                className="flex items-center gap-3 rounded-xl border border-neutral-200 px-4 py-3 text-left"
+                className="flex flex-col items-center gap-4 rounded-2xl bg-[#F9F7FD] px-6 py-8 text-center"
               >
-                <card.Icon className={card.iconClassName} size={16} />
-                <p className="text-sm font-medium text-neutral-700">
+                <span className="flex size-12 items-center justify-center rounded-full bg-white shadow-sm">
+                  <card.Icon className={card.iconClassName} size={24} />
+                </span>
+                <p className="text-base font-semibold text-neutral-900">
                   {card.title}
                 </p>
               </article>
