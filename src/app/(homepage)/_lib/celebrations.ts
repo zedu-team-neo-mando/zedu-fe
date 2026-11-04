@@ -1,5 +1,8 @@
 export type CelebrationKey =
-  "christmas" | "easter" | "independence" | "newyear";
+  | "christmas"
+  | "easter"
+  | "independence"
+  | "newyear";
 
 export interface CelebrationTheme {
   id: CelebrationKey;
