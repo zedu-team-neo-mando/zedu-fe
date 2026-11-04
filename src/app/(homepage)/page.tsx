@@ -36,7 +36,6 @@ export const metadata: Metadata = {
         alt: "Zedu learning platform for educators and cohorts",
       },
     ],
-
   },
   // A page's twitter block replaces the layout's, so the layout's title and description are repeated here
   twitter: {
