@@ -166,39 +166,6 @@ export const PricingSection = ({
         </DialogTrigger>
       </section>
 
-      {/* cards */}
-      <div className="grid w-full max-w-7xl grid-cols-1 mt-6 place-items-center gap-8 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
-        {plans.map((plan) => (
-          <PricingCard
-            key={plan.key}
-            title={plan.title}
-            description={plan.description}
-            amount={plan.amount}
-            periodLabel={plan.periodLabel}
-            footnote={plan.footnote}
-            features={plan.features}
-            ctaText={plan.ctaText}
-            ctaHref={plan.ctaHref}
-            ctaVariant={plan.ctaVariant}
-            variant={plan.variant}
-            badgeText={plan.badgeText}
-          />
-        ))}
-      </div>
-      <h1 className="text-xs sm:text-sm md:text-md font-medium text-neutral-700 ">
-        Launching a bootcamp? Let's build a pricing model that fits your cohort
-        size.
-      </h1>
-      <Link
-        href={"/pricing#compare-plans"}
-        className="group flex items-center gap-2 font-semibold text-primary-500"
-      >
-        Compare different plans
-        <span className="inline-flex transition-transform duration-300 ease-out group-hover:translate-x-1">
-          <PurpleArrowRight />
-        </span>
-      </Link>
-    </section>
       {/* Calculator modal */}
       <SlackZeduCalculator onCloseAutoFocus={handleCalculatorCloseAutoFocus} />
     </Dialog>
