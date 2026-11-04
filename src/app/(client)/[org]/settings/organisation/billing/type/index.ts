@@ -94,7 +94,12 @@ export type TelexTransaction = {
   };
   paymentMethod: {
     type:
-      "visa" | "mastercard" | "amex" | "paypal" | "bank_transfer" | "credit";
+      | "visa"
+      | "mastercard"
+      | "amex"
+      | "paypal"
+      | "bank_transfer"
+      | "credit";
     lastFour: string;
     processor: "stripe" | "paypal" | "direct";
   };
