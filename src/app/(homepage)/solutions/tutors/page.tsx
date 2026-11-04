@@ -28,9 +28,6 @@ export const metadata: Metadata = {
     "share files with students",
     "Zedu tutors",
   ],
-  icons: {
-    icon: "/TelexIcon.svg",
-  },
   openGraph: {
     title: "Zedu for Tutors | Live Lessons, Student Chat and Shared Files",
     description: PAGE_DESCRIPTION,
