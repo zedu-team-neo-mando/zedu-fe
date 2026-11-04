@@ -30,10 +30,21 @@ export function lookupAppleEmoji(emoji: string) {
   );
 }
 
+export type AppleEmojiToken =
+  | { type: "text"; value: string }
+  | { type: "emoji"; emoji: string; src: string };
+
+const escapeHtmlAttribute = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
 function emojiImageTag(emoji: string, unified: string) {
   const src = appleEmojiImageUrl(unified);
   if (!src) return emoji;
-  const safeAlt = emoji.replace(/"/g, "&quot;");
+  const safeAlt = escapeHtmlAttribute(emoji);
   return `<img class="apple-emoji-img" alt="${safeAlt}" src="${src}" draggable="false" />`;
 }
 

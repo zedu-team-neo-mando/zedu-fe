@@ -546,6 +546,15 @@ function Login() {
                   )}
                 </Button>
 
+                <Link href="/auth/magiclink">
+                  <Button
+                    type="submit"
+                    variant="ghost"
+                    className="w-fit text-start !p-0 border-none border-[#8760f8] text-[#8760f8] bg-white h-2"
+                  >
+                    Log in with magic link
+                  </Button>
+                </Link>
                 {/* Apple Login */}
                 <AppleSignin
                   authOptions={{

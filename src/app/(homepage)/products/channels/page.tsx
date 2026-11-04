@@ -17,8 +17,9 @@ const description =
   "Explore Zedu Channels for structured classroom and cohort communication. Organize discussions by subject, share updates clearly, and scale collaboration across learning teams.";
 
 export const metadata: Metadata = {
-  title: "Channels - Organized Communication for Learning Teams",
-  description,
+  title: "Zedu Channels - Organized Communication for Learning Teams",
+  description:
+    "Explore Zedu Channels for structured classroom and cohort communication. Organize discussions by subject, share updates clearly, and scale collaboration across learning teams.",
   keywords: [
     "Zedu channels",
     "education communication channels",

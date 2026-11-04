@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ogImageUrl } from "~/lib/env-urls";
 import { ChooseSetupGuide } from "./_components/home/ChooseSetupGuide";
 import { FeatureSection } from "./_components/home/FeatureSection";
 import HeroSection from "./_components/home/Herosection";
@@ -23,16 +24,18 @@ export const metadata: Metadata = {
     title: "Zedu - One Workspace for Your Entire Cohort",
     description,
     url: "/",
+    // Next.js replaces the layout's openGraph object instead of merging it,
+    // so the share image must be repeated here or the homepage has none.
     siteName: "Zedu",
+    type: "website",
     images: [
       {
-        url: "/og/zedu-home-share.png",
+        url: ogImageUrl("og-image-5.png"),
         width: 1200,
         height: 630,
-        alt: "Zedu: run your cohort on Zedu",
+        alt: "Zedu learning platform for educators and cohorts",
       },
     ],
-    type: "website",
   },
   // A page's twitter block replaces the layout's, so the layout's title and description are repeated here
   twitter: {

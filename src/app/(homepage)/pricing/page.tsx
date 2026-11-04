@@ -17,8 +17,9 @@ const description =
   "Explore Zedu pricing plans for schools, bootcamps, and cohort-based learning teams. Compare features, choose the right plan, and scale structured learning with AI-powered collaboration.";
 
 export const metadata: Metadata = {
-  title: "Pricing - Flexible Plans for Modern Learning Teams",
-  description,
+  title: "Zedu Pricing - Flexible Plans for Modern Learning Teams",
+  description:
+    "Explore Zedu pricing plans for schools, bootcamps, and cohort-based learning teams. Compare features, choose the right plan, and scale structured learning with AI-powered collaboration.",
   keywords: [
     "Zedu pricing",
     "education platform pricing",
