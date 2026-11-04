@@ -12,7 +12,7 @@ import {
 import { CircleHelp } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Pricing",
+  title: "Zedu Pricing - Flexible Plans for Modern Learning Teams",
   description:
     "Explore Zedu pricing plans for schools, bootcamps, and cohort-based learning teams. Compare features, choose the right plan, and scale structured learning with AI-powered collaboration.",
   keywords: [
