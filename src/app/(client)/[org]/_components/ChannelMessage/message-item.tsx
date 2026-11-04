@@ -9,6 +9,7 @@ import React, {
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
 import Prism from "prismjs";
 import "prismjs/themes/prism.css";
 import "prismjs/components/prism-javascript";
@@ -48,11 +49,13 @@ import DocumentPreviewModal from "./document-preview-modal";
 import { Media } from "~/types/channel";
 import { linkifyText } from "~/utils/linkify-text";
 import { replaceEmojiWithImages } from "~/lib/apple-emoji";
+import { messageSanitizeSchema } from "~/lib/sanitize-message-schema";
 import {
   getDocumentCategory,
   isPreviewableDocument,
 } from "~/utils/document-files";
 import { useRouter } from "next/navigation";
+import { tokenizeMessageText } from "~/app/(client)/[org]/_components/ChannelMessage/tokenize-message-text";
 
 /** @eslint-disable */
 
@@ -128,9 +131,39 @@ const hasLinks = (text: string): boolean => {
   return urlRegex.test(text);
 };
 
+const memberUserId = (member: any): string =>
+  String(
+    member?.user_id ??
+      member?.id ??
+      member?.userid ??
+      member?.profile?.user_id ??
+      ""
+  ).trim();
+
+const memberUsername = (member: any): string =>
+  String(member?.username ?? member?.profile?.username ?? "")
+    .trim()
+    .toLowerCase();
+
+/** System notices store a display name. The mention API needs the user id. */
+const resolveSystemMentionUserId = (
+  label: string,
+  members: unknown
+): string => {
+  const needle = label.trim().toLowerCase();
+  if (!needle || !Array.isArray(members)) return "";
+
+  const match = members.find((member) => memberUsername(member) === needle);
+  const id = match ? memberUserId(match) : "";
+  if (!id || id.toLowerCase() === needle) return "";
+  return id;
+};
+
 const MessageItem: React.FC<MessageItemProps> = ({ item }) => {
   const { state } = useContext(DataContext);
   const currentUser = state?.user;
+  const systemMentionMembers =
+    state?.mentionOrgMembers || state?.orgMembers || [];
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [image, setImage] = useState<any>(null);
@@ -225,11 +258,38 @@ const MessageItem: React.FC<MessageItemProps> = ({ item }) => {
     }
   }, [trimmedMessage]);
 
+  const renderPlainTextWithMentions = (text: string, id?: string) =>
+    React.Children.map(linkifyText(text, linkifyOptions), (child) => {
+      if (typeof child !== "string") return child;
+      return tokenizeMessageText(child).map(
+        ({ text: part, isEmail, isMention }, i) => {
+          if (isEmail) return part;
+          if (isMention && (part.startsWith("@") || part.startsWith("#"))) {
+            return (
+              <GlobalMention
+                key={`${part.slice(1)}-${i}`}
+                id={id ?? ""}
+                trigger={part.startsWith("@") ? "@" : "#"}
+                label={part.slice(1).trim()}
+                item={item}
+                currentUser={currentUser}
+              />
+            );
+          }
+          return part;
+        }
+      );
+    });
+
   const renderTextWithMentions = (node: any) => {
     if (!node || !node.props) return node;
 
     const props = node.props;
     const children = props.children;
+
+    if (typeof props.href === "string" && /^mailto:/i.test(props.href)) {
+      return node;
+    }
 
     if (
       (props["data-id"] || props["data-label"]) &&
@@ -257,17 +317,38 @@ const MessageItem: React.FC<MessageItemProps> = ({ item }) => {
     }
 
     if (typeof children === "string") {
-      const mentionRegex = /([@#][a-zA-Z0-9_.-]+(?:\s[a-zA-Z0-9_.-]+)*)/g;
+      if (item?.type !== "system") {
+        return renderPlainTextWithMentions(children, props["data-id"]);
+      }
+      const mentionRegex =
+        item?.type === "system"
+          ? /(@[a-zA-Z0-9_.-]+)/g
+          : /([@#][a-zA-Z0-9_.-]+(?:\s[a-zA-Z0-9_.-]+)*)/g;
       const parts = children.split(mentionRegex);
 
       return parts.map((part: any, i: number) => {
         if (typeof part === "string" && part.startsWith("@")) {
+          const label = part.slice(1).trim();
+          const mentionId =
+            props["data-id"] ||
+            (item?.type === "system"
+              ? resolveSystemMentionUserId(label, systemMentionMembers)
+              : "");
+
+          if (!mentionId) {
+            return item?.type === "system" ? (
+              <span key={`${label}-${i}`}>{label}</span>
+            ) : (
+              linkifyText(part, linkifyOptions)
+            );
+          }
+
           return (
             <GlobalMention
-              key={`${part.slice(1)}-${i}`}
-              id={props["data-id"]}
+              key={`${mentionId}-${i}`}
+              id={mentionId}
               trigger="@"
-              label={part.slice(1).trim()}
+              label={label}
               item={item}
               currentUser={currentUser}
             />
@@ -294,7 +375,9 @@ const MessageItem: React.FC<MessageItemProps> = ({ item }) => {
 
   return (
     <div>
-      <div className="w-full text-[#344054] text-[13px] lg:text-[15px] font-[400] break-words custom-message">
+      <div
+        className={`w-full text-[#344054] text-[13px] ${item?.type === "system" ? "" : "lg:text-[15px]"} font-[400] break-words custom-message`}
+      >
         <div
           style={{
             whiteSpace: "pre-wrap",
@@ -304,21 +387,29 @@ const MessageItem: React.FC<MessageItemProps> = ({ item }) => {
         >
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeRaw]}
+            rehypePlugins={[rehypeRaw, [rehypeSanitize, messageSanitizeSchema]]}
             components={{
               p: ({ children }) => {
                 return (
                   <p
                     style={{
                       margin: "0",
-                      lineHeight: "22px",
+                      lineHeight: item?.type === "system" ? "18px" : "22px",
                       color: item?.type === "system" ? "#6B7280" : "",
                       wordBreak: "break-word",
                     }}
                   >
                     {React.Children.map(children, (child) => {
+                      if (
+                        typeof child === "string" &&
+                        item?.type === "system"
+                      ) {
+                        return renderTextWithMentions({
+                          props: { children: child },
+                        });
+                      }
                       return typeof child === "string"
-                        ? linkifyText(child, linkifyOptions)
+                        ? renderPlainTextWithMentions(child)
                         : renderTextWithMentions(child);
                     })}
                   </p>
@@ -505,6 +596,39 @@ const useMediaActions = (mediaItem: MediaItem, item: any) => {
   };
 };
 
+// Shows the media actions on pointer hover or while keyboard focus is inside the
+// block. The two are tracked separately, so moving the pointer away cannot hide
+// an action that has keyboard focus. Focus moving into the "more" menu
+// (rendered in a portal) keeps them shown.
+const useRevealActions = () => {
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  return {
+    isHovered: hovered || focused,
+    revealProps: {
+      onMouseEnter: () => setHovered(true),
+      onMouseLeave: () => setHovered(false),
+      onFocus: () => setFocused(true),
+      onBlur: (e: React.FocusEvent<HTMLElement>) => {
+        const next = e.relatedTarget as HTMLElement | null;
+        if (
+          next &&
+          (e.currentTarget.contains(next) ||
+            next.closest("[data-radix-popper-content-wrapper]"))
+        ) {
+          return;
+        }
+        setFocused(false);
+      },
+    },
+  };
+};
+
+// A media block with nothing focusable inside (an image, or a video that
+// failed to load) is focusable itself, so keyboard users can reach its actions.
+const FOCUSABLE_MEDIA =
+  "rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2";
+
 const MediaActionMenu: React.FC<{
   onDownload: (e: React.MouseEvent) => void;
   onCopyLink: () => void;
@@ -512,15 +636,24 @@ const MediaActionMenu: React.FC<{
   onDelete: () => void;
 }> = ({ onDownload, onCopyLink, onShare, onDelete }) => (
   <>
-    <div className="hover:bg-gray-200 rounded-md p-1" onClick={onDownload}>
+    <Button
+      type="button"
+      size="icon"
+      variant="ghost"
+      aria-label="Download"
+      title="Download"
+      className="h-7 w-7 hover:bg-gray-200"
+      onClick={onDownload}
+    >
       <DownloadIcon size={18} />
-    </div>
+    </Button>
 
     <Popover>
       <PopoverTrigger asChild>
         <Button
           size="icon"
           variant="ghost"
+          aria-label="Media actions"
           className="h-7 w-7 text-muted-foreground hover:text-foreground"
         >
           <MoreVertical className="h-4 w-4" />
@@ -571,7 +704,7 @@ const ImageWithDownload: React.FC<{
   setImage: any;
   item: any;
 }> = ({ mediaItem, setIsOpen, setImage, item }) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const { isHovered, revealProps } = useRevealActions();
   const [imageError, setImageError] = useState(false);
   const {
     deleteMessage,
@@ -589,9 +722,11 @@ const ImageWithDownload: React.FC<{
 
   return (
     <div
-      className="relative min-w-0 w-fit max-w-full"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className={`relative min-w-0 w-fit max-w-full ${FOCUSABLE_MEDIA}`}
+      tabIndex={0}
+      role="group"
+      aria-label={`${mediaItem.file_name}: use Tab for media actions`}
+      {...revealProps}
     >
       <img
         src={mediaItem.file_link}
@@ -604,10 +739,9 @@ const ImageWithDownload: React.FC<{
         onError={() => setImageError(true)}
       />
       {isHovered && (
-        <a
-          href="#"
+        <div
           className="flex items-center gap-1 absolute top-2 right-2 bg-white py-1 px-2 rounded-lg z-10"
-          title="Download Image"
+          title="Media actions"
         >
           <MediaActionMenu
             onDownload={handleDownload}
@@ -615,7 +749,7 @@ const ImageWithDownload: React.FC<{
             onShare={() => setShareOpen(true)}
             onDelete={handleDelete}
           />
-        </a>
+        </div>
       )}
 
       <ShareFileModal
@@ -639,7 +773,7 @@ const FileWithDownload: React.FC<{
   mediaItem: MediaItem;
   item: any;
 }> = ({ mediaItem, item }) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const { isHovered, revealProps } = useRevealActions();
   const {
     deleteMessage,
     setDeleteMessage,
@@ -656,8 +790,7 @@ const FileWithDownload: React.FC<{
   return (
     <div
       className="relative border rounded-lg shadow-sm bg-white min-h-[200px] w-[200px] overflow-hidden"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      {...revealProps}
     >
       <a
         href={mediaItem.file_link}
@@ -734,7 +867,7 @@ const VideoWithDownload: React.FC<{
   mediaItem: MediaItem;
   item: any;
 }> = ({ mediaItem, item }) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const { isHovered, revealProps } = useRevealActions();
   const [nativeFullscreen, setNativeFullscreen] = useState(false);
   const [frame, setFrame] = useState<{ width: number; height: number } | null>(
     null
@@ -790,9 +923,14 @@ const VideoWithDownload: React.FC<{
 
   return (
     <div
-      className="relative min-w-0 w-fit max-w-full"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className={`relative min-w-0 w-fit max-w-full ${failed ? FOCUSABLE_MEDIA : ""}`}
+      // A failed video has no play button, so the block itself takes focus.
+      tabIndex={failed ? 0 : undefined}
+      role={failed ? "group" : undefined}
+      aria-label={
+        failed ? `${mediaItem.file_name}: use Tab for media actions` : undefined
+      }
+      {...revealProps}
     >
       <div
         className={

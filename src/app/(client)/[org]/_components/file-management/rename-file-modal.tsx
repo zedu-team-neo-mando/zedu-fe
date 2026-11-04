@@ -76,6 +76,7 @@ const RenameFileModal: React.FC<RenameFileModalProps> = ({
               )}
               <div className="place-self-end mt-5 ">
                 <button
+                  type="button"
                   className="px-4 py-2 text-sm bg-transparent border border-[#D0D5DD] text-[#344054] rounded-lg mr-2"
                   onClick={onClose}
                 >

@@ -103,7 +103,7 @@ export const Client = () => {
 
         <BillingHeader
           title={`Zedu ${orgData?.organisation_plan?.plan_details?.name || "Free"}`}
-          description="You are enjoying the full Zedu experience with ability to add as many users to your organisation."
+          description="You are enjoying the full Zedu experience with the ability to add as many users to your organisation."
           onComparePlan={
             canManageBilling
               ? () =>

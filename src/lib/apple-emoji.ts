@@ -30,10 +30,64 @@ export function lookupAppleEmoji(emoji: string) {
   );
 }
 
+export type AppleEmojiToken =
+  | { type: "text"; value: string }
+  | { type: "emoji"; emoji: string; src: string };
+
+const escapeHtmlAttribute = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
 function emojiImageTag(emoji: string, unified: string) {
   const src = appleEmojiImageUrl(unified);
   if (!src) return emoji;
-  return `<img class="apple-emoji-img" alt="${emoji}" src="${src}" draggable="false" />`;
+  return `<img class="apple-emoji-img" alt="${escapeHtmlAttribute(
+    emoji
+  )}" src="${escapeHtmlAttribute(src)}" draggable="false" />`;
+}
+
+/**
+ * Split text into literal text and Apple emoji image tokens.
+ *
+ * Unlike `replaceEmojiWithImages`, this never returns HTML. Callers render the
+ * tokens as React nodes, so message text is escaped by React rather than
+ * injected into the DOM.
+ */
+export function tokenizeAppleEmoji(value: string): AppleEmojiToken[] {
+  if (!value) return [];
+
+  const tokens: AppleEmojiToken[] = [];
+  let cursor = 0;
+
+  EMOJI_PATTERN.lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = EMOJI_PATTERN.exec(value)) !== null) {
+    const emoji = match[0];
+    if (!emoji) continue;
+
+    const unified = lookupAppleEmoji(emoji);
+    if (!unified) continue;
+
+    const src = appleEmojiImageUrl(unified);
+    if (!src) continue;
+
+    if (match.index > cursor) {
+      tokens.push({ type: "text", value: value.slice(cursor, match.index) });
+    }
+
+    tokens.push({ type: "emoji", emoji, src });
+    cursor = match.index + emoji.length;
+  }
+
+  if (cursor < value.length) {
+    tokens.push({ type: "text", value: value.slice(cursor) });
+  }
+
+  return tokens;
 }
 
 export function replaceEmojiWithImages(value: string) {

@@ -17,6 +17,7 @@ import { Country } from "country-state-city";
 import UpdateCustomSelect from "~/components/ui/update-custom-select";
 import { PutRequest } from "~/utils/new-request";
 import { getInitials } from "~/utils/utils";
+import { getCountryName } from "~/utils/country-name";
 import { showError, showSuccess } from "~/components/toast/sonner";
 
 const EditOrganisationDialog = ({ isOpen, onClose }: any) => {
@@ -26,11 +27,35 @@ const EditOrganisationDialog = ({ isOpen, onClose }: any) => {
   const [type, setType] = useState(user?.type || "");
   const [avatar, setAvatar] = useState(user?.logo_url || images?.user);
   const [image, setImage] = useState("");
+  const [isReadingImage, setIsReadingImage] = useState(false);
   const [buttonLoading, setButtonLoading] = useState(false);
   const [country, setCountry] = useState<any>(null);
   const [countries, setCountries] = useState<any>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const activeReaderRef = useRef<FileReader | null>(null);
+  const previewUrlRef = useRef<string | null>(null);
+
+  const stopReadingImage = () => {
+    const reader = activeReaderRef.current;
+    activeReaderRef.current = null;
+    if (reader?.readyState === FileReader.LOADING) reader.abort();
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    previewUrlRef.current = null;
+    setIsReadingImage(false);
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      stopReadingImage();
+      setAvatar(user?.logo_url);
+      setImage("");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+    return () => {
+      stopReadingImage();
+    };
+  }, [isOpen, user?.logo_url]);
 
   useEffect(() => {
     setName(user?.name);
@@ -38,8 +63,9 @@ const EditOrganisationDialog = ({ isOpen, onClose }: any) => {
     setAvatar(user?.logo_url);
 
     if (user?.country && countries.length > 0) {
+      const countryName = getCountryName(user.country).toLowerCase();
       const matchedCountry = countries?.find(
-        (c: any) => c.value.toLowerCase() === user.country.toLowerCase()
+        (c: any) => c.value.toLowerCase() === countryName
       );
       setCountry(matchedCountry || null);
     }
@@ -58,17 +84,18 @@ const EditOrganisationDialog = ({ isOpen, onClose }: any) => {
   const handleSubmit = async (event: React.FormEvent) => {
     const orgId = localStorage.getItem("orgId");
     event.preventDefault();
+    if (activeReaderRef.current || isReadingImage) return;
 
     setButtonLoading(true);
 
     let payload = {
       name,
-      description: "company description",
+      description: user?.description || "",
       email: user?.email,
       type,
-      location: "location",
+      location: user?.location || "",
       country: country?.value,
-      logo_url: typeof avatar === "string" ? image : "",
+      logo_url: avatar ? image || user?.logo_url || "" : "",
     };
 
     const res = await PutRequest(`/organisations/${orgId}`, payload);
@@ -88,19 +115,36 @@ const EditOrganisationDialog = ({ isOpen, onClose }: any) => {
     }
 
     if (file) {
+      stopReadingImage();
       const url = URL.createObjectURL(file);
+      previewUrlRef.current = url;
       setAvatar(url);
+      setImage("");
 
       const reader = new FileReader();
+      activeReaderRef.current = reader;
+      setIsReadingImage(true);
       reader.onloadend = () => {
-        setImage(reader.result as string);
+        if (activeReaderRef.current !== reader) return;
+        activeReaderRef.current = null;
+        if (typeof reader.result === "string") {
+          setImage(reader.result);
+        } else {
+          setAvatar(user?.logo_url || "");
+          if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+          previewUrlRef.current = null;
+          showError("Could not read the selected image");
+        }
+        setIsReadingImage(false);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleRemovePhoto = async () => {
+  const handleRemovePhoto = () => {
+    stopReadingImage();
     setAvatar("");
+    setImage("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -242,7 +286,7 @@ const EditOrganisationDialog = ({ isOpen, onClose }: any) => {
           <Button
             onClick={handleSubmit}
             className="d-flex items-center gap-2 bg-[#6868F7] text-white h-9 text-sm hover:bg-[#5151d3]"
-            disabled={buttonLoading}
+            disabled={buttonLoading || isReadingImage}
           >
             Save Changes {buttonLoading && <Loading />}
           </Button>

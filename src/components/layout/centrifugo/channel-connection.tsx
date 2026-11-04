@@ -15,8 +15,7 @@ import {
 export default function ChannelConnection() {
   const params = useParams();
   const id = params.id as string;
-  const { dispatch, state } = useContext(DataContext);
-  const { channelCallback } = state;
+  const { dispatch } = useContext(DataContext);
 
   // centrifugo connection for notification
   useEffect(() => {
@@ -32,7 +31,6 @@ export default function ChannelConnection() {
 
       const onPublication = (ctx: any) => {
         const result = ctx?.data;
-        // console.log("channel publishing", ctx);
 
         if (ctx?.data?.type === "typing") {
           dispatch({
@@ -46,7 +44,7 @@ export default function ChannelConnection() {
           return;
         }
 
-        if (ctx?.data?.type === "message") {
+        if (ctx?.data?.type === "message" || ctx?.data?.type === "system") {
           dispatch({
             type: ACTIONS.USER_TYPING,
             payload: {

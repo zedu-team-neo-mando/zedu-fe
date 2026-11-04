@@ -57,7 +57,7 @@ function MagicLink() {
       <main className="w-full min-h-screen flex flex-col  items-center ">
         <div className="flex items-center justify-between w-full py-6 max-w-7xl px-4 sm:px-6 lg:px-8">
           <Link href="/">
-            <Image src="/Zedu.png" alt="" width={86} height={31} />
+            <Image src="/Zedu.png" alt="Zedu home" width={86} height={31} />
           </Link>
           <div>
             Already have an account?{" "}
@@ -89,6 +89,7 @@ function MagicLink() {
                 </label>
                 <div className="w-full flex flex-col gap-[2px]">
                   <input
+                    id="email"
                     type="email"
                     value={email}
                     onChange={handleEmailChange}

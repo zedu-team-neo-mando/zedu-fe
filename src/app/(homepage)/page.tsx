@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ogImageUrl } from "~/lib/env-urls";
 import { FeatureSection } from "./_components/home/FeatureSection";
 import HeroSection from "./_components/home/Herosection";
 import { ArticlesSection } from "./_components/home/ArticlesSection";
@@ -19,6 +20,18 @@ export const metadata: Metadata = {
     description:
       "Built for modern learning: structured channels, AI-powered support, flexible education pricing, and tools that help educators run better cohorts.",
     url: "/",
+    // Next.js replaces the layout's openGraph object instead of merging it,
+    // so the share image must be repeated here or the homepage has none.
+    siteName: "Zedu",
+    type: "website",
+    images: [
+      {
+        url: ogImageUrl("og-image-5.png"),
+        width: 1200,
+        height: 630,
+        alt: "Zedu learning platform for educators and cohorts",
+      },
+    ],
   },
   alternates: {
     canonical: "/",

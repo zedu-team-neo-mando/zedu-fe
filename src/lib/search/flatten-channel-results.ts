@@ -23,7 +23,7 @@ export function flattenChannelSearchResults(
       if (!message?.message_id) continue;
       hits.push({
         message_id: message.message_id,
-        thread_id: message.thread_id,
+        thread_id: message.thread_id || group.thread?.id,
         message: message.message,
         timestamp: message.timestamp,
         user_name: user?.user_name || "Unknown",

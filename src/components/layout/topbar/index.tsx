@@ -8,6 +8,7 @@ import {
   ChevronDown,
   ChevronUp,
   Pin,
+  CircleHelp,
 } from "lucide-react";
 import { PinIcon } from "~/svgs/index";
 import { usePathname } from "next/navigation";
@@ -44,6 +45,11 @@ import {
 import { RequirePermission } from "~/components/rbac/RequirePermission";
 import { useRBAC } from "~/hooks/useRBAC";
 import { isOwnerOrAdministrator } from "~/utils/rbac";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 import NavigationHistory from "~/components/layout/topbar/navigation-history";
 
 const Topbar = () => {
@@ -144,6 +150,23 @@ const Topbar = () => {
       {/* Leftmost section: Workspace button */}
 
       <div className="flex items-center gap-3 lg:gap-6 relative">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="shrink-0 lg:hidden hover:bg-blue-300 hover:text-white focus-visible:ring-white focus-visible:ring-offset-blue-500"
+          aria-label={state?.openSidebar ? "Close sidebar" : "Open sidebar"}
+          aria-expanded={!!state?.openSidebar}
+          onClick={() =>
+            dispatch({
+              type: ACTIONS.OPEN_SIDEBAR,
+              payload: !state?.openSidebar,
+            })
+          }
+        >
+          {!state?.openSidebar ? <Menu /> : <XIcon />}
+        </Button>
+
         {orgloading ? (
           <div className="flex items-center gap-1 lg:w-4/10">
             <div className="flex items-center gap-2 animate-pulse">
@@ -415,7 +438,7 @@ const Topbar = () => {
                               item.name !== orgData?.name
                           ) && (
                             <span className="text-sm text-gray-400 px-3 flex items-center justify-center">
-                              You have no pinned organisations yet!!
+                              You have no pinned organization yet.
                             </span>
                           )}
                           {organisations.map((item: any, index: number) => {
@@ -487,27 +510,6 @@ const Topbar = () => {
             </Popover>
           </div>
         )}
-
-        <div
-          className="flex lg:hidden"
-          onClick={() =>
-            dispatch({
-              type: ACTIONS.OPEN_SIDEBAR,
-              payload: !state?.openSidebar,
-            })
-          }
-        >
-          {!state?.openSidebar ? (
-            <Menu />
-          ) : (
-            <XIcon
-              className="text-white cursor-pointer"
-              onClick={() =>
-                dispatch({ type: ACTIONS.OPEN_SIDEBAR, payload: false })
-              }
-            />
-          )}
-        </div>
       </div>
 
       {!pathname.includes(`/${orgSlug}/welcome`) && (
@@ -523,6 +525,48 @@ const Topbar = () => {
       <div className="flex h-full min-w-0 lg:w-auto items-center lg:py-1 mr-2 lg:mr-0 lg:gap-6">
         <PillWidget />
         <MiniWidget />
+        <Popover>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Help"
+                  className="ml-1 size-9 shrink-0 text-white hover:bg-blue-300 hover:text-white focus-visible:ring-white"
+                >
+                  <CircleHelp className="size-5" aria-hidden="true" />
+                </Button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Help</TooltipContent>
+          </Tooltip>
+          <PopoverContent align="end" sideOffset={8}>
+            <div className="flex flex-col gap-3">
+              <div>
+                <p className="font-semibold text-neutral-900">
+                  How can we help?
+                </p>
+                <p className="mt-1 text-sm text-neutral-600">
+                  Browse helpful resources or contact our support team.
+                </p>
+              </div>
+              <Link
+                href="/resources"
+                className="rounded-md px-3 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Browse resources
+              </Link>
+              <a
+                href="mailto:support@zedu.chat"
+                className="rounded-md px-3 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Contact support
+              </a>
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
     </div>
   );

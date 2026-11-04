@@ -1,6 +1,14 @@
-function readEnv(name: string): string {
-  return (process.env[name] ?? "").replace(/\/$/, "");
+function clean(value: string | undefined): string {
+  return (value ?? "").replace(/\/$/, "");
 }
+
+function readEnv(name: string): string {
+  return clean(process.env[name]);
+}
+
+// Next.js only inlines NEXT_PUBLIC_* values into browser code when they are
+// written out in full. readEnv(name) returns "" in client components, so
+// links rendered by client components must read process.env.NEXT_PUBLIC_* directly.
 
 export function siteUrl(path = ""): string {
   const base = readEnv("NEXT_PUBLIC_CLIENT_URL");
@@ -89,19 +97,19 @@ export function uiAvatarUrl(name: string): string {
 }
 
 export function instagramUrl(): string {
-  return readEnv("NEXT_PUBLIC_INSTAGRAM_URL");
+  return clean(process.env.NEXT_PUBLIC_INSTAGRAM_URL);
 }
 
 export function tiktokUrl(): string {
-  return readEnv("NEXT_PUBLIC_TIKTOK_URL");
+  return clean(process.env.NEXT_PUBLIC_TIKTOK_URL);
 }
 
 export function facebookUrl(): string {
-  return readEnv("NEXT_PUBLIC_FACEBOOK_URL");
+  return clean(process.env.NEXT_PUBLIC_FACEBOOK_URL);
 }
 
 export function xUrl(): string {
-  return readEnv("NEXT_PUBLIC_X_URL");
+  return clean(process.env.NEXT_PUBLIC_X_URL);
 }
 
 /** npm package root for emoji-datasource-apple (no trailing slash). */

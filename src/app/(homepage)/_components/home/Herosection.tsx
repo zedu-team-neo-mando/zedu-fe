@@ -1,12 +1,121 @@
+"use client";
+
 import Image from "next/image";
 import { Star } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowBtn, OutlineBtn } from "../ui/Button";
 
-const metrics = [
-  { text: "Learners supported", amount: "10,000+" },
-  { text: "Conversations powered by AI", amount: "15,000+" },
-  { text: "Educator satisfaction", amount: "98%" },
+interface Metric {
+  text: string;
+  /** The display value, e.g. "10,000+" or "98%" */
+  amount: string;
+  /** Numeric target to count up to */
+  target: number;
+  /** Suffix to append after the number, e.g. "+" or "%" */
+  suffix: string;
+  /** Whether the number should be formatted with commas */
+  useCommas: boolean;
+}
+
+const metrics: Metric[] = [
+  {
+    text: "Learners supported",
+    amount: "10,000+",
+    target: 10000,
+    suffix: "+",
+    useCommas: true,
+  },
+  {
+    text: "Conversations powered by AI",
+    amount: "15,000+",
+    target: 15000,
+    suffix: "+",
+    useCommas: true,
+  },
+  {
+    text: "Educator satisfaction",
+    amount: "98%",
+    target: 98,
+    suffix: "%",
+    useCommas: false,
+  },
 ];
+
+const DURATION_MS = 2000;
+
+function useCountUp(target: number, enabled: boolean) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    let startTime: number | null = null;
+    let raf: number;
+
+    const step = (timestamp: number) => {
+      if (startTime === null) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / DURATION_MS, 1);
+      // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(eased * target));
+      if (progress < 1) {
+        raf = requestAnimationFrame(step);
+      } else {
+        setCount(target);
+      }
+    };
+
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [target, enabled]);
+
+  return count;
+}
+
+function MetricCard({ metric }: { metric: Metric }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [hasTriggered, setHasTriggered] = useState(false);
+  const count = useCountUp(metric.target, hasTriggered);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHasTriggered(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const formatted = metric.useCommas
+    ? count.toLocaleString("en-US")
+    : count.toString();
+
+  return (
+    <div
+      ref={ref}
+      className="flex w-full max-w-[260px] flex-col items-center justify-center gap-1 px-1.5 py-1 sm:flex-col sm:gap-1 sm:px-4 sm:py-3"
+    >
+      <p
+        className="text-lg font-semibold text-neutral-900 sm:text-3xl"
+        aria-label={metric.amount}
+      >
+        {formatted}
+        {metric.suffix}
+      </p>
+      <p className="text-[10px] leading-tight text-neutral-500 sm:text-sm">
+        {metric.text}
+      </p>
+    </div>
+  );
+}
 
 const HeroSection = () => {
   return (
@@ -53,17 +162,7 @@ const HeroSection = () => {
       </div>
       <div className="grid w-full max-w-4xl grid-cols-3 place-items-center gap-1.5 sm:gap-6 md:gap-10">
         {metrics.map((metric, i) => (
-          <div
-            key={i}
-            className="flex w-full max-w-[260px] flex-col items-center justify-center gap-1 px-1.5 py-1 sm:flex-col sm:gap-1 sm:px-4 sm:py-3"
-          >
-            <p className="text-lg font-semibold text-neutral-900 sm:text-3xl">
-              {metric.amount}
-            </p>
-            <p className="text-[10px] leading-tight text-neutral-500 sm:text-sm">
-              {metric.text}
-            </p>
-          </div>
+          <MetricCard key={i} metric={metric} />
         ))}
       </div>{" "}
       <div className="w-full max-w-6xl overflow-hidden rounded-2xl">

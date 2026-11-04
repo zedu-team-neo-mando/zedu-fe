@@ -56,7 +56,6 @@ export default function StatusConnection() {
 
     const onPublication = (ctx: any) => {
       const data = ctx?.data;
-      // console.log("Received publication on org:", data);
 
       if (data?.notification_type === "profile_status_updated") {
         const targetUserId =

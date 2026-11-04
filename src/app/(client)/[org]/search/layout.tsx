@@ -11,7 +11,7 @@ interface LayoutProps {
 
 function Layout({ children }: LayoutProps) {
   const { state } = useContext(DataContext);
-  const [sidebarWidth, setSidebarWidth] = useState(350);
+  const [sidebarWidth, setSidebarWidth] = useState(270);
   const sidebarRef = useRef<HTMLDivElement | null>(null);
   const resizerRef = useRef<HTMLDivElement | null>(null);
 

@@ -66,7 +66,7 @@ export default function AddSkillDialog({ openChange, setOpenChange }: any) {
 
   return (
     <Dialog open={openChange} onOpenChange={setOpenChange}>
-      <DialogTrigger>
+      <DialogTrigger asChild>
         <Button className="flex items-center gap-2 bg-primary-500 text-white px-10">
           Add a skill
           <AddSkillsIcon />

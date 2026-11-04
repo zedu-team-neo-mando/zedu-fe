@@ -1,12 +1,26 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { siteUrl } from "~/lib/env-urls";
+import { ogImageUrl, siteUrl } from "~/lib/env-urls";
 
 export const metadata: Metadata = {
   title: "Contributors",
   description: "Meet the teams who built Zedu during the HNG 15 internship.",
   alternates: {
     canonical: siteUrl("/contributors"),
+  },
+  openGraph: {
+    title: "Zedu Contributors - The Teams Behind Zedu",
+    description:
+      "Meet the HNG 15 teams who set up, ran and improved Zedu. Browse every team and the work they shipped.",
+    url: siteUrl("/contributors"),
+    images: [ogImageUrl("og-image-5.png")],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Zedu Contributors - The Teams Behind Zedu",
+    description:
+      "Meet the HNG 15 teams who set up, ran and improved Zedu. Browse every team and the work they shipped.",
+    images: [ogImageUrl("og-image-5.png")],
   },
 };
 

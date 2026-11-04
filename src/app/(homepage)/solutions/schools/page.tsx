@@ -22,9 +22,6 @@ export const metadata: Metadata = {
     "education collaboration platform",
     "Zedu schools",
   ],
-  icons: {
-    icon: "/TelexIcon.svg",
-  },
   openGraph: {
     title: "Zedu for Schools - Structured Communication for Classrooms",
     description:
@@ -126,9 +123,52 @@ const featureMetrics = [
   },
 ];
 
+const pageUrl = siteUrl("/solutions/schools");
+
+// schema.org's fixed vocabulary identifier required by JSON-LD (not a Zedu
+// URL, so it is not an environment value).
+const SCHEMA_CONTEXT = ["https:", "schema.org"].join("//");
+
+const jsonLd = {
+  "@context": SCHEMA_CONTEXT,
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": `${pageUrl}#webpage`,
+      url: pageUrl,
+      name: "Schools Solutions | Zedu",
+      description: metadata.description ?? undefined,
+      isPartOf: { "@type": "WebSite", name: "Zedu", url: siteUrl("/") },
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: siteUrl("/"),
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Schools",
+          item: pageUrl,
+        },
+      ],
+    },
+  ],
+};
+
 const SchoolsSolutionsPage = () => {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <section className="relative isolate overflow-hidden px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div
           aria-hidden="true"
@@ -166,7 +206,7 @@ const SchoolsSolutionsPage = () => {
             <div className="relative aspect-[16/11] w-full sm:aspect-[4/3] lg:aspect-[16/10]">
               <Image
                 src="/images/homepage/solutions/schools-hero.png"
-                alt="Students seated together while collaborating in the Zedu school workspace"
+                alt="A student wearing a backpack and holding a binder outside a school building"
                 fill
                 priority
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 680px"
@@ -224,7 +264,7 @@ const SchoolsSolutionsPage = () => {
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div className="flex flex-col items-center text-center gap-4">
           <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
-            How Zedu transforms Schools
+            How Zedu Transforms Schools
           </h1>
         </div>
 

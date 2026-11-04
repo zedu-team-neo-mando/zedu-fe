@@ -22,16 +22,16 @@ export default function DirectoriesPage() {
         </h1>
         <div className="flex gap-8 text-[13px] font-medium text-gray-600 dark:text-zinc-400">
           <TabButton
-            active={activeTab === "people"}
-            onClick={() => setActiveTab("people")}
-            icon={<Users size={16} />}
-            label="People"
-          />
-          <TabButton
             active={activeTab === "channels"}
             onClick={() => setActiveTab("channels")}
             icon={<Hash size={16} />}
             label="Channels"
+          />
+          <TabButton
+            active={activeTab === "people"}
+            onClick={() => setActiveTab("people")}
+            icon={<Users size={16} />}
+            label="People"
           />
           {/* <TabButton
             active={activeTab === "user_groups"}

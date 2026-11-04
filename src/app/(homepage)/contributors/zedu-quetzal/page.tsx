@@ -7,9 +7,6 @@ export const metadata: Metadata = {
   title: "Team Quetzal Contributors",
   description:
     "Meet the members of Team Quetzal who helped build Zedu during HNG 15.",
-  icons: {
-    icon: "/TelexIcon.svg",
-  },
   alternates: {
     canonical: siteUrl("/contributors/zedu-quetzal"),
   },

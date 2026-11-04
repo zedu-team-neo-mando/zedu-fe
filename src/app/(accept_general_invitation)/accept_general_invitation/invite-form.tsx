@@ -151,7 +151,7 @@ const InviteForm = () => {
     <div className="w-full pb-20">
       <div className="flex w-full flex-col items-center justify-center rounded-md bg-[#faf8f6] py-10 text-center">
         <Link href="/">
-          <Image src="/Zedu.png" alt="" width={86} height={31} />
+          <Image src="/Zedu.png" alt="Zedu home" width={86} height={31} />
         </Link>
 
         {loading ? (
@@ -169,7 +169,7 @@ const InviteForm = () => {
             </h1>
 
             <p className="mt-2 text-base text-gray-700">
-              Zedu is where work happens for companies of all sizes.
+              Zedu brings learners and educators together in one workspace.
             </p>
 
             <div className="mt-6 flex items-center justify-center">

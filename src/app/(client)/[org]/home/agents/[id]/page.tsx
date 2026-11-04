@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Image, { StaticImageData } from "next/image";
 import {
   Bookmark,
+  ChevronDown,
   Forward,
   MessageCircleMore,
   MoreVertical,
@@ -15,6 +16,8 @@ import { Button } from "~/components/ui/button";
 import { PieChart, Pie, Cell, ResponsiveContainer, Label } from "recharts";
 import { BotMessages } from "../../../constants/messages";
 import { uiAvatarUrl } from "~/lib/env-urls";
+import { ScrollToLatestButton } from "~/components/ui/scroll-to-latest-button";
+import { cn } from "~/lib/utils";
 
 export interface User {
   id: string;
@@ -43,6 +46,8 @@ const AgentPage = () => {
   // const [showThreads, setShowThreads] = useState(false);
   // const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [handles, setHandles] = useState<{ [key: string]: string }>({});
   const [isEditing, setIsEditing] = useState(true);
@@ -61,9 +66,31 @@ const AgentPage = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handleScroll = () => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    // With normal scroll (not column-reverse), bottom is when scrollTop + clientHeight >= scrollHeight
+    const isAtBottom =
+      container.scrollTop + container.clientHeight >=
+      container.scrollHeight - 10;
+    setShowScrollButton(!isAtBottom);
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    container.addEventListener("scroll", handleScroll);
+    handleScroll(); // Initial check
+
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   const handleSendMessage = (text: string) => {
     if (!text.trim()) return; // Don't send empty messages
@@ -1080,7 +1107,10 @@ $result = $stmt->get_result();
         className={`flex flex-col flex-1 transition-[margin] duration-300 ease-in-out`}
       >
         <div className="flex-1 flex flex-col justify-end relative overflow-hidden">
-          <div className="overflow-y-auto pb-5 mb-[180px] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <div
+            ref={scrollContainerRef}
+            className="overflow-y-auto pb-5 mb-[180px] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          >
             {/* Empty intro section for users that are selected */}
             {/* Messages section */}
             <div className="flex flex-col">
@@ -1208,6 +1238,13 @@ $result = $stmt->get_result();
               <div ref={messagesEndRef} />
             </div>
           </div>
+
+          <ScrollToLatestButton
+            scrollContainerRef={scrollContainerRef}
+            isAtBottom={!showScrollButton}
+            scrollToTop={false}
+            className="bottom-[196px] right-6"
+          />
         </div>
       </div>
     </div>

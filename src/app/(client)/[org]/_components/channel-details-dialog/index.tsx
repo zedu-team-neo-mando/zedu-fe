@@ -11,17 +11,24 @@ import { X } from "lucide-react";
 interface ChannelDetailsDialogProps {
   children: React.ReactNode;
   className?: string;
+  // Accessible name for the trigger button, e.g. "1,909 members"
+  triggerLabel?: string;
 }
 
 const ChannelDetailsDialog: React.FC<ChannelDetailsDialogProps> = ({
   children,
   className,
+  triggerLabel,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => setIsOpen(open)}>
-      <DialogTrigger className={className} onClick={() => setIsOpen(true)}>
+      <DialogTrigger
+        aria-label={triggerLabel}
+        className={className}
+        onClick={() => setIsOpen(true)}
+      >
         {children}
       </DialogTrigger>
 

@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { DataContext } from "~/store/GlobalState";
 import InfiniteScroll from "react-infinite-scroll-component";
 import ReplyMessages from "../ChannelMessage/reply-message";
@@ -18,6 +18,7 @@ import {
   MESSAGE_HIGHLIGHT_DURATION_MS,
   removeMessageHighlightClasses,
 } from "~/utils/message-highlight";
+import { shouldFetchSearchReply } from "~/lib/search/navigate";
 
 const ReplyMessage = ({ fetchMoreData, hasMore }: any) => {
   const { state, dispatch } = useContext(DataContext);
@@ -28,9 +29,20 @@ const ReplyMessage = ({ fetchMoreData, hasMore }: any) => {
   const channelId = (thread?.channels_id || params.id) as string;
   const [popupId, setPopupId] = useState<any>(null);
   const replyMessageId = searchParams.get("message_id");
+  const urlThreadId = searchParams.get("thread_id");
+  const requestedReplyPageRef = useRef<string | null>(null);
+  const fetchMoreDataRef = useRef(fetchMoreData);
 
   useEffect(() => {
-    if (!replyMessageId || !replies?.length) return;
+    fetchMoreDataRef.current = fetchMoreData;
+  }, [fetchMoreData]);
+
+  useEffect(() => {
+    if (!replyMessageId) {
+      requestedReplyPageRef.current = null;
+      return;
+    }
+    if (!replies?.length) return;
 
     const highlightReply = () => {
       const el = document.getElementById(`reply-${replyMessageId}`);
@@ -44,12 +56,39 @@ const ReplyMessage = ({ fetchMoreData, hasMore }: any) => {
       return true;
     };
 
-    if (highlightReply()) return;
+    if (highlightReply()) {
+      requestedReplyPageRef.current = null;
+      return;
+    }
 
-    requestAnimationFrame(() => {
-      highlightReply();
+    const animationFrame = requestAnimationFrame(() => {
+      if (highlightReply()) {
+        requestedReplyPageRef.current = null;
+        return;
+      }
+
+      const currentThreadReplies = replies.filter(
+        (reply: { thread_id?: string }) =>
+          !reply.thread_id || reply.thread_id === thread?.thread_id
+      );
+
+      // The link points at a reply in one thread. Opening another thread must
+      // not page through that thread looking for it.
+      if (thread?.thread_id !== urlThreadId) return;
+
+      if (
+        shouldFetchSearchReply(replyMessageId, currentThreadReplies, hasMore)
+      ) {
+        const requestKey = `${replyMessageId}:${currentThreadReplies.length}`;
+        if (requestedReplyPageRef.current !== requestKey) {
+          requestedReplyPageRef.current = requestKey;
+          fetchMoreDataRef.current();
+        }
+      }
     });
-  }, [replyMessageId, replies]);
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, [replyMessageId, urlThreadId, replies, hasMore, thread?.thread_id]);
 
   // edit message
   const handleEditMessage = async (content: any) => {

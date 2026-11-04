@@ -10,6 +10,7 @@ import { ACTIONS } from "~/store/Actions";
 import { DataContext } from "~/store/GlobalState";
 import Loading from "~/components/ui/loading";
 import { RequirePermission } from "~/components/rbac/RequirePermission";
+import { showSuccess } from "~/components/toast/sonner";
 
 const CreateChannelDialog = () => {
   const [channelName, setChannelName] = useState("");
@@ -40,8 +41,12 @@ const CreateChannelDialog = () => {
       });
 
       const channelId = res?.data?.data?.channels_id;
-      localStorage.setItem("channelName", res?.data?.data?.name);
+      // Fall back to the submitted name when the response omits data.name.
+      const createdName = res?.data?.data?.name || channelName;
+      localStorage.setItem("channelName", createdName);
       localStorage.setItem("channelId", channelId);
+
+      showSuccess("Channel created", `#${createdName}`);
 
       setOpen(false);
       setChannelName("");

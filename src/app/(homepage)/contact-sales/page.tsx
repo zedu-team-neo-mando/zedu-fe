@@ -4,7 +4,7 @@ import { ContactSalesBenefits } from "./_components/ContactSalesBenefits";
 import { ContactSalesForm } from "./_components/ContactSalesForm";
 
 export const metadata: Metadata = {
-  title: "Contact Sales",
+  title: "Contact Sales for Schools and Cohorts",
   description:
     "Contact the Zedu sales team to find the right plan for your school, bootcamp, or learning organisation. Get tailored pricing, onboarding guidance, and enterprise support.",
   keywords: [
@@ -17,9 +17,6 @@ export const metadata: Metadata = {
     "AI education platform pricing",
     "Zedu onboarding",
   ],
-  icons: {
-    icon: "/TelexIcon.svg",
-  },
   openGraph: {
     title: "Contact Sales - Zedu for Schools and Cohorts",
     description:
@@ -54,13 +51,13 @@ export const metadata: Metadata = {
 
 const ContactPage = () => {
   return (
-    <section className="relative mt-12 flex px-4 py-16">
+    <section className="relative mt-0 flex px-4 py-16 lg:mt-6 lg:py-10">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[50%] bg-gradient-to-t from-blue-50/30 to-white"
+        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[80%] bg-gradient-to-t from-[#efecff]/80 via-[#f6f4ff]/40 to-transparent"
       />
 
-      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 lg:grid-cols-[0.95fr_1.15fr] lg:items-center lg:gap-10">
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-8 lg:max-w-[1168px] lg:grid-cols-[1fr_1.05fr] lg:items-stretch lg:gap-10 xl:gap-20">
         <ContactSalesBenefits />
         <ContactSalesForm />
       </div>

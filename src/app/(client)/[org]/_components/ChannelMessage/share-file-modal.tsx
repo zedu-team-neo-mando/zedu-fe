@@ -33,9 +33,18 @@ type Recipient = {
 interface ShareFileModalProps {
   open: boolean;
   onClose: () => void;
-  mediaItem: Media;
+  /** When provided, the modal shares this file. When omitted, it forwards the whole message in `item`. */
+  mediaItem?: Media;
   item: any;
 }
+
+const htmlToText = (html?: string) => {
+  if (!html) return "";
+  if (typeof window === "undefined") return html.replace(/<[^>]*>/g, " ");
+  return (
+    new DOMParser().parseFromString(html, "text/html").body.textContent ?? ""
+  ).trim();
+};
 
 const ShareFileModal = ({
   open,
@@ -48,6 +57,7 @@ const ShareFileModal = ({
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Recipient | null>(null);
   const [isForwarding, setIsForwarding] = useState(false);
+  const isMessageMode = !mediaItem;
 
   const recipients = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -111,8 +121,50 @@ const ShareFileModal = ({
   };
 
   const handleCopyLink = () => {
+    if (!mediaItem) return;
     navigator.clipboard.writeText(mediaItem.file_link);
     showInfo("Link copied to clipboard");
+  };
+
+  // Returns the DM channel id for a person, creating the DM if none exists yet.
+  const openDmChannel = async (userId?: string) => {
+    const orgId = localStorage.getItem("orgId") || "";
+    const res = await PostRequest(`/organisations/${orgId}/dms`, {
+      chat_type: "user",
+      participant_id: userId,
+    });
+
+    if (res?.status !== 200 && res?.status !== 201) {
+      throw new Error("Failed to open conversation");
+    }
+
+    return res?.data?.data?.channel_id as string;
+  };
+
+  const forwardMessage = async () => {
+    if (!selected) return;
+
+    const targetChannelId =
+      selected.type === "user"
+        ? await openDmChannel(selected.userId)
+        : selected.channelId;
+
+    const res = await PostRequest(
+      `/channels/${item?.channels_id}/thread/forward`,
+      {
+        thread_id: item?.thread_id,
+        forwarded_to_channel_id: targetChannelId,
+        // The backend stores the content it is sent, so send the original.
+        // Channel threads keep their text in `message`; DM items use `content`.
+        content: item?.content ?? item?.message ?? "",
+        media: item?.media ?? [],
+        mentions: item?.mentions ?? [],
+      }
+    );
+
+    if (res?.status !== 200 && res?.status !== 201) {
+      throw new Error("Failed to forward message");
+    }
   };
 
   const handleForward = async () => {
@@ -121,6 +173,13 @@ const ShareFileModal = ({
     setIsForwarding(true);
 
     try {
+      if (isMessageMode) {
+        await forwardMessage();
+        showSuccess("Message forwarded");
+        resetAndClose();
+        return;
+      }
+
       const threadId = uuidv7();
       const payload = {
         content: "<p></p>",
@@ -141,17 +200,7 @@ const ShareFileModal = ({
         let channelId = selected.channelId;
 
         if (selected.type === "user") {
-          const orgId = localStorage.getItem("orgId") || "";
-          const res = await PostRequest(`/organisations/${orgId}/dms`, {
-            chat_type: "user",
-            participant_id: selected.userId,
-          });
-
-          if (res?.status !== 200 && res?.status !== 201) {
-            throw new Error("Failed to open conversation");
-          }
-
-          channelId = res?.data?.data?.channel_id;
+          channelId = await openDmChannel(selected.userId);
         }
 
         const endpoint =
@@ -169,7 +218,9 @@ const ShareFileModal = ({
       showSuccess("File forwarded");
       resetAndClose();
     } catch {
-      showError("Could not forward file");
+      showError(
+        isMessageMode ? "Could not forward message" : "Could not forward file"
+      );
     } finally {
       setIsForwarding(false);
     }
@@ -188,7 +239,7 @@ const ShareFileModal = ({
       >
         <DialogHeader className="px-5 py-4 border-b">
           <DialogTitle className="text-base font-semibold">
-            Share this file
+            {isMessageMode ? "Forward this message" : "Share this file"}
           </DialogTitle>
         </DialogHeader>
 
@@ -264,21 +315,33 @@ const ShareFileModal = ({
                 ? moment(item.created_at).format("MMM D [at] h:mm A")
                 : ""}
             </p>
-            <p className="break-all text-sm font-medium">
-              {mediaItem.file_name}
+            <p
+              className={`break-all text-sm font-medium ${
+                isMessageMode ? "line-clamp-3" : ""
+              }`}
+            >
+              {isMessageMode
+                ? htmlToText(item?.content ?? item?.message) ||
+                  item?.media?.[0]?.file_name ||
+                  "Message"
+                : mediaItem.file_name}
             </p>
           </div>
         </div>
 
         <div className="flex items-center justify-between border-t px-5 py-4">
-          <button
-            type="button"
-            onClick={handleCopyLink}
-            className="flex items-center gap-1.5 text-sm text-[#5F5FE1] hover:underline"
-          >
-            <Link2 size={16} />
-            Copy Link
-          </button>
+          {isMessageMode ? (
+            <span />
+          ) : (
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="flex items-center gap-1.5 text-sm text-[#5F5FE1] hover:underline"
+            >
+              <Link2 size={16} />
+              Copy Link
+            </button>
+          )}
 
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={resetAndClose}>

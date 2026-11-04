@@ -4,6 +4,7 @@ import { ACTIONS } from "~/store/Actions";
 import { DataContext } from "~/store/GlobalState";
 import { GetRequest } from "~/utils/new-request";
 import { prefetchAvatars } from "~/utils/prefetch-avatars";
+import { hasMoreReplyPages } from "~/lib/search/navigate";
 
 const UseGroupReply = () => {
   const params = useParams();
@@ -24,13 +25,10 @@ const UseGroupReply = () => {
       if (res?.status === 200 || res?.status === 201) {
         const newThreads = Array.isArray(res.data?.data) ? res.data?.data : [];
 
-        // Get previous threads from state
-        const prevThreads = state?.threads || [];
-
         dispatch({
           type: ACTIONS.REPLIES,
           payload: {
-            newThreads: [...prevThreads, ...newThreads],
+            newThreads,
             newPage,
             parentReactions: state?.thread?.reactions,
           },
@@ -38,7 +36,7 @@ const UseGroupReply = () => {
 
         prefetchAvatars(newThreads);
 
-        setHasMore([...prevThreads, ...newThreads].length > 30);
+        setHasMore(hasMoreReplyPages(newThreads.length));
       }
       setLoading(false);
     } catch (error) {

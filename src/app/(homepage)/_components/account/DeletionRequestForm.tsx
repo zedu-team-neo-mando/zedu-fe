@@ -1,12 +1,22 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Mail, Send, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { PostRequest } from "~/utils/new-request";
-import { useRouter } from "next/navigation";
+
+// Reading storage can throw (for example when the browser blocks it).
+// Treat that as logged out instead of breaking the page.
+const hasSavedLogin = () => {
+  try {
+    return Boolean(localStorage.getItem("token"));
+  } catch {
+    return false;
+  }
+};
 
 const DeletionRequestForm = () => {
   const [loading, setLoading] = useState(false);
@@ -19,7 +29,22 @@ const DeletionRequestForm = () => {
     additional_info: "",
   });
 
-  const router = useRouter();
+  // null until the saved login has been read, so the notice does not flash
+  // for logged-in visitors.
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    setIsLoggedIn(hasSavedLogin());
+    // Logging in or out in another tab updates the notice in this one.
+    const onStorage = () => {
+      const loggedIn = hasSavedLogin();
+      setIsLoggedIn(loggedIn);
+      // Drop the "Please log in" error once the visitor has logged in.
+      if (loggedIn) setError("");
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -42,6 +67,16 @@ const DeletionRequestForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // The deletion endpoint needs a login. Without one the API answers 401 and
+    // the app redirects to the login page, losing what the visitor typed.
+    // Read it again now, in case the visitor logged in after the page loaded.
+    const loggedIn = hasSavedLogin();
+    setIsLoggedIn(loggedIn);
+    if (!loggedIn) {
+      setError("Please log in to submit a deletion request.");
+      return;
+    }
+
     if (!isFormValid) {
       setError("Please fill in all required fields with valid information");
       return;
@@ -51,8 +86,9 @@ const DeletionRequestForm = () => {
 
     const res = await PostRequest("/account/delete-account", formData);
     if (res.status === 200 || res.status === 201) {
+      // Stay on the page so the success card (and its "check your email"
+      // instructions) is shown, instead of redirecting home straight away.
       setSubmitted(true);
-      router.push("/");
       setFormData({
         fullname: "",
         email: "",
@@ -122,6 +158,22 @@ const DeletionRequestForm = () => {
           onSubmit={handleSubmit}
           className="bg-gray-50 rounded-2xl p-6 md:p-8 border border-gray-200"
         >
+          {isLoggedIn === false && (
+            <div className="mb-6 bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-900">
+                You need to be logged in to request account deletion.{" "}
+                <Link
+                  href="/auth/login?redirect=/account"
+                  className="font-semibold underline"
+                >
+                  Log in
+                </Link>{" "}
+                first, then come back to this form.
+              </p>
+            </div>
+          )}
+
           {error && (
             <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />

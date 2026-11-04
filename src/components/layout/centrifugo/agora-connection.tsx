@@ -63,7 +63,6 @@ export default function AgoraConnection() {
 
     const onPublication = async (ctx: any) => {
       const payload = ctx?.data;
-      // console.log("agora centrifugo publication received", payload);
       const currentParticipants = participantsRef.current || [];
       const currentChats = chatsRef.current || [];
 

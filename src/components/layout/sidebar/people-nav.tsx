@@ -1,7 +1,7 @@
 "use client";
 
 import { Search, X, Loader2, PlusIcon } from "lucide-react";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import InfiniteScroll from "react-infinite-scroll-component";
 
@@ -73,7 +73,7 @@ export default function PeopleNav({
     router.push(`/${orgSlug}/home/people/new-chat`);
   };
 
-  const searchData = (users as any[]) || [];
+  const searchData = useMemo(() => (users as any[]) || [], [users]);
 
   useEffect(() => {
     if (id2 && memberRefs.current[id2]) {
@@ -104,7 +104,7 @@ export default function PeopleNav({
 
         <div className="relative h-fit w-full px-3">
           <Input
-            type="search"
+            type="text"
             placeholder="Find a conversation"
             className="h-10 pl-8 pr-8 bg-[#4A4AAF] border-[#5F5FE1] text-white placeholder:text-white/80"
             onChange={(e) => setSearchInput(e.target.value)}

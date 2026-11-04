@@ -13,6 +13,7 @@ export type Team = {
   contributors: Contributor[];
 };
 
+// Contributor data used by the Sparrow team page.
 export const TEAM: Team = {
   name: "Zedu-Sparrow",
   contributors: [

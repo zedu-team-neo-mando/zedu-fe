@@ -123,7 +123,12 @@ const filterDmList = (dms: any[] | undefined, rawQuery: string) => {
     .map(({ dm }) => dm);
 };
 
-export default function DMNav({ resizerRef, sidebarWidth, sidebarRef }: any) {
+export default function DMNav({
+  resizerRef,
+  sidebarWidth,
+  sidebarRef,
+  fullPageOnMobile = false,
+}: any) {
   const { state, dispatch } = useContext(DataContext);
   const [searchInput, setSearchInput] = useState("");
   const router = useRouter();
@@ -210,9 +215,20 @@ export default function DMNav({ resizerRef, sidebarWidth, sidebarRef }: any) {
     <>
       <div
         ref={sidebarRef}
-        style={{ width: `${sidebarWidth}px` }}
-        className={`fixed top-[60px] lg:rounded-tl-[8px] lg:rounded-bl-[8px] bottom-[60px] left-0 lg:left-[85px] h-[100dvh] bg-blue-300 lg:translate-x-0  ${state?.openSidebar ? "translate-x-[85px]" : "-translate-x-full "}
-      pt-4 flex flex-col gap-4 sm:w-[350px] transition-transform duration-300 ease-in-out z-30`}
+        style={
+          fullPageOnMobile
+            ? ({
+                "--dm-sidebar-width": `${sidebarWidth}px`,
+              } as React.CSSProperties)
+            : { width: `${sidebarWidth}px` }
+        }
+        className={cn(
+          `fixed top-[60px] lg:rounded-tl-[8px] lg:rounded-bl-[8px] bottom-[60px] left-0 lg:left-[85px] h-[100dvh] bg-blue-300 lg:translate-x-0  ${state?.openSidebar ? "translate-x-[85px]" : "-translate-x-full "}
+      pt-4 flex flex-col gap-4 sm:w-[350px] transition-transform duration-300 ease-in-out z-30`,
+          // DMs index on mobile: the list is the page, not a hidden drawer.
+          fullPageOnMobile && "w-full sm:w-full lg:w-[var(--dm-sidebar-width)]",
+          fullPageOnMobile && !state?.openSidebar && "translate-x-0"
+        )}
       >
         <div className="flex items-center justify-between px-3">
           <div className="flex items-center gap-[5px] md:justify-between w-full">

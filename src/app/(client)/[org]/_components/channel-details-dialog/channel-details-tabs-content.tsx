@@ -33,6 +33,8 @@ export function AboutTabContainer({ setIsOpen }: any) {
   const id = params.id as string;
   const { state, dispatch } = useContext(DataContext);
   const { channelDetails } = state;
+  const { hasPermission } = useRBAC();
+  const canArchiveChannel = hasPermission("archive:channels");
 
   const handleLeave = async () => {
     setButtonLoading(true);
@@ -93,13 +95,15 @@ export function AboutTabContainer({ setIsOpen }: any) {
         </div>
       </div>
 
-      <div className="py-4 px-5 flex justify-between items-center">
-        <UnarchiveChannelDialog>
-          <Button className="flex items-center gap-2 text-[#D31103] font-bold p-0 h-fit">
-            Archive channel for everyone
-          </Button>
-        </UnarchiveChannelDialog>
-      </div>
+      {canArchiveChannel && (
+        <div className="py-4 px-5 flex justify-between items-center">
+          <UnarchiveChannelDialog>
+            <Button className="flex items-center gap-2 text-[#D31103] font-bold p-0 h-fit">
+              Archive channel for everyone
+            </Button>
+          </UnarchiveChannelDialog>
+        </div>
+      )}
 
       <div className="py-4 px-5 flex justify-between items-center">
         <Button

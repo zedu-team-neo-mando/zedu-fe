@@ -1,10 +1,11 @@
 "use client";
+import { isValidEmail } from "~/lib/utils";
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import { PostRequest } from "~/utils/request";
-import { useToast } from "~/components/ui/use-toast";
+import axios from "axios";
+import { showSuccess } from "~/components/toast/sonner";
 import {
   appStoreUrl,
   facebookUrl,
@@ -23,46 +24,32 @@ type FooterLink = {
 };
 
 const productLinks: FooterLink[] = [
-  {
-    id: 0,
-    label: "Buzz",
-    href: "/products/buzz",
-  },
-  {
-    id: 1,
-    label: "Channels",
-    href: "/products/channels",
-  },
-  {
-    id: 2,
-    label: "File Management",
-    href: "/products/file-management",
-  },
+  { id: 0, label: "Buzz", href: "/products/buzz" },
+  { id: 1, label: "Channels", href: "/products/channels" },
+  { id: 2, label: "File Management", href: "/products/file-management" },
 ];
 
 const solutionLinks: FooterLink[] = [
-  {
-    id: 0,
-    label: "Bootcamps",
-    href: "/solutions/bootcamps",
-  },
-  {
-    id: 1,
-    label: "Schools",
-    href: "/solutions/schools",
-  },
-  {
-    id: 2,
-    label: "Universities",
-    href: "/solutions/universities",
-  },
+  { id: 0, label: "Bootcamps", href: "/solutions/bootcamps" },
+  { id: 1, label: "Schools", href: "/solutions/schools" },
+  { id: 2, label: "Universities", href: "/solutions/universities" },
 ];
 
 const supportLinks: FooterLink[] = [
   {
     id: 0,
+    label: "About Us",
+    href: "/about",
+  },
+  {
+    id: 1,
     label: "Pricing",
     href: "/pricing",
+  },
+  {
+    id: 2,
+    label: "Download",
+    href: "/download",
   },
   {
     id: 3,
@@ -73,15 +60,16 @@ const supportLinks: FooterLink[] = [
 
 const resourcesLinks: FooterLink[] = [
   { id: 0, label: "Resource Library", href: "/resources" },
+  { id: 1, label: "Templates", href: "/templates" },
   { id: 2, label: "Privacy Policy", href: "/policy" },
   { id: 3, label: "Terms of Service", href: "/terms-of-service" },
 ];
 
 const footerSections = [
-  { title: "Products", links: productLinks, twoColumns: true },
-  { title: "Solutions", links: solutionLinks, twoColumns: true },
-  { title: "Zedu", links: supportLinks, twoColumns: false },
-  { title: "Resources", links: resourcesLinks, twoColumns: false },
+  { title: "Products", links: productLinks },
+  { title: "Solutions", links: solutionLinks },
+  { title: "Zedu", links: supportLinks },
+  { title: "Resources", links: resourcesLinks },
 ];
 
 const socialLinks = [
@@ -116,7 +104,7 @@ const appStoreLinks = [
     id: 0,
     href: appStoreUrl(),
     icon: "/images/app-download/app-store-badge-2.png",
-    label: "App store",
+    label: "App Store",
     rating: "4.9",
     starKey: "app",
   },
@@ -124,7 +112,7 @@ const appStoreLinks = [
     id: 1,
     href: playStoreUrl(),
     icon: "/images/app-download/google-play-badge-2.png",
-    label: "Play store",
+    label: "Play Store",
     rating: "4.7",
     starKey: "play",
   },
@@ -132,91 +120,173 @@ const appStoreLinks = [
 
 const plusJakartaSans = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
+// Isolated Axios client for public newsletter subscription.
+// Kept separate from the global HTTP client to avoid global interceptor side effects
+// (such as authentication-expiry redirects or token attachment) and global toast dismissals.
+const newsletterClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_BASE_URL,
+});
+
 const Footer = () => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
-  const { toast } = useToast();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setLoading(true);
-    const token = localStorage.getItem("token") || "";
 
-    if (!validateEmail(email)) {
+    if (loading) return;
+
+    setError("");
+
+    if (!isValidEmail(email)) {
       setError("Please enter a valid email address.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await newsletterClient.post("/newsletter", { email });
+
+      if (res.status === 200 || res.status === 201) {
+        setEmail("");
+        setError("");
+        showSuccess(
+          "You're subscribed!",
+          "Thanks for joining us. Stay tuned for the latest updates from Zedu."
+        );
+      }
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status;
+        const body = err.response?.data;
+        const isAlreadySubscribed = status === 409 || body?.status_code === 409;
+
+        if (isAlreadySubscribed) {
+          setError("This email is already subscribed to our newsletter.");
+        } else {
+          setError(
+            body?.message ||
+              err.message ||
+              "Something went wrong. Please try again."
+          );
+        }
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const req = await PostRequest("/newsletter", { email: email }, token);
-    setLoading(false);
-    if (req?.data?.status_code === 201) {
-      setEmail("");
-      setError("");
-      toast({
-        description: "Email sent successfully!",
-      });
-    } else {
-      setError(req?.data?.message);
-      return;
-    }
-  };
-
-  const validateEmail = (email: string) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(String(email).toLowerCase());
   };
 
   //
 
   return (
-    <footer className="flex flex-col bg-[#303073] text-[#fafafa] px-6 ">
-      <div className="mx-auto w-full max-w-[1300px] py-8  sm:py-12 ">
+    <footer className="flex flex-col bg-[#303073] text-[#fafafa] px-6">
+      <div className="mx-auto w-full max-w-[1300px] py-8 sm:py-12">
         <div className="flex flex-col gap-12 xl:flex-row xl:items-start xl:justify-between xl:gap-16">
           <div className="w-full max-w-[420px] space-y-8">
             <div className="flex items-center gap-3">
-              <Link href="/" className="[&>svg]:h-[39px] [&>svg]:w-[39px]">
+              <Link
+                href="/"
+                aria-label="Zedu home"
+                className="[&>svg]:h-[39px] [&>svg]:w-[39px]"
+              >
                 <ZeduRoundedWhiteLogo />
               </Link>
               <h3 className="text-2xl font-semibold leading-none text-white">
                 Get Zedu today
               </h3>
             </div>
+
             <form
               onSubmit={handleSubmit}
-              className="flex w-full flex-col gap-4"
+              className="flex w-full flex-col gap-3 text-slate-100 antialiased"
             >
-              <label className="font-medium text-white/95">
-                Sign up to our Newsletter
-              </label>
-              <div>
-                <div className="flex h-14 w-full items-center justify-between gap-2 rounded-xl bg-white p-1.5">
+              <div className="flex flex-col gap-1">
+                <label
+                  htmlFor="newsletter-email"
+                  className="text-base font-bold tracking-tight text-white"
+                >
+                  Sign up to our Newsletter
+                </label>
+                <p className="text-xs font-normal text-white/80 leading-relaxed">
+                  Fresh ideas, useful insights, delivered to your inbox.
+                </p>
+              </div>
+
+              <div className="flex h-12 w-full items-center justify-between gap-2 rounded-2xl bg-white p-1.5 shadow-md focus-within:ring-2 focus-within:ring-[#6042EC] focus-within:ring-offset-2 focus-within:ring-offset-[#303073]">
+                <div className="flex items-center gap-2.5 pl-3 flex-1 min-w-0">
+                  <svg
+                    className="h-5 w-5 text-gray-400 shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.75}
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
                   <input
+                    id="newsletter-email"
                     type="email"
                     name="newsletter"
-                    placeholder="johndoe@example.com"
+                    aria-invalid={!!error}
+                    aria-describedby={error ? "newsletter-error" : undefined}
+                    placeholder="Your email address"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={`${plusJakartaSans.className} h-full min-w-0 flex-1 bg-transparent p-2 text-sm text-black placeholder:text-[#a0a0a0] focus:outline-none sm:text-base`}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      // Clear a previous validation error as soon as the user
+                      // edits the field again, so a stale message never lingers
+                      // while they are correcting the address. React skips the
+                      // state update when the value is unchanged.
+                      if (error) setError("");
+                    }}
+                    className="h-full min-w-0 flex-1 bg-transparent border-none text-sm font-medium text-gray-900 placeholder:text-gray-400 placeholder:font-normal focus:outline-none"
                   />
-                  <button
-                    type="submit"
-                    className="relative flex h-full items-center justify-center rounded-[10px] bg-primary-500 px-4 py-2 text-sm font-medium leading-5 transition-all hover:bg-opacity-80"
-                  >
-                    <p className={loading ? "opacity-0" : ""}>Subscribe</p>
-                    {loading ? (
-                      <Loader2 className="animate-spin absolute" />
-                    ) : null}
-                  </button>
                 </div>
-                {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+                <button
+                  type="submit"
+                  aria-label="Subscribe to newsletter"
+                  disabled={loading}
+                  className="flex h-full items-center justify-center gap-1.5 px-4 text-xs font-semibold text-white bg-[#6042EC] hover:bg-[#7254FC] disabled:opacity-70 transition-all duration-200 rounded-xl shrink-0 shadow-sm"
+                >
+                  {loading ? (
+                    <Loader2
+                      className="h-4 w-4 animate-spin"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <>
+                      <span>Subscribe</span>
+                      <span className="text-sm font-semibold">→</span>
+                    </>
+                  )}
+                </button>
               </div>
+
+              {error && (
+                <p
+                  id="newsletter-error"
+                  className="text-xs font-medium text-red-300"
+                  role="alert"
+                >
+                  {error}
+                </p>
+              )}
+              <p className="text-[11px] font-normal text-white/70">
+                Unsubscribe anytime.
+              </p>
             </form>
 
             <div className="space-y-4">
               <p className="text-white/90">
-                Mobile App is available on Google PlayStore and AppStore
+                Mobile App is available on Google Play and the App Store
               </p>
               <div className="mt-5 flex flex-wrap items-start gap-8 text-white">
                 {appStoreLinks.map((store) => (
@@ -252,19 +322,13 @@ const Footer = () => {
             </div>
           </div>
 
-          <div className="grid w-full grid-cols-1 gap-12 sm:grid-cols-2 sm:gap-14 xl:grid-cols-4 xl:gap-16 lg:border-l lg:border-neutral-50/25 lg:pl-14">
+          <div className="grid w-full grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4 sm:gap-x-10 xl:gap-16 xl:border-l xl:border-neutral-50/25 xl:pl-14">
             {footerSections.map((section) => (
-              <div key={section.title} className="flex flex-col gap-8">
+              <div key={section.title} className="flex flex-col gap-5 sm:gap-8">
                 <h2 className="text-xl font-semibold text-white">
                   {section.title}
                 </h2>
-                <div
-                  className={`text-neutral-200 ${
-                    section.twoColumns
-                      ? "grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 xl:grid-cols-1"
-                      : "flex flex-col gap-5"
-                  }`}
-                >
+                <div className="flex flex-col gap-4 text-neutral-200 sm:gap-5">
                   {section.links.map((item) => (
                     <Link
                       key={item.id}
@@ -288,7 +352,7 @@ const Footer = () => {
               <ZeduWhiteLogo />
             </div>
             <div className="flex flex-col gap-1 text-white/95">
-              <span className="font-semibold leading-none tracking-[-0.02em] ">
+              <span className="font-semibold leading-none tracking-[-0.02em]">
                 © 2026 Zedu. All Rights Reserved
               </span>
               <Link
@@ -301,19 +365,30 @@ const Footer = () => {
           </div>
 
           <div className="flex items-center gap-6">
-            {socialLinks.map((item) => (
-              <Link
-                key={item.id}
-                href={item.href}
-                className="transition-all hover:underline"
-              >
-                <Image src={item.icon} width={24} height={24} alt={item.alt} />
-              </Link>
-            ))}
+            {socialLinks
+              .filter((item) => Boolean(item.href))
+              .map((item) => (
+                <a
+                  key={item.id}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={item.alt}
+                  className="inline-flex transition-all hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#303073]"
+                >
+                  <Image
+                    src={item.icon}
+                    width={24}
+                    height={24}
+                    alt={item.alt}
+                  />
+                </a>
+              ))}
           </div>
         </div>
       </div>
     </footer>
   );
 };
+
 export default Footer;

@@ -14,7 +14,7 @@ import { Button } from "~/components/ui/button";
 interface BillingCancellationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  // eslint-disable-next-line
+
   onCancel: (password: string, isAdminConfirmed: boolean) => void;
   isUnSubscribing: boolean;
 }
@@ -76,8 +76,8 @@ const BillingCancellationModal: React.FC<BillingCancellationModalProps> = ({
               <>
                 <p className="text-gray-700 text-sm leading-relaxed mb-8">
                   You are about to cancel your subscription to Zedu Starter.
-                  Please note that you will be moved to the Zedu Free Plan after
-                  your billing period expires on{" "}
+                  Please note that you will be moved to the Zedu Starter Plan
+                  after your billing period expires on{" "}
                   {new Date(
                     new Date().getFullYear(),
                     new Date().getMonth() + 1,

@@ -466,6 +466,8 @@ export default function InviteTable({
           <Button
             variant="outline"
             className="text-gray-700 h-fit p-1"
+            aria-label={`Delete invite for ${row.original.email}`}
+            title="Delete invite"
             onClick={() => {
               setIsOpenRestrictMemberModal(true);
               setSelectedMember(row.original);

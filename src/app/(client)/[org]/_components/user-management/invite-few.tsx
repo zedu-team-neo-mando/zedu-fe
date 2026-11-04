@@ -1,3 +1,4 @@
+import { isValidEmail } from "~/lib/utils";
 import React, { useEffect, useCallback } from "react";
 import { Input } from "~/components/ui/input";
 import {
@@ -26,17 +27,12 @@ const InviteFew = ({
   onUsersChange,
 }: {
   users: User[];
-  // eslint-disable-next-line
+
   setUsers: (users: User[]) => void;
   roles: Role[];
-  // eslint-disable-next-line
+
   onUsersChange: (users: InviteUser[]) => void;
 }) => {
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
   const addRow = () => {
     const newUser: User = {
       id: Date.now().toString(),
@@ -55,7 +51,7 @@ const InviteFew = ({
       if (user.id === id) {
         if (field === "email") {
           const emailError =
-            value && !validateEmail(value)
+            value && !isValidEmail(value)
               ? "Please enter a valid email address"
               : undefined;
           return { ...user, [field]: value, emailError };

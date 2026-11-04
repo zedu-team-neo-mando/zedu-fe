@@ -85,18 +85,6 @@ const InviteModal: React.FC<StorageOffloadModalProps> = ({
     }));
   };
 
-  const getInviteLinkStatus = async () => {
-    if (!orgId) return;
-    try {
-      const res = await GetRequest(`/invite/general/status/${orgId}`);
-      if (res?.status === 200 || res?.status === 201) {
-        setIsLinkEnabled(res?.data?.data?.status);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   const handleToggleInviteLink = async () => {
     if (!orgId) return;
     setToggleLoading(true);
@@ -108,7 +96,7 @@ const InviteModal: React.FC<StorageOffloadModalProps> = ({
       if (res?.status === 200 || res?.status === 201) {
         dispatch({
           type: ACTIONS.PROFILE_CALLBACK,
-          payload: state?.profileCallback,
+          payload: !state?.profileCallback,
         });
         setIsLinkEnabled(!isLinkEnabled);
         showSuccess(
@@ -168,10 +156,24 @@ const InviteModal: React.FC<StorageOffloadModalProps> = ({
       showSuccess(res?.data?.message);
 
       if (onInviteSuccess) {
-        const emails = inviteFewUsers.map((user) => user.email);
-        const roleName =
-          roles?.find((role) => role.id === roleId)?.name || "User";
-        const optimisticInvites = createOptimisticInvites(emails, roleName);
+        const optimisticInvites = inviteFewUsers.map((user) => {
+          const matchedRole = roles?.find(
+            (role) => role.id === user.role || role.name === user.role
+          );
+          const roleName = matchedRole?.name || user.role || "User";
+          return {
+            id: `temp-${Date.now()}-${Math.random()}`,
+            email: user.email,
+            username: "",
+            phone_number: "",
+            profile_url: "",
+            name: "",
+            role: roleName,
+            status: "invited" as const,
+            created_at: new Date().toISOString(),
+            entity_type: "user" as const,
+          };
+        });
         onInviteSuccess(optimisticInvites);
       }
 
@@ -212,8 +214,23 @@ const InviteModal: React.FC<StorageOffloadModalProps> = ({
     setRoles(orgRoles);
     const roleuser = orgRoles?.find((item: Role) => item?.name === "User");
     setRoleId(roleuser?.id);
-    if (isOpen) getInviteLinkStatus();
-  }, [orgId, isOpen]);
+    if (!isOpen) return;
+    // Show the cached status straight away so the toggle does not flash off,
+    // then confirm it with the server, since another admin may have changed it.
+    setIsLinkEnabled(orgData?.invite_link_status === "enabled");
+    if (!orgId) return;
+    let active = true;
+    GetRequest(`/invite/general/status/${orgId}`)
+      .then((res) => {
+        if (active && (res?.status === 200 || res?.status === 201)) {
+          setIsLinkEnabled(res?.data?.data?.status);
+        }
+      })
+      .catch((error) => console.error(error));
+    return () => {
+      active = false;
+    };
+  }, [orgId, isOpen, orgRoles, orgData?.invite_link_status]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

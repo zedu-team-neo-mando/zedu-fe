@@ -34,6 +34,8 @@ const ColleaguesSidebar = ({ user }: any) => {
         <h2 className="text-[#1D2939] text-lg font-bold">Profile</h2>
 
         <button
+          aria-label="Close profile"
+          title="Close profile"
           onClick={onClose}
           className="text-[#344054] p-1 border border-input rounded-[0.3125rem]"
         >
@@ -123,7 +125,10 @@ const ColleaguesSidebar = ({ user }: any) => {
                 <span className="text-sm text-[#6868F7]">{user?.phone}</span>
                 {/* <span className="text-sm text-[#667085]">whatsapp only</span> */}
               </div>
-              <CopyToClipboardWithTooltip textToCopy={user?.phone}>
+              <CopyToClipboardWithTooltip
+                textToCopy={user?.phone}
+                label="Copy phone number"
+              >
                 <CopyIcon />
               </CopyToClipboardWithTooltip>
             </div>
@@ -139,6 +144,7 @@ const ColleaguesSidebar = ({ user }: any) => {
               <CopyToClipboardWithTooltip
                 textToCopy={user?.email}
                 tooltipText="Copied!"
+                label="Copy email"
               >
                 <CopyIcon />
               </CopyToClipboardWithTooltip>

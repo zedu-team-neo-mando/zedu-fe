@@ -1,6 +1,7 @@
 import { PurpleVerifiedBadge } from "../svgs";
 import { ArrowRight } from "lucide-react";
 import { cn } from "~/lib/utils";
+import React from "react";
 
 type WhyCardProps = {
   title: string;
@@ -8,6 +9,7 @@ type WhyCardProps = {
   showBadge?: boolean;
   showArrow?: boolean;
   className?: string;
+  cta?: React.ReactNode;
 };
 
 export const WhyCard = ({
@@ -16,6 +18,7 @@ export const WhyCard = ({
   showBadge = true,
   showArrow = false,
   className = "",
+  cta,
 }: WhyCardProps) => {
   return (
     <div
@@ -29,6 +32,8 @@ export const WhyCard = ({
         {showBadge ? <PurpleVerifiedBadge /> : <div className="size-10" />}
       </h2>
       <p className="text-left   text-neutral-600">{desc}</p>
+
+      {cta}
 
       {showArrow && (
         <div className="py-2">

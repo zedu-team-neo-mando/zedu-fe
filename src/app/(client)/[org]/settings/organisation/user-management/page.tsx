@@ -9,6 +9,10 @@ import InviteTable from "../../../_components/user-management/invite-table";
 import { DataContext } from "~/store/GlobalState";
 import { GetRequest } from "~/utils/new-request";
 import { RequirePermission } from "~/components/rbac/RequirePermission";
+import {
+  buildOrganisationInvitesUrl,
+  buildOrganisationUsersUrl,
+} from "./search-urls";
 
 const Page = () => {
   const { state } = useContext(DataContext);
@@ -37,10 +41,12 @@ const Page = () => {
     if (!orgId) return;
     setIsMembersLoading(true);
 
-    let url = `/organisations/${orgId}/users?page=${membersPage}&limit=${limit}&search=${membersSearch}`;
-    if (membersRole) {
-      url += `&role=${membersRole}`;
-    }
+    const url = buildOrganisationUsersUrl(orgId, {
+      page: membersPage,
+      limit,
+      search: membersSearch,
+      role: membersRole || undefined,
+    });
 
     const response = await GetRequest(url);
     if (response?.status === 200 || response?.status === 201) {
@@ -56,10 +62,12 @@ const Page = () => {
     if (!orgId) return;
     setIsInvitesLoading(true);
 
-    let url = `/organisations/${orgId}/invites?page=${invitesPage}&limit=${limit}&search=${invitesSearch}`;
-    if (invitesRole) {
-      url += `&role=${invitesRole}`;
-    }
+    const url = buildOrganisationInvitesUrl(orgId, {
+      page: invitesPage,
+      limit,
+      search: invitesSearch,
+      role: invitesRole || undefined,
+    });
 
     const response = await GetRequest(url);
     if (response?.status === 200 || response?.status === 201) {
