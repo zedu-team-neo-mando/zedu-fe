@@ -7,7 +7,8 @@ import { searchMessages, searchUsers } from "~/lib/search/api";
 import { openSearchMessageResult } from "~/lib/search/navigate";
 import type { MessageSearchResult, UserSearchResult } from "~/lib/search/types";
 import { formatSearchTimestamp, stripHtmlAndDecode } from "~/lib/search/format";
-import { GetRequest, PostRequest } from "~/utils/new-request";
+import { GetRequest } from "~/utils/new-request";
+import { openDmWithUser } from "~/lib/dm/open-dm-with-user";
 import UserAvatar from "~/components/layout/user-avatar";
 import { DeactivationBadge } from "~/components/layout/deactivation-badge";
 
@@ -228,28 +229,23 @@ export const SearchInput = ({ name, orgId }: SearchInputProps) => {
 
   const openPersonResult = useCallback(
     async (person: UserSearchResult) => {
-      if (!resolvedOrgId) return;
-
       localStorage.setItem("channelName", person.username);
       saveRecentSearch(searchQuery);
 
-      const response = await PostRequest(
-        `/organisations/${resolvedOrgId}/dms`,
-        {
-          chat_type: "user",
-          participant_id: person.id,
-        }
-      );
+      const opened = await openDmWithUser({
+        user: person,
+        orgId: resolvedOrgId,
+        orgSlug,
+        router,
+        dispatch,
+      });
 
-      if (response?.status === 200 || response?.status === 201) {
-        router.push(
-          `/${orgSlug}/home/people/${response?.data?.data?.channel_id}/${response?.data?.data?.participant_id}/dm`
-        );
+      if (opened) {
         setIsOpen(false);
         setSearchQuery("");
       }
     },
-    [orgSlug, resolvedOrgId, router, saveRecentSearch, searchQuery]
+    [dispatch, orgSlug, resolvedOrgId, router, saveRecentSearch, searchQuery]
   );
 
   const handlePreviewSelect = useCallback(
