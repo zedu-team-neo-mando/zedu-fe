@@ -289,11 +289,11 @@ const PeopleMessage = ({ participant }: any) => {
 
         {!hasMore && (
           <div className="mt-auto px-5">
-            <div className="flex gap-2 items-center my-4">
-              <div className="relative">
+            <div className="flex items-center gap-3 py-2">
+              <div className="relative shrink-0">
                 <UserAvatar
                   item={participant}
-                  size="2xl"
+                  size="md"
                   alt="dm"
                   imageClassName="rounded-lg"
                   className="rounded-lg"
@@ -301,37 +301,45 @@ const PeopleMessage = ({ participant }: any) => {
 
                 {!isUserDeactivated(participant) && (
                   <div
-                    className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border border-white ${
+                    className={`absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border border-white ${
                       participant?.online ? "bg-[#00AD51]" : "bg-[#F97316]"
                     }`}
                   />
                 )}
               </div>
-              <h3 className="text-lg font-bold text-[#1D2939]">
-                {participant?.username}
-                {isPersonalDm ? " (you)" : ""}
-              </h3>
+
+              <div className="min-w-0 flex-1">
+                <h3
+                  className="truncate text-[15px] font-bold text-[#1D2939]"
+                  title={participant?.username}
+                >
+                  {participant?.username}
+                  {isPersonalDm ? " (you)" : ""}
+                </h3>
+                <p className="text-[13px] leading-snug text-[#344054]">
+                  {isPersonalDm ? (
+                    "Your personal space. Save messages, notes, links, and anything you want to come back to later."
+                  ) : (
+                    <>
+                      This conversation is just between you and{" "}
+                      <UsernameHover item={participant} />. Check out their
+                      profile to learn about them.
+                    </>
+                  )}
+                </p>
+              </div>
+
+              <Button
+                variant={"outline"}
+                size="sm"
+                className="shrink-0"
+                onClick={() => {
+                  dispatch({ type: ACTIONS.SHOW_PROFILE, payload: true });
+                }}
+              >
+                View Profile
+              </Button>
             </div>
-            <p className="text-[17px] text-[#344054] mb-2">
-              {isPersonalDm ? (
-                "Your personal space. Save messages, notes, links, and anything you want to come back to later."
-              ) : (
-                <>
-                  This conversation is just between you and{" "}
-                  <UsernameHover item={participant} />. Check out their profile
-                  to learn about them.
-                </>
-              )}
-            </p>
-            <Button
-              variant={"outline"}
-              className="h-10"
-              onClick={() => {
-                dispatch({ type: ACTIONS.SHOW_PROFILE, payload: true });
-              }}
-            >
-              View Profile
-            </Button>
           </div>
         )}
       </div>
