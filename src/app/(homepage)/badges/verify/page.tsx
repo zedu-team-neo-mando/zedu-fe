@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 };
 
 export default function BadgeVerifyDirectoryPage() {
-  const structuredData = {
+  const structuredData = JSON.stringify({
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: "Zedu Credential Verification Registry",
@@ -37,13 +37,14 @@ export default function BadgeVerifyDirectoryPage() {
       "Verify peer mentorship micro-credentials, solutions provided, and study circle contributions on Zedu.",
     url: siteUrl("/badges/verify"),
     operatingSystem: "Web, iOS, Android, macOS, Windows",
-  };
+  }).replace(/</g, "\\u003c");
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        // nosemgrep: typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml
+        dangerouslySetInnerHTML={{ __html: structuredData }}
       />
       <BadgeDirectoryView />
     </>

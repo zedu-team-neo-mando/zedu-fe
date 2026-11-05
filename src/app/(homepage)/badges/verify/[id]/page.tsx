@@ -62,7 +62,7 @@ export default async function BadgeVerificationPage({ params }: PageProps) {
   const credential = getCredentialById(id);
 
   const structuredData = credential
-    ? {
+    ? JSON.stringify({
         "@context": "https://schema.org",
         "@type": "EducationalOccupationalCredential",
         name: credential.title,
@@ -77,7 +77,7 @@ export default async function BadgeVerificationPage({ params }: PageProps) {
           name: credential.recipientName,
         },
         url: siteUrl(`/badges/verify/${credential.id}`),
-      }
+      }).replace(/</g, "\\u003c")
     : null;
 
   return (
@@ -85,7 +85,8 @@ export default async function BadgeVerificationPage({ params }: PageProps) {
       {structuredData && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+          // nosemgrep: typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml
+          dangerouslySetInnerHTML={{ __html: structuredData }}
         />
       )}
       <CredentialVerificationCard
