@@ -35,7 +35,8 @@
       "src/app/(client)/[org]/home/channels/[id]/settings/history/page.tsx",
       "src/app/(homepage)/solutions/study-groups/page.tsx",
       "src/app/(homepage)/solutions/study-groups/opengraph-image.tsx",
-      "src/app/(homepage)/solutions/study-groups/twitter-image.tsx"
+      "src/app/(homepage)/solutions/study-groups/twitter-image.tsx",
+      "src/app/(homepage)/templates/hackathon/page.tsx"
     ]
   },
   "reuse": {

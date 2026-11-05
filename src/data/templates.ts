@@ -24,6 +24,7 @@ const PRESET_DATA = [
   "university-college-class|UNIVERSITY / COLLEGE CLASS|Semester Class & TA Space|Universities|🎓|syllabus,lecture-notes,study-groups,ta-office-hours|Exam Study & FAQ Bot|Academic classroom setup connecting professors, TAs, and student study circles.",
   "data-science-ai-cohort|DATA SCIENCE & AI COHORT|Notebooks, Datasets & Models|Bootcamps|📊|datasets,python-sql-help,model-review|Python Debugger Agent|Data cohort architecture for dataset sharing, model reviews, and ML pipelines.",
   "executive-masterclass|EXECUTIVE / MASTERCLASS WORKSHOP|High-Impact Executive Workshop|Bootcamps|⚡|agenda,speaker-ama,networking|Workshop Summary Bot|High-engagement executive workshop layout with real-time AMA coordination.",
+  "hackathon-in-a-box|HACKATHON-IN-A-BOX|48-Hour Turnkey Hackathon Workspace|Fellowships|🚀|announcements,rules-and-schedule,submit-projects,find-team-ai,find-team-frontend,find-team-design,call-mentor|Mentor Dispatch & Whiteboard Bot|Turnkey hackathon workspace with automated team matchmaking, /call-mentor dispatch, and private team whiteboards.",
 ];
 
 export const TEMPLATES: TemplatePreset[] = PRESET_DATA.map((r) => {
@@ -48,6 +49,10 @@ export const TEMPLATES: TemplatePreset[] = PRESET_DATA.map((r) => {
  */
 export function getTemplateBySlug(slug: string): TemplatePreset | undefined {
   if (!slug) return undefined;
+  if (slug === "hackathon")
+    return TEMPLATES.find((t) => t.slug === "hackathon-in-a-box");
+  if (slug === "hackathon")
+    return TEMPLATES.find((t) => t.slug === "hackathon-in-a-box");
   return TEMPLATES.find((t) => t.slug === slug);
 }
 
