@@ -82,9 +82,12 @@ const BilllingAICreditBalance = ({
     };
   }, []);
 
+  // credit_balance from the API is already net of usage, so the remaining
+  // balance plus today's usage is the balance the org started the day with.
+  const startOfDayBalance = currentTotalCredit + currentCreditUsed;
   const creditPercentage =
-    currentTotalCredit > 0
-      ? Math.min((currentCreditUsed / currentTotalCredit) * 100, 100)
+    startOfDayBalance > 0
+      ? Math.min((currentCreditUsed / startOfDayBalance) * 100, 100)
       : 0;
 
   return (
@@ -121,14 +124,12 @@ const BilllingAICreditBalance = ({
             <div className="flex items-center gap-2 text-[#475467]">
               <p
                 className={`font-medium text-2xl ${
-                  currentTotalCredit - currentCreditUsed < 0
-                    ? "text-red-500"
-                    : ""
+                  currentTotalCredit < 0 ? "text-red-500" : ""
                 }`}
               >
                 {" "}
                 {new Intl.NumberFormat("en-US").format(
-                  Math.max(currentTotalCredit - currentCreditUsed, 0)
+                  Math.max(currentTotalCredit, 0)
                 )}
               </p>
               <span className="text-sm">AI Credits</span>
