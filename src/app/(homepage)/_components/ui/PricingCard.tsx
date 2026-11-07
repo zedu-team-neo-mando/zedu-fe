@@ -2,7 +2,6 @@
 
 import { ArrowBtn, OutlineBtn } from "./Button";
 import { cn } from "~/lib/utils";
-import { useRouter } from "next/navigation";
 type PricingFeature = {
   text: string;
   enabled: boolean;
@@ -54,7 +53,6 @@ export const PricingCard = ({
   badgeText,
 }: PricingCardProps) => {
   const isPopular = variant === "popular";
-  const router = useRouter();
 
   return (
     <article
@@ -94,13 +92,7 @@ export const PricingCard = ({
           hideArrow
         />
       ) : (
-        <OutlineBtn
-          text={ctaText}
-          className="w-full"
-          onClick={() => {
-            if (ctaHref) router.push(ctaHref);
-          }}
-        />
+        <OutlineBtn text={ctaText} className="w-full" href={ctaHref} />
       )}
 
       <div className="flex flex-1 flex-col gap-2 text-left">
