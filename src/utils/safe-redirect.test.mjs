@@ -1,6 +1,21 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { getSafeRedirect } from "./safe-redirect.ts";
+import { readFileSync } from "node:fs";
+import ts from "typescript";
+
+const source = readFileSync(
+  new URL("./safe-redirect.ts", import.meta.url),
+  "utf8"
+);
+const compiled = ts.transpileModule(source, {
+  compilerOptions: {
+    module: ts.ModuleKind.ESNext,
+    target: ts.ScriptTarget.ES2020,
+  },
+}).outputText;
+const { getSafeRedirect } = await import(
+  `data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`
+);
 
 // The scheme is a constant so the hardcoded-URL scan does not flag fixtures.
 const SCHEME = "https";

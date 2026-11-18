@@ -83,8 +83,6 @@ const PeopleHeader = ({ user }: { user: any }) => {
     }
   };
 
-  if (!user) return null;
-
   const navigation = (
     <nav className="flex items-center justify-between p-5 border-b border-[#E6EAEF]">
       <div

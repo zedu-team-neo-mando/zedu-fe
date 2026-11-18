@@ -26,6 +26,7 @@ export const DataProvider = ({ children }: DataProviderProps) => {
     thread: null,
 
     channelDetails: null,
+    channelNavContext: null,
     channelName: "",
     dmDetails: null,
 
@@ -163,7 +164,7 @@ export const DataProvider = ({ children }: DataProviderProps) => {
     homeDmsCallback: false,
     deleteCallback: false,
     dmRenderCallback: false,
-    channelReady: true,
+    channelReady: false,
     conversationSearchOpen: false,
   };
 

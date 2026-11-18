@@ -30,13 +30,6 @@ import ConversationSearchSidebar, {
 } from "~/app/(client)/[org]/_components/conversation-search/conversation-search-sidebar";
 import { loadOrganisationThreadsPage } from "~/utils/org-threads";
 
-// Global `participant` is whoever was opened last, so only trust it when it is
-// the person this DM is with.
-const isParticipantOf = (person: any, participantId: string) =>
-  Boolean(person) &&
-  String(person?.user_id ?? person?.id ?? person?.participant_id) ===
-    String(participantId);
-
 const DmPage = () => {
   const { state, dispatch } = useContext(DataContext);
   const { orgId, participant: previewParticipant, user } = state;
@@ -49,14 +42,14 @@ const DmPage = () => {
   const id = params.id as string;
   const id2 = params.id2 as string;
   const { fetchMoreData, hasMore } = UsePeopleReply();
-  const activeParticipant = isParticipantOf(previewParticipant, id2)
-    ? previewParticipant
-    : participant;
+  const activeParticipant = previewParticipant || participant;
   const refreshRequestId = useRef(0);
   const unseenThreadCountRevisionRef = useRef(
     state?.unseenThreadCountRevision ?? 0
   );
   unseenThreadCountRevisionRef.current = state?.unseenThreadCountRevision ?? 0;
+
+  console.log(previewParticipant, participant);
 
   const refreshUnseenThreadCount = useCallback(async () => {
     const currentOrgId = state?.orgId || localStorage.getItem("orgId") || "";
@@ -79,9 +72,8 @@ const DmPage = () => {
 
   // get the participant infor
   useEffect(() => {
-    setParticipant(
-      isParticipantOf(previewParticipant, id2) ? previewParticipant : null
-    );
+    setParticipant(previewParticipant);
+
     const getUser = async () => {
       const res = await GetRequest(
         `/organisations/${orgId}/dms/participants/${id}`

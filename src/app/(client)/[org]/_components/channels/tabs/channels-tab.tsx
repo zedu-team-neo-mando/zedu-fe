@@ -164,6 +164,13 @@ export default function ChannelsTab() {
     localStorage.setItem("channelId", item?.channels_id);
     localStorage.setItem("channelName", item?.name);
     dispatch({ type: ACTIONS.CHANNEL_NAME, payload: item?.name || "" });
+    dispatch({
+      type: ACTIONS.CHANNEL_NAV_CONTEXT,
+      payload: {
+        channels_id: item?.channels_id,
+        is_restricted: Boolean(item?.is_restricted ?? item?.restricted),
+      },
+    });
     // Keep the unread count of the channel being opened for the unread divider
     dispatch({
       type: ACTIONS.CHANNEL_UNREAD_COUNT,

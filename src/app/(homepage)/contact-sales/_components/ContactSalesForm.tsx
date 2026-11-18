@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { campaignPayload } from "~/lib/campaign-attribution";
 import { Loader2, Mail } from "lucide-react";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
@@ -125,7 +124,6 @@ export const ContactSalesForm = ({
 
     const normalizedPhone = getPhoneDigits(formData.phone);
     const contactData = {
-      ...campaignPayload(),
       name: formData.name.trim(),
       email: formData.email.trim(),
       phone_number: normalizedPhone,

@@ -80,16 +80,12 @@ const UseChannel = () => {
     };
     requestRef.current = request;
 
-    // Do not show the previous conversation while the next one is loading.
-    if (channelChanged) {
-      dispatch({
-        type: ACTIONS.MESSAGES,
-        payload: { newThreads: [], newPage: 1 },
-      });
-    }
-
+    // ChannelCard already stored preview_thread in messages. Leave that list
+    // on screen and replace it when this channel's threads return.
     if (id && token) {
-      if (channelChanged) setLoading(true);
+      const isInitialLoad =
+        !Array.isArray(state?.messages) || state.messages.length === 0;
+      if (channelChanged && isInitialLoad) setLoading(true);
       setHasMore(true);
       void fetchThreads(request, 1);
     } else {
