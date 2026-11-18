@@ -45,7 +45,6 @@ describe("organisation deletion confirmation", () => {
         win.localStorage.setItem("token", "cypress-test-token");
         win.localStorage.setItem("orgId", orgId);
         win.localStorage.setItem("orgSlug", "test-org");
-        win.localStorage.setItem("zedu:campaign-consent:v1", "denied");
       },
     });
     cy.contains("button", "Delete this organisation", {

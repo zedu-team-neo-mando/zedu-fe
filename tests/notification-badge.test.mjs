@@ -1,24 +1,43 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+import ts from "typescript";
+
+const compile = (source) =>
+  ts.transpileModule(source, {
+    compilerOptions: {
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.ES2020,
+    },
+  }).outputText;
+
+const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const loadTs = async (relativePath) => {
+  const source = readFileSync(join(root, relativePath), "utf8");
+  return import(
+    `data:text/javascript;base64,${Buffer.from(compile(source)).toString("base64")}`
+  );
+};
+
+const {
   shouldIncrementNotificationBadge,
   registerNotificationBadge,
   clearNotificationBadgeRegistry,
   isNotificationsRoute,
   isHomeRoute,
   getNotificationBadgeKey,
-} from "../src/lib/notifications/notification-badge.ts";
-import {
+} = await loadTs("src/lib/notifications/notification-badge.ts");
+
+const {
   isNotificationRead,
   isNotificationUnread,
   markNotificationAsRead,
-  getReadNotificationIds,
-  saveReadNotificationIds,
-  getStorageKey,
   getSeenAt,
   markNotificationsSeen,
   fetchAndSyncUnreadBadge,
-} from "../src/lib/notifications/notification-store.ts";
+} = await loadTs("src/lib/notifications/notification-store.ts");
 
 test("isNotificationsRoute correctly identifies notification paths", () => {
   assert.equal(isNotificationsRoute("/my-org/notifications"), true);
@@ -101,6 +120,18 @@ test("registerNotificationBadge deduplicates repeated events", () => {
 
   clearNotificationBadgeRegistry();
   assert.equal(registerNotificationBadge(payload), true);
+});
+
+test("getNotificationBadgeKey builds a stable key from payload fields", () => {
+  assert.equal(
+    getNotificationBadgeKey({
+      notification_type: "new_message",
+      channel_id: "chan-1",
+      message_id: "msg-100",
+      sender_id: "user-5",
+    }),
+    "new_message:chan-1:msg-100:user-5"
+  );
 });
 
 test("unread tracking store correctly identifies and marks read notifications", () => {

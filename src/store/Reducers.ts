@@ -36,7 +36,7 @@ const applyTyping = (
 
 const toPreviewThreadItem = (message: any) => ({
   thread_id: message.thread_id,
-  channels_id: message.channel_id,
+  channels_id: message.channel_id ?? message.channels_id,
   username: message.username,
   status: "success",
   created_at: message.created_at,
@@ -261,6 +261,11 @@ const reducers = (state: any, action: any) => {
       return {
         ...state,
         channelDetails: payload,
+      };
+    case ACTIONS.CHANNEL_NAV_CONTEXT:
+      return {
+        ...state,
+        channelNavContext: payload,
       };
     case ACTIONS.UPDATE_CHANNEL_STAR: {
       const { channelId, isStarred } = payload || {};
@@ -1089,7 +1094,7 @@ const reducers = (state: any, action: any) => {
       };
     case ACTIONS.PREPEND_CHANNEL_PREVIEW: {
       const message = action.payload;
-      const channelId = message?.channel_id;
+      const channelId = message?.channel_id ?? message?.channels_id;
       if (!channelId || !message?.thread_id) return state;
 
       return {

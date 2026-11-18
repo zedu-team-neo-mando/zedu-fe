@@ -60,8 +60,19 @@ const UseGetSingleChannel = ({ onError }: Props = {}) => {
       fetchChannelById();
       return () => {
         ignore = true;
+        dispatch({
+          type: ACTIONS.CHANNEL_READY,
+          payload: false,
+        });
       };
     }
+
+    return () => {
+      dispatch({
+        type: ACTIONS.CHANNEL_READY,
+        payload: false,
+      });
+    };
   }, [
     dispatch,
     id,

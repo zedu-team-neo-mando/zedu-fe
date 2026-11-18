@@ -23,7 +23,6 @@ import { ACTIONS } from "~/store/Actions";
 import { useIsSmUp } from "~/hooks/use-media-query";
 import { cn } from "~/lib/utils";
 import RestrictedChannel from "../../../_components/restricted-channel";
-import { ComposerSkeleton } from "../../../_components/ChannelMessage/channel-loading-skeleton";
 import ErrorState, {
   ErrorStateVariant,
   errorVariantFromStatus,
@@ -32,6 +31,7 @@ import ConversationSearchSidebar, {
   CONVERSATION_SEARCH_PANEL_TRANSITION,
   getConversationSearchSidebarWidth,
 } from "../../../_components/conversation-search/conversation-search-sidebar";
+import { dispatchPrependChannelPreview } from "~/utils/prepend-channel-preview";
 
 const CHANNEL_ERROR_COPY: Partial<
   Record<ErrorStateVariant, { title: string; description: string }>
@@ -61,7 +61,6 @@ const ChannelsPage = () => {
 
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
-  const [render, setRender] = useState(true);
   const [channelError, setChannelError] = useState<ErrorStateVariant | null>(
     null
   );
@@ -76,12 +75,6 @@ const ChannelsPage = () => {
     },
     []
   );
-
-  useEffect(() => {
-    if (!state?.channelReady) {
-      setRender(false);
-    }
-  }, [state?.channelReady]);
 
   useEffect(() => {
     if (!buzzSidebar && isChatOpen) {
@@ -100,7 +93,6 @@ const ChannelsPage = () => {
     return () => window.removeEventListener("resize", updateDesktopState);
   }, []);
 
-  // send messages
   const handleSendMessage = async (
     id: string,
     uuid: string,
@@ -109,7 +101,6 @@ const ChannelsPage = () => {
     mentions: any = state?.mentions,
     isRetry = false
   ) => {
-    // send client side update
     const optimisticMessage = {
       channels_id: id,
       thread_id: uuid,
@@ -130,6 +121,16 @@ const ChannelsPage = () => {
         type: ACTIONS.MESSAGES,
         payload: { newMessage: optimisticMessage },
       });
+      dispatchPrependChannelPreview(dispatch, {
+        channelId: id,
+        threadId: uuid,
+        message: content,
+        user,
+        media: medias,
+        channelName: state?.channelName || state?.channelDetails?.name,
+        channelType: state?.channelDetails?.is_private ? "private" : "public",
+        createdAt: optimisticMessage.created_at,
+      });
     }
 
     const payload = {
@@ -140,11 +141,9 @@ const ChannelsPage = () => {
     };
 
     const res = await PostRequest(`/threads/${id}`, payload);
-    // Tells the message box whether to keep the typed text as a draft.
     return res?.status === 200 || res?.status === 201;
   };
 
-  // reply messages
   const handleReplyMessage = async (
     id: string,
     uuid: string,
@@ -189,9 +188,6 @@ const ChannelsPage = () => {
     return res?.status === 200 || res?.status === 201;
   };
 
-  if (state?.channelloading) return null;
-
-  // Calculate combined width of open side panels
   let totalSidePanelWidth = 0;
 
   const buzzRegionWidth = shouldShowBuzzSidePanel
@@ -212,9 +208,16 @@ const ChannelsPage = () => {
     isSmUp
   );
 
-  const channelReady =
-    String(state?.channelDetails?.channels_id || "") ===
-    String(channelId || "");
+  const channelFetchComplete = !state?.channelReady;
+  const channelDetails = state?.channelDetails || null;
+
+  const showJoinChannel =
+    channelFetchComplete && channelDetails?.access === false;
+  const showArchivedChannel =
+    channelFetchComplete && Boolean(channelDetails?.archived);
+  const showRestrictedChannel = Boolean(
+    state?.channelNavContext?.is_restricted
+  );
 
   if (channelError) {
     return (
@@ -239,7 +242,6 @@ const ChannelsPage = () => {
       <ChannelConnection />
       <ChannelAgoraConnection />
 
-      {/* MAIN CONTENT */}
       <div
         className={cn(
           "relative flex flex-col flex-1 transition-[margin]",
@@ -252,27 +254,22 @@ const ChannelsPage = () => {
         <ChannelsMessage />
 
         <div className="absolute bottom-0 left-0 right-[17px]">
-          {/* Until this channel's details load we don't know whether the user
-              may post, so never show an editable composer before then. */}
-          {!channelReady ? (
-            <ComposerSkeleton />
-          ) : !render && state?.channelDetails?.access === false ? (
+          {showJoinChannel ? (
             <JoinChannel />
-          ) : state?.channelDetails?.archived ? (
+          ) : showArchivedChannel ? (
             <ArchivedChannel />
-          ) : state?.channelDetails?.is_restricted ? (
+          ) : showRestrictedChannel ? (
             <RestrictedChannel />
           ) : (
             <MessageBox
               subscription={state?.channelSubscription}
               sendMessage={handleSendMessage}
-              channelLoading={render}
+              channelLoading={false}
             />
           )}
         </div>
       </div>
 
-      {/* Master Side Panels Container - Holds all right-aligned panels */}
       <div
         className={cn(
           "fixed z-30 mt-[60px] right-0 top-0 h-full flex overflow-hidden transition-[width]",
@@ -285,14 +282,12 @@ const ChannelsPage = () => {
             : { width: `${totalSidePanelWidth}px` }
         }
       >
-        {/* Hover Sidebar */}
         {state?.hoverProfile && isSmUp && (
           <div className="w-[408px] h-full bg-white border-l border-[#E6EAEF]">
             <HoverSidebar />
           </div>
         )}
 
-        {/* Threads Sidebar */}
         {state?.reply && (
           <div className={threadsSidebarPanelClassName}>
             <ThreadsSidebar

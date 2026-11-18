@@ -17,7 +17,81 @@ interface MediaItem {
   file_link: string;
 }
 
-const previewCache = new Map<string, LinkPreview[]>();
+const previewCache = new Map<string, LinkPreview | null>();
+const inFlightPreviews = new Map<string, Promise<LinkPreview | null>>();
+
+const cacheKeyForUrl = (url: string): string => {
+  try {
+    const parsed = new URL(url);
+    parsed.hostname = parsed.hostname.toLowerCase();
+    if (parsed.pathname.length > 1 && parsed.pathname.endsWith("/")) {
+      parsed.pathname = parsed.pathname.slice(0, -1);
+    }
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+};
+
+const assemblePreviews = (urls: string[]): LinkPreview[] => {
+  const seen = new Set<string>();
+  const previews: LinkPreview[] = [];
+
+  for (const url of urls) {
+    const key = cacheKeyForUrl(url);
+    if (seen.has(key)) continue;
+
+    const cached = previewCache.get(key);
+    if (cached) {
+      seen.add(key);
+      previews.push(cached);
+    }
+  }
+
+  return previews;
+};
+
+const previewsFromMessage = (message: string): LinkPreview[] =>
+  assemblePreviews(extractLinks(message));
+
+const getOrFetchLinkPreview = async (
+  url: string
+): Promise<LinkPreview | null> => {
+  const key = cacheKeyForUrl(url);
+
+  if (previewCache.has(key)) {
+    return previewCache.get(key) ?? null;
+  }
+
+  const pending = inFlightPreviews.get(key);
+  if (pending) {
+    return pending;
+  }
+
+  const request = (async () => {
+    try {
+      const response = await fetch(
+        `/api/link-preview?url=${encodeURIComponent(url)}`
+      );
+      if (!response.ok) {
+        previewCache.set(key, null);
+        return null;
+      }
+
+      const data: LinkPreview = await response.json();
+      const preview = data.title ? data : null;
+      previewCache.set(key, preview);
+      return preview;
+    } catch {
+      return null;
+    } finally {
+      inFlightPreviews.delete(key);
+    }
+  })();
+
+  inFlightPreviews.set(key, request);
+  return request;
+};
 
 export const extractLinks = (text: string) => {
   const urlRegex =
@@ -41,67 +115,38 @@ const PreviewLinks = ({
 }: {
   item: { id?: string; message: string; media?: MediaItem[] };
 }) => {
-  const [previews, setPreviews] = useState<LinkPreview[]>([]);
+  const [previews, setPreviews] = useState<LinkPreview[]>(() =>
+    previewsFromMessage(item.message)
+  );
   const containerRef = useRef<HTMLDivElement>(null);
   const isInView = useInChatView(containerRef);
 
   useEffect(() => {
-    if (!isInView) return;
-
-    const message = item.message;
-    const urls = extractLinks(message);
+    const urls = extractLinks(item.message);
     if (urls.length === 0) {
       setPreviews([]);
       return;
     }
 
-    const cached = previewCache.get(message);
-    if (cached) {
-      setPreviews(cached);
-      return;
-    }
+    setPreviews(assemblePreviews(urls));
 
-    const controller = new AbortController();
+    if (!isInView) return;
+
+    const missingUrls = urls.filter(
+      (url) => !previewCache.has(cacheKeyForUrl(url))
+    );
+    if (missingUrls.length === 0) return;
+
     let cancelled = false;
 
-    const fetchPreview = async (url: string) => {
-      try {
-        const response = await fetch(
-          `/api/link-preview?url=${encodeURIComponent(url)}`,
-          { signal: controller.signal }
-        );
-        if (!response.ok) return null;
-        const data: LinkPreview = await response.json();
-        return data.title ? data : null;
-      } catch {
-        return null;
-      }
-    };
-
-    const timeoutId = window.setTimeout(() => {
-      const loadPreviews = async () => {
-        const previewData = await Promise.all(urls.map(fetchPreview));
-        if (cancelled) return;
-
-        const uniquePreviews = Array.from(
-          new Map(
-            previewData
-              .filter((p): p is LinkPreview => Boolean(p))
-              .map((p) => [p.url, p])
-          ).values()
-        );
-
-        previewCache.set(message, uniquePreviews);
-        setPreviews(uniquePreviews);
-      };
-
-      void loadPreviews();
-    }, 150);
+    void (async () => {
+      await Promise.all(missingUrls.map((url) => getOrFetchLinkPreview(url)));
+      if (cancelled) return;
+      setPreviews(assemblePreviews(urls));
+    })();
 
     return () => {
       cancelled = true;
-      window.clearTimeout(timeoutId);
-      controller.abort();
     };
   }, [isInView, item.message]);
 

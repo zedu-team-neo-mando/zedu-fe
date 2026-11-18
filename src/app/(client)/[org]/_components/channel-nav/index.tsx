@@ -38,21 +38,25 @@ const ChannelHeader = () => {
   const id = useParams().id as string;
   const detailsMatch =
     String(channelDetails?.channels_id || "") === String(id || "");
-  const displayName = detailsMatch
-    ? channelDetails?.name || state?.channelName
-    : state?.channelName;
-  const showPrivateIcon = detailsMatch && channelDetails?.is_private;
+  // channelName is stored on click, before the route param and channel
+  // details request catch up, so the title can render with the messages.
+  const displayName =
+    state?.channelName || (detailsMatch ? channelDetails?.name : "") || "";
+  const previewReady =
+    Boolean(displayName) && channelDetails?.name === displayName;
+  const headerReady = detailsMatch || previewReady;
+  const showPrivateIcon = headerReady && channelDetails?.is_private;
 
   const [startLoading, setStartLoading] = useState(false);
   const [joinLoading, setJoinLoading] = useState(false);
   const [startBuzzConfirmOpen, setStartBuzzConfirmOpen] = useState(false);
   const [starLoading, setStarLoading] = useState(false);
 
-  const isStarred = detailsMatch && Boolean(channelDetails?.is_starred);
+  const isStarred = headerReady && Boolean(channelDetails?.is_starred);
 
   const handleToggleStar = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!id || !detailsMatch || starLoading) return;
+    if (!id || !headerReady || starLoading) return;
     setStarLoading(true);
 
     const nextStarred = !isStarred;
@@ -145,9 +149,7 @@ const ChannelHeader = () => {
   };
 
   // Members button: the channel's total, e.g. "1,909", or "12.4K" from 10,000
-  const memberCount = detailsMatch
-    ? Number(channelDetails?.user_count) || 0
-    : 0;
+  const memberCount = headerReady ? Number(channelDetails?.user_count) || 0 : 0;
   const memberTotal = memberCount.toLocaleString("en");
   const memberLabel = memberCount === 1 ? "1 member" : `${memberTotal} members`;
   const memberBadge =
@@ -179,7 +181,7 @@ const ChannelHeader = () => {
               type="button"
               aria-label={isStarred ? "Unstar channel" : "Star channel"}
               onClick={handleToggleStar}
-              disabled={!detailsMatch}
+              disabled={!headerReady}
               className="p-1.5 rounded-md transition-all duration-150 hover:bg-gray-100 dark:hover:bg-zinc-800 active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             >
               <StarIcon

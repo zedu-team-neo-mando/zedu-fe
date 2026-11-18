@@ -18,7 +18,6 @@ import UserAvatar from "~/components/layout/user-avatar";
 import { GetRequest } from "~/utils/new-request";
 import { getShowMessagePreviews } from "~/lib/notification-preview";
 import {
-  isNotificationRead,
   isNotificationUnread,
   markNotificationAsRead,
 } from "~/lib/notifications/notification-store";

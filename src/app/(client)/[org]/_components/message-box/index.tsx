@@ -163,6 +163,20 @@ const MessageBox = ({
       type: ACTIONS.MESSAGE_DELIVERY,
       payload: { id: attempt.id, status: "pending" },
     });
+    // Clear the typed text now. The request still finishes in the background,
+    // and anything typed after this stays in the editor.
+    if (
+      !isRetry &&
+      mounted.current &&
+      activeScope.current === attempt.scope &&
+      editor &&
+      !editor.isDestroyed &&
+      editor.getHTML() === attempt.html
+    ) {
+      editor.commands.clearContent();
+      clearMessageDraft(attempt.scope);
+      dispatch({ type: ACTIONS.CLEAR_MENTIONS });
+    }
     refreshDelivery((value) => value + 1);
     const sent = await result;
     dispatch({
@@ -442,11 +456,6 @@ const MessageBox = ({
               Retry message
             </button>
           </div>
-        )}
-        {sending && (
-          <p role="status" className="mb-2 text-sm text-gray-600">
-            Sending message…
-          </p>
         )}
         <div
           onClick={() => !channelLoading && editor && editor.commands.focus()}

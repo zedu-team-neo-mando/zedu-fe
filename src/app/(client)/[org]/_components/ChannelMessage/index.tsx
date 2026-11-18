@@ -16,7 +16,6 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import ChannelIntro from "../channel-intro";
 import Thread from "./thread";
 import Message from "./message";
-import { MessageListSkeleton } from "./channel-loading-skeleton";
 import EditMessageBox from "../message-box/edit";
 import UserAvatar from "~/components/layout/user-avatar";
 import { GetRequest, PutRequest } from "~/utils/new-request";
@@ -104,9 +103,9 @@ const ChannelsMessage = () => {
     if (!container) return;
 
     const handleScroll = () => {
-      const isAtBottom =
-        container.scrollHeight - container.scrollTop - container.clientHeight <
-        100;
+      // column-reverse: latest messages sit at scrollTop ~= 0; older history
+      // uses negative scrollTop (same contract as people/group/buzz chats).
+      const isAtBottom = container.scrollTop >= -1;
 
       if (isAtBottom) {
         getData();
@@ -260,8 +259,6 @@ const ChannelsMessage = () => {
         onScrollToBottom={getData}
         className="bottom-[calc(var(--chat-composer-height,140px)+16px)] right-6"
       />
-
-      {loading && !messages?.length && <MessageListSkeleton />}
 
       <div
         id="scrollableDivs"
