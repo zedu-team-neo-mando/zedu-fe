@@ -66,7 +66,9 @@ export const ThreadItem = ({ group }: ThreadItemProps) => {
 
           return (
             <div
-              key={group.thread_id ?? item.thread_id}
+              // Each message needs its own key: keying every row by the
+              // group's thread id made React drop or reuse rows in a group.
+              key={`${item.thread_id ?? "message"}-${index}`}
               className={cn(
                 "transition-colors",
                 index > 0 && "border-t border-[#E6EAEF]",
@@ -92,7 +94,11 @@ export const ThreadItem = ({ group }: ThreadItemProps) => {
                 </div>
               ) : null}
 
-              <Message item={item} shouldShowAvatar={shouldShowAvatar} />
+              <Message
+                item={item}
+                shouldShowAvatar={shouldShowAvatar}
+                group={group}
+              />
             </div>
           );
         })}

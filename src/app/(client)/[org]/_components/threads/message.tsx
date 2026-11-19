@@ -1,22 +1,51 @@
 "use client";
 
 import React, { useContext } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { ArrowUpRight } from "lucide-react";
 import { DataContext } from "~/store/GlobalState";
 import { ACTIONS } from "~/store/Actions";
 import ReplyCard from "../reply-card";
 import UserAvatar from "~/components/layout/user-avatar";
 import MessageItem from "../ChannelMessage/message-item";
 import { formatSlackStyleTimestamp } from "~/utils/format-slack-timestamp";
+import type { ThreadGroup } from "~/types/threads";
+import {
+  threadConversationHref,
+  threadMentionTarget,
+  threadTargetQuery,
+} from "~/utils/thread-mention-target";
 
 interface MessageProps {
   item: any;
   shouldShowAvatar: boolean;
+  /** The thread group this message belongs to, for its conversation link. */
+  group?: ThreadGroup;
 }
 
-const Message = ({ item, shouldShowAvatar }: MessageProps) => {
+const Message = ({ item, shouldShowAvatar, group }: MessageProps) => {
   const { state, dispatch } = useContext(DataContext);
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // The reply that mentions the signed-in user, if any: opening the thread
+  // lands there instead of at the top.
+  const target = threadMentionTarget(
+    item,
+    state?.user?.id || state?.user?.user_id
+  );
+  const conversationHref = group
+    ? threadConversationHref(state?.orgSlug, group, target)
+    : null;
 
   const handleReply = () => {
+    // The reply panel scrolls to and highlights the reply named in the URL.
+    if (pathname) {
+      router.replace(`${pathname}${threadTargetQuery(target)}`, {
+        scroll: false,
+      });
+    }
     dispatch({ type: ACTIONS.THREAD, payload: item });
     dispatch({
       type: ACTIONS.REPLIES,
@@ -79,6 +108,21 @@ const Message = ({ item, shouldShowAvatar }: MessageProps) => {
             lastReplyTime={item?.last_reply || item?.created_at}
             handleReply={handleReply}
           />
+        )}
+
+        {conversationHref && (
+          <Link
+            href={conversationHref}
+            className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[#1264A3] hover:underline"
+          >
+            {target.messageId ? "Open your mention in" : "Open in"}{" "}
+            {["dm", "groupdm"].includes(
+              String(group?.channel_type ?? item?.channel_type).toLowerCase()
+            )
+              ? "conversation"
+              : "channel"}
+            <ArrowUpRight className="size-3.5" aria-hidden="true" />
+          </Link>
         )}
       </div>
     </div>

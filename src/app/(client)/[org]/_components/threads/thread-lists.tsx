@@ -1,12 +1,38 @@
 "use client";
 
-import { useContext, useEffect, useRef } from "react";
-import { MessageSquare } from "lucide-react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
+  MessageSquare,
+} from "lucide-react";
 import { ThreadItem } from "./thread-item";
 import { DataContext } from "~/store/GlobalState";
 import UseThreads from "../../home/channels/hooks/use-threads";
 import type { ThreadGroup } from "~/types/threads";
 import Loading from "~/components/ui/loading";
+import { Button } from "~/components/ui/button";
+import {
+  DEFAULT_THREAD_SORT_ORDER,
+  readThreadSortOrder,
+  saveThreadSortOrder,
+  sortThreadGroups,
+  type ThreadSortOrder,
+} from "~/utils/thread-sort";
+
+const SORT_LABELS: Record<ThreadSortOrder, string> = {
+  newest: "Newest first",
+  oldest: "Oldest first",
+};
+
+function currentOrgId(stateOrgId?: string) {
+  if (stateOrgId) return stateOrgId;
+  try {
+    return localStorage.getItem("orgId") || "";
+  } catch {
+    return "";
+  }
+}
 
 function scrollingElement(node: HTMLElement | null) {
   let current = node;
@@ -29,8 +55,42 @@ export const ThreadList = () => {
   const { fetchMoreData, hasMore, loading } = UseThreads();
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
-  const threadGroups: ThreadGroup[] = threadMentions || [];
-  const totalThreads = threadGroups.length;
+  const totalThreads = Array.isArray(threadMentions)
+    ? threadMentions.length
+    : 0;
+  const [sortOrder, setSortOrder] = useState<ThreadSortOrder>(
+    DEFAULT_THREAD_SORT_ORDER
+  );
+
+  // Restore the saved order once in the browser, and again if the organisation changes.
+  useEffect(() => {
+    setSortOrder(readThreadSortOrder(currentOrgId(state?.orgId)));
+  }, [state?.orgId]);
+
+  // Sorting at render time keeps the order right when pages load or a new
+  // reply arrives in real time.
+  const threadGroups: ThreadGroup[] = useMemo(
+    () =>
+      sortThreadGroups(
+        Array.isArray(threadMentions) ? threadMentions : [],
+        sortOrder
+      ),
+    [threadMentions, sortOrder]
+  );
+
+  const toggleSortOrder = () => {
+    const next: ThreadSortOrder = sortOrder === "newest" ? "oldest" : "newest";
+    setSortOrder(next);
+    saveThreadSortOrder(currentOrgId(state?.orgId), next);
+    scrollRef.current?.scrollTo({ top: 0 });
+  };
+
+  // Threads are paged newest first, so oldest-first is only right once every
+  // page is loaded: keep loading while that order is chosen.
+  const loadingForOldest = sortOrder === "oldest" && hasMore;
+  useEffect(() => {
+    if (sortOrder === "oldest" && hasMore && !loading) fetchMoreData();
+  }, [sortOrder, hasMore, loading, fetchMoreData, totalThreads]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -68,12 +128,40 @@ export const ThreadList = () => {
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-white">
       <div className="flex items-center justify-between px-5 py-4 border-b border-[#E6EAEF] shrink-0">
         <h1 className="text-[22px] font-bold text-[#1D2939]">Threads</h1>
-        {!loading && totalThreads > 0 && (
-          <span className="text-sm text-[#667085]">
-            {totalThreads} thread{totalThreads === 1 ? "" : "s"}
-          </span>
-        )}
+        <div className="flex items-center gap-3">
+          {!loading && totalThreads > 0 && (
+            <span className="text-sm text-[#667085]">
+              {totalThreads} thread{totalThreads === 1 ? "" : "s"}
+            </span>
+          )}
+          {totalThreads > 1 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={toggleSortOrder}
+              aria-label={`Sorted by ${SORT_LABELS[sortOrder].toLowerCase()}. Switch to ${SORT_LABELS[sortOrder === "newest" ? "oldest" : "newest"].toLowerCase()}`}
+              title="Change the order of threads"
+              className="gap-1.5 text-[#344054]"
+            >
+              {sortOrder === "newest" ? (
+                <ArrowDownWideNarrow className="size-4" aria-hidden="true" />
+              ) : (
+                <ArrowUpNarrowWide className="size-4" aria-hidden="true" />
+              )}
+              {SORT_LABELS[sortOrder]}
+            </Button>
+          )}
+        </div>
       </div>
+      {loadingForOldest && (
+        <p
+          role="status"
+          className="shrink-0 border-b border-[#E6EAEF] bg-[#F9FAFB] px-5 py-2 text-xs text-[#667085]"
+        >
+          Loading all threads so the oldest come first...
+        </p>
+      )}
 
       <div
         id="threadsScrollable"
