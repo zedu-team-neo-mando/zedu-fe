@@ -1,41 +1,47 @@
 import type { Metadata } from "next";
+import { ogImageUrl } from "~/lib/env-urls";
+import { ChooseSetupGuide } from "./_components/home/ChooseSetupGuide";
 import { FeatureSection } from "./_components/home/FeatureSection";
 import HeroSection from "./_components/home/Herosection";
+import { CreatorSection } from "./_components/home/CreatorSection";
 import { ArticlesSection } from "./_components/home/ArticlesSection";
+import { LearningSetupGuide } from "./_components/home/LearningSetupGuide";
 import { PricingSection } from "./_components/home/PricingSection";
 import { WhySection } from "./_components/home/WhySection";
+import { TestimonialsSection } from "./_components/home/TestimonialsSection";
 import { FAQSection } from "./_components/home/FAQSection";
 import { DynamicFooter } from "./_components/footer/dynamic-footer";
 import { getHomeStructuredData } from "./_lib/homeStructuredData";
 
+const description =
+  "Stop juggling scattered chat groups, meeting links, and shared folders. Zedu brings learners and educators together in one organized space built for bootcamps and learning communities.";
 export const metadata: Metadata = {
   title: {
-    absolute: "Zedu - Learning Platform for Bootcamps, Schools, and Cohorts",
+    absolute: "Zedu - One Workspace for Your Entire Cohort",
   },
-  description:
-    "Zedu is an AI-powered education platform built for bootcamps and learning communities. Organize cohorts, run classes, manage communication, and scale modern learning in one workspace.",
+  description,
   openGraph: {
-    title: "Zedu - Learning Platform for Bootcamps, Schools, and Cohorts",
-    description:
-      "Built for modern learning: structured channels, AI-powered support, flexible education pricing, and tools that help educators run better cohorts.",
+    title: "Zedu - One Workspace for Your Entire Cohort",
+    description,
     url: "/",
+    // Next.js replaces the layout's openGraph object instead of merging it,
+    // so the share image must be repeated here or the homepage has none.
     siteName: "Zedu",
+    type: "website",
     images: [
       {
-        url: "/og/zedu-home-share.png",
+        url: ogImageUrl("og-image-5.png"),
         width: 1200,
         height: 630,
-        alt: "Zedu: run your cohort on Zedu",
+        alt: "Zedu learning platform for educators and cohorts",
       },
     ],
-    type: "website",
   },
   // A page's twitter block replaces the layout's, so the layout's title and description are repeated here
   twitter: {
     card: "summary_large_image",
     title: "Zedu — Structured Learning for Bootcamps & Schools",
-    description:
-      "Zedu is a structured learning platform for bootcamps, schools, and universities. Organize cohorts, channels, and AI-powered learning in one workspace.",
+    description,
     images: ["/og/zedu-home-share.png"],
   },
   alternates: {
@@ -56,10 +62,14 @@ const HomePage = () => {
         dangerouslySetInnerHTML={{ __html: structuredData }}
       />
       <HeroSection />
+      <CreatorSection />
+      <ChooseSetupGuide />
       <FeatureSection />
       <ArticlesSection />
+      <LearningSetupGuide />
       <PricingSection />
       <WhySection />
+      <TestimonialsSection />
       <FAQSection />
       <DynamicFooter
         text="Run Your Next Cohort Without Limits"

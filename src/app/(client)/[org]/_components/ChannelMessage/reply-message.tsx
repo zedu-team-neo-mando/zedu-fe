@@ -14,12 +14,8 @@ import { DataContext } from "~/store/GlobalState";
 import ReplyMore from "./reply-more";
 import UserHoverCard from "../hover-card/user";
 import { ACTIONS } from "~/store/Actions";
-import {
-  DeleteSavedMessage,
-  GetRequest,
-  PostRequest,
-  SaveMessage,
-} from "~/utils/new-request";
+import { GetRequest, PostRequest } from "~/utils/new-request";
+import { useSavedMessageActions } from "~/hooks/useSavedMessages";
 import { useParams, usePathname } from "next/navigation";
 import {
   Tooltip,
@@ -40,13 +36,14 @@ const ReplyMessages = ({
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
   const { state, dispatch } = useContext(DataContext);
-  const { bookmarks, user, orgMembers } = state;
+  const { user, orgMembers } = state;
   const params = useParams();
   const id = params.id as string;
   const [usernames, setUsernames] = useState<any>([]);
   const pathname = usePathname();
 
-  const isSaved = bookmarks?.some((b: any) => b.id === item.id);
+  const { isReplySaved, saveReply, removeReply } = useSavedMessageActions();
+  const isSaved = isReplySaved(item.id);
 
   const isOnline = orgMembers?.find(
     (member: any) => member.id === item.user_id
@@ -83,35 +80,10 @@ const ReplyMessages = ({
     await PostRequest(`/reactions/${id}`, payload);
   };
 
-  const toggleSave = async () => {
-    const updatedIds = [...bookmarks, { id: item.id }];
+  const toggleSave = () =>
+    saveReply({ id: item.id, thread_id: item.thread_id, channels_id: id });
 
-    dispatch({ type: ACTIONS.BOOKMARKS, payload: updatedIds });
-
-    const orgId = localStorage.getItem("orgId") || "";
-
-    const payload = {
-      channels_id: id,
-      message_id: item.id,
-      thread_id: item.thread_id,
-    };
-
-    await SaveMessage(`/organisations/${orgId}/message/save`, payload);
-  };
-
-  const toggleRemove = async () => {
-    const updatedIds = bookmarks.filter(
-      (bookmark: any) => bookmark.id !== item.id
-    );
-
-    dispatch({ type: ACTIONS.BOOKMARKS, payload: updatedIds });
-
-    const orgId = localStorage.getItem("orgId") || "";
-
-    await DeleteSavedMessage(
-      `/organisations/${orgId}/saved/message/${item.id}`
-    );
-  };
+  const toggleRemove = () => removeReply(item.id);
 
   // get reactions users
   const reactionUsers = async (reactionId: string) => {

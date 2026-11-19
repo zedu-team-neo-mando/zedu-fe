@@ -5,15 +5,20 @@ import { ArrowBtn, DownloadAppBtn } from "../_components/ui/Button";
 import FeatureCard from "../_components/FeatureCard";
 import { DynamicFooter } from "../_components/footer/dynamic-footer";
 import { QRCodeDisplay } from "../_components/QRCodeDisplay";
-import { appStoreUrl, playStoreUrl } from "~/lib/env-urls";
+import { desktopDownloadUrl, storeLink } from "~/lib/env-urls";
+import { getDownloadStructuredData } from "../_lib/downloadStructuredData";
 
-const APP_STORE_URL = appStoreUrl();
-const PLAY_STORE_URL = playStoreUrl();
+const HERO_LINK = { campaign: "download-page", content: "hero" };
+const BOTTOM_LINK = { campaign: "download-page", content: "bottom" };
+
+const description =
+  "Download Zedu on iOS, Android, and desktop. Join classes, chat with peers, manage files, and stay updated in one connected learning workspace.";
 
 export const metadata: Metadata = {
-  title: "Download Zedu App | Mobile and Desktop Learning Workspace",
-  description:
-    "Download Zedu on iOS, Android, and desktop. Join classes, chat with peers, manage files, and stay updated in one connected learning workspace.",
+  title: {
+    absolute: "Download Zedu App | Mobile and Desktop Learning Workspace",
+  },
+  description,
   keywords: [
     "Zedu app download",
     "download Zedu",
@@ -29,15 +34,14 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Download Zedu App | Mobile and Desktop Learning Workspace",
-    description:
-      "Get Zedu for mobile and desktop. Learn anywhere with classes, chat, files, and real-time updates in one place.",
+    description,
     url: "/download",
     type: "website",
     images: [
       {
         url: "/images/homepage/download/download-hero.png",
-        width: 1200,
-        height: 630,
+        width: 950,
+        height: 713,
         alt: "Zedu app preview on mobile devices",
       },
     ],
@@ -45,8 +49,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Download Zedu App | Mobile and Desktop Learning Workspace",
-    description:
-      "Download Zedu for iOS, Android, and desktop to learn, collaborate, and stay updated from anywhere.",
+    description,
     images: ["/images/homepage/download/download-hero.png"],
   },
   robots: {
@@ -56,6 +59,7 @@ export const metadata: Metadata = {
 };
 
 const DownLoadPage = () => {
+  const desktopUrl = desktopDownloadUrl();
   const features = [
     {
       icon: "buzz",
@@ -83,9 +87,17 @@ const DownLoadPage = () => {
     },
   ];
 
+  const structuredData = JSON.stringify(getDownloadStructuredData()).replace(
+    /</g,
+    "\\u003c"
+  );
+
   return (
     <div className="min-h-screen">
-      {" "}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: structuredData }}
+      />{" "}
       <section className="relative isolate flex w-full flex-col items-center gap-4 overflow-hidden px-4 pt-10 text-center sm:gap-6 sm:px-8 sm:pt-16  lg:gap-8 lg:px-12 text-white bg-primary-500 rounded-b-[3rem] mt-5">
         <h1 className="text-3xl font-semibold leading-tight text-white sm:text-5xl md:text-6xl text-center">
           Learn anywhere with Zedu
@@ -100,13 +112,13 @@ const DownLoadPage = () => {
             text="Download on the"
             description="App Store"
             leftIcon="apple"
-            href={APP_STORE_URL}
+            href={storeLink("app", HERO_LINK)}
           />
           <DownloadAppBtn
             text="GET IT ON"
             description="Google Play"
             leftIcon="google"
-            href={PLAY_STORE_URL}
+            href={storeLink("play", HERO_LINK)}
           />
         </div>
 
@@ -126,7 +138,7 @@ const DownLoadPage = () => {
         <div className="w-full max-w-6xl overflow-hidden rounded-2xl">
           <div className="relative aspect-[16/10]  w-full sm:aspect-[16/9] lg:aspect-[2/1] ">
             <Image
-              src="/images/homepage/download/download-hero.png"
+              src="/images/homepage/download/download-hero.jpg"
               alt="Preview of the Zedu Application interfaces on mobile devices"
               fill
               priority
@@ -138,9 +150,9 @@ const DownLoadPage = () => {
       </section>
       <section className="relative isolate flex w-full flex-col items-center gap-5 overflow-hidden px-4 py-12 text-center sm:gap-6 sm:px-8 sm:py-16 lg:gap-8 lg:px-12">
         <div className="flex flex-col gap-3 items-center">
-          <h1 className=" text-2xl font-semibold leading-tight text-neutral-900 sm:text-3xl md:text-4xl text-center">
+          <h2 className=" text-2xl font-semibold leading-tight text-neutral-900 sm:text-3xl md:text-4xl text-center">
             Everything you need in one app
-          </h1>
+          </h2>
           <p className="max-w-[95%] text-sm text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[85%] lg:max-w-[65%] lg:text-lg">
             Zedu combines communication, file sharing, and scheduling into a
             single, easy-to-use platform.
@@ -172,7 +184,7 @@ const DownLoadPage = () => {
                 text="Download on the"
                 description="App Store"
                 leftIcon="apple"
-                href={APP_STORE_URL}
+                href={storeLink("app", BOTTOM_LINK)}
                 dark
                 iconColor="#FFFFFF"
               />
@@ -180,7 +192,7 @@ const DownLoadPage = () => {
                 text="GET IT ON"
                 description="Google Play"
                 leftIcon="google"
-                href={PLAY_STORE_URL}
+                href={storeLink("play", BOTTOM_LINK)}
                 dark
                 iconColor="#FFFFFF"
               />
@@ -203,7 +215,7 @@ const DownLoadPage = () => {
           <div>
             <div className="mx-auto w-full max-w-[520px] overflow-hidden rounded-[1.5rem]">
               <Image
-                src="/images/homepage/download/mobile-app-showcase.png"
+                src="/images/homepage/download/mobile-app-showcase.jpg"
                 width={768}
                 height={833}
                 alt="Zedu mobile chat interface preview"
@@ -219,11 +231,24 @@ const DownLoadPage = () => {
           <p className="text-center text-xs text-neutral-500 sm:text-sm">
             Stay focused with a full learning workspace on your computer
           </p>
-          <ArrowBtn
-            text="Download for Desktop"
-            hideArrow={false}
-            className="!px-6 !py-2.5"
-          />
+          {desktopUrl ? (
+            <ArrowBtn
+              text="Download for Desktop"
+              href={desktopUrl}
+              hideArrow={false}
+              className="!px-6 !py-2.5"
+            />
+          ) : (
+            <button
+              type="button"
+              disabled
+              aria-disabled="true"
+              data-desktop-download-unavailable
+              className="cursor-not-allowed rounded-full border border-neutral-300 bg-neutral-100 px-6 py-2.5 font-medium text-neutral-500"
+            >
+              Desktop app coming soon
+            </button>
+          )}
 
           <div className="w-full">
             <div className="relative w-full aspect-[16/10] sm:aspect-[16/9] lg:aspect-[16/8]">

@@ -22,8 +22,14 @@ const ChannelDetailsDialog: React.FC<ChannelDetailsDialogProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape") {
+      setIsOpen(false);
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => setIsOpen(open)}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger
         aria-label={triggerLabel}
         className={className}
@@ -34,6 +40,8 @@ const ChannelDetailsDialog: React.FC<ChannelDetailsDialogProps> = ({
 
       <DialogContent
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={handleKeyDown}
+        onEscapeKeyDown={() => setIsOpen(false)}
         className="p-0 rounded-[0.625rem] w-full sm:max-w-[550px]"
       >
         <DialogClose className="absolute right-5 top-4 text-[#344054] p-1 border border-input rounded-[0.3125rem]">

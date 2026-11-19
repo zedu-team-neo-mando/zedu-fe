@@ -23,6 +23,13 @@ type RouteContext = {
 export async function GET(request: NextRequest, context: RouteContext) {
   const { filename: rawFilename } = await context.params;
   const filename = decodeURIComponent(rawFilename || "document");
+
+  // Reject filenames containing control characters (CRLF, etc.) to prevent
+  // response header injection via the Content-Disposition header.
+  if (/[\r\n\u0000-\u001f\u007f]/.test(filename)) {
+    return NextResponse.json({ error: "Invalid filename" }, { status: 400 });
+  }
+
   const rawUrl = request.nextUrl.searchParams.get("url");
 
   if (!rawUrl) {
@@ -44,6 +51,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
           : {}),
       },
       cache: "no-store",
+      redirect: "error",
     });
 
     if (!upstream.ok && upstream.status !== 206) {
@@ -56,10 +64,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const ext = filename.includes(".")
       ? filename.split(".").pop()!.toLowerCase()
       : "";
-    const contentType =
-      CONTENT_TYPES[ext] ||
-      upstream.headers.get("content-type") ||
-      "application/octet-stream";
+    // Only trust our own allowlist of content types; never reflect the
+    // upstream Content-Type, which could be text/html and turn this proxy
+    // into a same-origin HTML delivery vector.
+    const contentType = CONTENT_TYPES[ext] || "application/octet-stream";
 
     const headers = new Headers();
     headers.set("Content-Type", contentType);

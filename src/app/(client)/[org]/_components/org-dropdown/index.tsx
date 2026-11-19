@@ -14,13 +14,14 @@ import { getInitials } from "~/utils/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { RequirePermission } from "~/components/rbac/RequirePermission";
-import { appStoreUrl, playStoreUrl } from "~/lib/env-urls";
+import { storeLink } from "~/lib/env-urls";
 interface Props {
   name?: string;
 }
 
-const APP_STORE_URL = appStoreUrl();
-const PLAY_STORE_URL = playStoreUrl();
+const IN_APP_MENU_LINK = { campaign: "in-app", content: "org-menu" };
+const APP_STORE_URL = storeLink("app", IN_APP_MENU_LINK);
+const PLAY_STORE_URL = storeLink("play", IN_APP_MENU_LINK);
 
 export default function OrganisationMenu({ name }: Props) {
   const { state, dispatch } = useContext(DataContext);

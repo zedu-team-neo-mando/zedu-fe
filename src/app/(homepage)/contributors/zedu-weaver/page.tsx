@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import { ContributorCard } from "~/app/(homepage)/_components/contributors/ContributorCard";
 import { zeduWeaverContributors } from "~/app/(homepage)/contributors/zedu-weaver/contributors";
+import { siteUrl } from "~/lib/env-urls";
 
 export const metadata: Metadata = {
   title: "Zedu-Weaver — Our Team",
   description: `Meet the ${zeduWeaverContributors.length} members of the Zedu-Weaver team.`,
+  alternates: {
+    canonical: siteUrl("/contributors/zedu-weaver"),
+  },
 };
 
 /** Renders the Weaver team roster using shared contributor cards. */

@@ -40,10 +40,10 @@ export const handleSessionExpired = () => {
 
   try {
     sessionStorage.removeItem("pending_org");
+    localStorage.removeItem("token");
   } catch {
     // ignore
   }
-  localStorage.clear();
   window.location.href = loginUrl;
 };
 

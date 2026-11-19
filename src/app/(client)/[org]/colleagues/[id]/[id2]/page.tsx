@@ -14,6 +14,7 @@ const Page = () => {
   const { orgId } = state;
   const [participant, setParticipant] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isFavourite, setIsFavourite] = useState<boolean>();
   const params = useParams();
   const id = params.id as string;
 
@@ -25,6 +26,7 @@ const Page = () => {
       );
       if (res?.status === 200 || res?.status === 201) {
         setParticipant(res?.data?.data?.participants[0]);
+        setIsFavourite(Boolean(res?.data?.data?.is_favourite));
       }
       setLoading(false);
     };
@@ -38,15 +40,17 @@ const Page = () => {
     id: string,
     uuid: string,
     content: string,
-    medias: any
+    medias: any,
+    mentions: any = state?.mentions
   ) => {
     const secondPayload = {
       content: content,
       media: medias,
-      mentions: state?.mentions,
+      mentions: mentions,
     };
 
-    await PostRequest(`/dms/channels/${id}/threads`, secondPayload);
+    const res = await PostRequest(`/dms/channels/${id}/threads`, secondPayload);
+    return res?.status === 200 || res?.status === 201;
   };
 
   //
@@ -72,7 +76,11 @@ const Page = () => {
       <div
         className={`fixed right-0 top-[60px] bottom-0 z-20 w-full sm:w-[408px] bg-white border-l border-[#E6EAEF] shadow-[-3px_0px_25px_0px_#DFDFDF] ${state?.showProfile ? "translate-x-0" : "translate-x-full"}`}
       >
-        <ProfileSidebar user={participant} />
+        <ProfileSidebar
+          user={participant}
+          channelId={id}
+          isFavourite={isFavourite}
+        />
       </div>
     </div>
   );

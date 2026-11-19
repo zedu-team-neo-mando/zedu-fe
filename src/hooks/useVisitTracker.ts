@@ -7,22 +7,56 @@ import { ipifyUrl } from "~/lib/env-urls";
 
 const TWO_HOURS = 2 * 60 * 60 * 1000;
 
-const getVisitorId = (): string => {
-  let id = localStorage.getItem("visitor_id");
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem("visitor_id", id);
+export const getStoredUser = (): {
+  username?: string;
+  email?: string;
+} | null => {
+  try {
+    const userData =
+      typeof window !== "undefined" ? localStorage.getItem("user") : null;
+    if (!userData) return null;
+    return JSON.parse(userData);
+  } catch {
+    return null;
   }
-  return id;
 };
 
-const getLastVisit = (): number | null => {
-  const value = localStorage.getItem("last_visit_time");
-  return value ? parseInt(value, 10) : null;
+export const getVisitorId = (): string => {
+  try {
+    let id =
+      typeof window !== "undefined" ? localStorage.getItem("visitor_id") : null;
+    if (!id) {
+      id = crypto.randomUUID();
+      if (typeof window !== "undefined") {
+        localStorage.setItem("visitor_id", id);
+      }
+    }
+    return id;
+  } catch {
+    return crypto.randomUUID();
+  }
 };
 
-const setLastVisit = (time: number) => {
-  localStorage.setItem("last_visit_time", time.toString());
+export const getLastVisit = (): number | null => {
+  try {
+    const value =
+      typeof window !== "undefined"
+        ? localStorage.getItem("last_visit_time")
+        : null;
+    return value ? parseInt(value, 10) : null;
+  } catch {
+    return null;
+  }
+};
+
+export const setLastVisit = (time: number) => {
+  try {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("last_visit_time", time.toString());
+    }
+  } catch {
+    // Ignore storage quota or access errors
+  }
 };
 
 export const useVisitTracker = () => {
@@ -32,8 +66,7 @@ export const useVisitTracker = () => {
     const trackVisit = async () => {
       try {
         const visitorId = getVisitorId();
-        const userData = localStorage.getItem("user");
-        const user = userData ? JSON.parse(userData) : null;
+        const user = getStoredUser();
         const username = user?.username || user?.email || `guest_${visitorId}`;
         const now = Date.now();
         const lastVisit = getLastVisit();

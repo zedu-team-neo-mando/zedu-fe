@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import SettingsLabel from "../../../components/settings-label";
 import {
   Breadcrumb,
@@ -30,7 +30,7 @@ const Page = () => {
   const [isBillingCancellationModalOpen, setIsBillingCancellationModalOpen] =
     useState(false);
   const [isUnSubscribing, setIsUnSubscribing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const checkoutPending = useRef(false);
   const { currentSubscription } = useGetCurrentSubscription();
 
   const { state } = useContext(DataContext);
@@ -49,72 +49,69 @@ const Page = () => {
     Enterprise: "bg-[#2D9CDB]",
   };
 
-  const handleUpgrade = async (planName: string) => {
+  const startCheckout = async (
+    planId: string,
+    request: () => ReturnType<typeof PostRequest>
+  ) => {
+    if (!canManageBilling || checkoutPending.current) return;
+
+    checkoutPending.current = true;
+    setLoadingPlan(planId);
+    let redirecting = false;
+
     try {
-      if (orgData?.subscription_plan_id === "free") {
-        await PostRequest(`/subscriptions/create`, {
-          plan_name: planName,
-          org_id: orgId || "",
-          email,
-        })
-          .then((res) => {
-            if (res?.data?.data?.checkout_session_url) {
-              window.location.href = res?.data?.data?.checkout_session_url;
-            }
-          })
-          .catch((err) => {
-            showError(
-              `${
-                err.response?.data?.message ||
-                "An error occurred during upgrade."
-              } Please try again.`
-            );
-            throw err;
-          });
-      } else {
-        await PutRequest(`/subscriptions/modify`, {
-          plan_name: planName,
-          org_id: orgId || "",
-        })
-          .then((res) => {
-            if (res?.data?.data?.checkout_session_url) {
-              window.location.href = res?.data?.data?.checkout_session_url;
-            }
-          })
-          .catch((err) => {
-            showError(
-              `${
-                err.response?.data?.message ||
-                "An error occurred during upgrade."
-              } Please try again.`
-            );
-            throw err;
-          });
+      const response = await request();
+      if (response?.status !== 200 && response?.status !== 201) return;
+
+      let destination: URL;
+      try {
+        const checkoutUrl = response?.data?.data?.checkout_session_url;
+        if (typeof checkoutUrl !== "string" || !checkoutUrl.trim()) {
+          throw new Error("Missing checkout URL");
+        }
+        destination = new URL(checkoutUrl);
+        if (!["https:", "http:"].includes(destination.protocol)) {
+          throw new Error("Invalid checkout URL");
+        }
+      } catch {
+        showError("Unable to start checkout. Please try again.");
+        return;
       }
-    } catch (error) {
-      showError("An error occurred during upgrade. Please try again.");
+
+      window.location.assign(destination.href);
+      redirecting = true;
+    } catch {
+      // The shared request helpers already report request failures.
     } finally {
-      setLoadingPlan("");
+      if (!redirecting) {
+        checkoutPending.current = false;
+        setLoadingPlan("");
+      }
     }
   };
 
-  const handleSubscription = async (id: string) => {
-    setIsLoading(true);
-    setLoadingPlan(id);
+  const handleUpgrade = (planId: string) =>
+    startCheckout(planId, () =>
+      orgData?.subscription_plan_id === "free"
+        ? PostRequest("/subscriptions/create", {
+            plan_id: planId,
+            org_id: orgId || "",
+            email,
+          })
+        : PutRequest("/subscriptions/modify", {
+            plan_id: planId,
+            org_id: orgId || "",
+          })
+    );
 
-    const payload = {
-      plan_id: id,
-      org_id: orgData?.id,
-      email: user?.email,
-    };
-
-    const res = await PostRequest("/subscriptions/create", payload);
-    if (res?.status === 200 || res?.status === 201) {
-      window.location.href = res?.data?.data?.checkout_session_url;
-    }
-
-    setIsLoading(false);
-  };
+  const handleSubscription = (id: string) =>
+    startCheckout(id, () =>
+      PostRequest("/subscriptions/create", {
+        plan_id: id,
+        org_id: orgData?.id,
+        email: user?.email,
+      })
+    );
 
   // Show loading state while plans are being fetched
   if (plansLoading) {
@@ -348,7 +345,7 @@ const Page = () => {
                             <Button
                               className="w-full rounded-xl border border-[#6941C6] bg-white px-6 py-6 text-center font-semibold text-[#6941C6] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#F8F7FF] hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
                               onClick={() => {
-                                handleUpgrade(plan.name);
+                                handleUpgrade(plan.id);
                               }}
                               disabled={isLoading || loadingPlan !== ""}
                             >

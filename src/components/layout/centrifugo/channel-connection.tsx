@@ -25,10 +25,6 @@ export default function ChannelConnection() {
         getToken: () => getSubscriptionToken(id),
       });
 
-      const onSubscribed = () => {
-        dispatch({ type: ACTIONS.CHANNEL_SUBSCRIPTION, payload: sub });
-      };
-
       const onPublication = (ctx: any) => {
         const result = ctx?.data;
 
@@ -273,17 +269,18 @@ export default function ChannelConnection() {
         console.error(`Subscription error: ${ctx.message}`);
       };
 
-      sub.on("subscribed", onSubscribed);
       sub.on("publication", onPublication);
       sub.on("error", onError);
 
       if (sub.state !== "subscribed") {
         sub.subscribe();
       }
+      // Match chat-connection: expose the sub as soon as we have it so send is
+      // not gated on a second "subscribed" event (shared subs often skip it).
+      dispatch({ type: ACTIONS.CHANNEL_SUBSCRIPTION, payload: sub });
 
       // Cleanup on channel change or unmount — keep the shared connection alive
       return () => {
-        sub.off("subscribed", onSubscribed);
         sub.off("publication", onPublication);
         sub.off("error", onError);
         releaseChannelSubscription(centrifugeClient, id, sub);

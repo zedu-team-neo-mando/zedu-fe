@@ -40,9 +40,14 @@ const FilterSection: React.FC<FilterSectionProps> = ({
 }) => {
   const documentOptions: FilterOption[] = [
     { id: "doc-1", label: "Documents", value: "document" },
+    { id: "doc-2", label: "Spreadsheets", value: "spreadsheet" },
+    { id: "doc-6", label: "Presentations", value: "presentation" },
     { id: "doc-3", label: "Images", value: "image" },
     { id: "doc-4", label: "Videos", value: "videos" },
     { id: "doc-5", label: "Music", value: "musics" },
+    { id: "doc-7", label: "Audio", value: "audio" },
+    { id: "doc-8", label: "Archives", value: "archive" },
+    { id: "doc-9", label: "Code", value: "code" },
   ];
 
   const dateOptions: FilterOption[] = [

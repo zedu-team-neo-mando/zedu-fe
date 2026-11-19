@@ -9,7 +9,6 @@ import {
   Share2,
   File,
 } from "lucide-react";
-// @ts-ignore
 import FileViewer from "react-file-viewer";
 import "./file-preview-viewer.css";
 import { showError } from "~/components/toast/sonner";

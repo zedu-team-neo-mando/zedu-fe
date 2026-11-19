@@ -43,25 +43,32 @@ const Page = () => {
     id: string,
     uuid: string,
     content: string,
-    medias: any
+    medias: any,
+    mentions: any = state?.mentions
   ) => {
     const secondPayload = {
       content: content,
       media: medias,
-      mentions: state?.mentions,
+      mentions: mentions,
     };
 
     try {
-      await PostRequest(`/dms/channels/${id}/threads`, secondPayload);
+      const res = await PostRequest(
+        `/dms/channels/${id}/threads`,
+        secondPayload
+      );
 
+      if (res?.status !== 200 && res?.status !== 201) return false;
       // Dispatch custom event to trigger credit data refetch
       window.dispatchEvent(
         new CustomEvent("agentMessageSent", {
           detail: { agentId: id, content, timestamp: Date.now() },
         })
       );
+      return true;
     } catch (error) {
       console.error("Error sending agent message:", error);
+      return false;
     }
   };
 

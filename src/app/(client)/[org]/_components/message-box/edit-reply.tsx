@@ -124,6 +124,8 @@ const EditReplyMessageBox = ({ subscription, sendMessage }: any) => {
           <div className="border-b border-[#E6EAEF] flex items-center gap-2 mb-2 bg-[#F9FAFB] pl-3 pr-4 py-[5px]">
             {/* Bold */}
             <button
+              aria-label="Bold"
+              aria-pressed={editor?.isActive("bold") ?? false}
               onClick={() => editor?.chain().focus().toggleBold().run()}
               className={`p-1.5 hover:bg-gray-100 rounded ${
                 editor?.isActive("bold")
@@ -139,6 +141,8 @@ const EditReplyMessageBox = ({ subscription, sendMessage }: any) => {
 
             {/* Italic */}
             <button
+              aria-label="Italic"
+              aria-pressed={editor?.isActive("italic") ?? false}
               onClick={() => editor?.chain().focus().toggleItalic().run()}
               className={`p-1.5 hover:bg-gray-100 rounded ${
                 editor?.isActive("italic")
@@ -154,6 +158,8 @@ const EditReplyMessageBox = ({ subscription, sendMessage }: any) => {
 
             {/* Strikethrough */}
             <button
+              aria-label="Strikethrough"
+              aria-pressed={editor?.isActive("strike") ?? false}
               onClick={() => editor?.chain().focus().toggleStrike().run()}
               className={`p-1.5 hover:bg-gray-100 rounded ${
                 editor?.isActive("strike")
@@ -173,6 +179,7 @@ const EditReplyMessageBox = ({ subscription, sendMessage }: any) => {
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <button
+                  aria-label="Add link"
                   onClick={() => setOpen(true)}
                   className={`p-1.5 hover:bg-gray-100 rounded ${editor?.isActive("link") ? "bg-gray-200 font-semibold text-black" : ""}`}
                 >
@@ -221,6 +228,8 @@ const EditReplyMessageBox = ({ subscription, sendMessage }: any) => {
             </Dialog>
 
             <button
+              aria-label="Numbered list"
+              aria-pressed={editor?.isActive("orderedList") ?? false}
               type="button"
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => editor?.chain().focus().toggleOrderedList().run()}
@@ -238,6 +247,8 @@ const EditReplyMessageBox = ({ subscription, sendMessage }: any) => {
 
             {/* Unordered List */}
             <button
+              aria-label="Bulleted list"
+              aria-pressed={editor?.isActive("bulletList") ?? false}
               type="button"
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => editor?.chain().focus().toggleBulletList().run()}
@@ -257,6 +268,8 @@ const EditReplyMessageBox = ({ subscription, sendMessage }: any) => {
 
             {/* Inline Code */}
             <button
+              aria-label="Inline code"
+              aria-pressed={editor?.isActive("code") ?? false}
               onClick={() => editor?.chain().focus().toggleCode().run()}
               className={`p-1.5 hover:bg-gray-100 rounded ${
                 editor?.isActive("code")
@@ -283,6 +296,9 @@ const EditReplyMessageBox = ({ subscription, sendMessage }: any) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 py-2 pl-3 pr-4">
             <button
+              aria-label={
+                showFormatting ? "Hide formatting" : "Show formatting"
+              }
               title="show formatting"
               onClick={() => setShowformatting((prev) => !prev)}
               className="p-1.5 hover:bg-gray-100 rounded text-[#606060] underline"
@@ -296,7 +312,10 @@ const EditReplyMessageBox = ({ subscription, sendMessage }: any) => {
                 onOpenChange={setIsEmojiPickerOpen}
               >
                 <PopoverTrigger asChild>
-                  <button className="p-1.5 hover:bg-gray-100 rounded">
+                  <button
+                    aria-label="Emoji"
+                    className="p-1.5 hover:bg-gray-100 rounded"
+                  >
                     <Smile size={18} color="#606060" />
                   </button>
                 </PopoverTrigger>

@@ -135,7 +135,7 @@ const ChatHeader = ({ participants }: any) => {
           aria-label="View members"
         >
           <div className="flex items-center gap-1.5">
-            {participants?.map((member: any) => (
+            {(participants ?? []).slice(0, 3).map((member: any) => (
               <Avatar
                 key={member.user_id}
                 className="rounded-[5px] w-5 h-5 -ml-2.5 first:ml-0 border border-[#E6EAEF]"

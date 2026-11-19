@@ -22,8 +22,12 @@ const UseGetSingleChannel = ({ onError }: Props = {}) => {
     });
 
     if (id) {
+      // A response for a channel the user has since left or navigated away
+      // from must not overwrite the current channel's state.
+      let ignore = false;
       const fetchChannelById = async () => {
         const res = await GetRequest(`/channels/${id}`);
+        if (ignore) return;
         const status = res?.response?.status ?? res?.status;
         if (status === 200 || status === 201) {
           onError?.(null);
@@ -54,7 +58,21 @@ const UseGetSingleChannel = ({ onError }: Props = {}) => {
         });
       };
       fetchChannelById();
+      return () => {
+        ignore = true;
+        dispatch({
+          type: ACTIONS.CHANNEL_READY,
+          payload: false,
+        });
+      };
     }
+
+    return () => {
+      dispatch({
+        type: ACTIONS.CHANNEL_READY,
+        payload: false,
+      });
+    };
   }, [
     dispatch,
     id,

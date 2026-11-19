@@ -27,23 +27,27 @@ type PricingComparisonTableProps = {
   rowInfoIcon?: ReactNode;
   featureColumnLabel?: string;
   className?: string;
+  containerClassName?: string;
 };
 
 const renderCellValue = (value: PricingComparisonCellValue) => {
   if (typeof value === "boolean") {
     if (value) {
       return (
-        <span className="inline-flex justify-center" aria-label="Included">
-          <CheckIcon />
+        <span className="inline-flex justify-center">
+          <span className="sr-only">Included</span>
+          <span aria-hidden="true">
+            <CheckIcon />
+          </span>
         </span>
       );
     }
 
-    return <span aria-hidden="true">&nbsp;</span>;
+    return <span className="text-sm text-neutral-500">Not included</span>;
   }
 
   if (value === null || value === undefined || value === "") {
-    return <span aria-hidden="true">&nbsp;</span>;
+    return <span className="text-sm text-neutral-500">Not included</span>;
   }
 
   return <span className="text-sm text-neutral-700">{value}</span>;
@@ -74,6 +78,7 @@ export const PricingComparisonTable = ({
   sectionTitleIcon,
   rowInfoIcon,
   className,
+  containerClassName,
 }: PricingComparisonTableProps) => {
   return (
     <div className={cn("w-full max-w-7xl text-left no-scrollbar", className)}>
@@ -86,7 +91,10 @@ export const PricingComparisonTable = ({
         </div>
       ) : null}
 
-      <Table className="min-w-[680px] table-fixed sm:min-w-[760px]">
+      <Table
+        className="min-w-[680px] table-fixed sm:min-w-[760px]"
+        containerClassName={containerClassName}
+      >
         <colgroup>
           <col className="w-[40%]" />
           {plans.map((plan) => (

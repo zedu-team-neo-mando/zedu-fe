@@ -11,7 +11,11 @@ import "prismjs/components/prism-markup";
 import "prismjs/components/prism-css";
 import PreviewLinks from "../ChannelMessage/preview-links";
 import { replaceEmojiWithImages } from "~/lib/apple-emoji";
-import { messageSanitizeSchema } from "~/lib/sanitize-message-schema";
+import { appleEmojiDatasourceBaseUrl } from "~/lib/env-urls";
+import {
+  messageSanitizeSchema,
+  rehypeEmojiImagesOnly,
+} from "~/lib/sanitize-message-schema";
 import AssetToDelete from "./asset-to-delete";
 
 /** @eslint-disable */
@@ -65,7 +69,11 @@ const MessageItem: React.FC<MessageItemProps> = ({ item }) => {
       >
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
-          rehypePlugins={[rehypeRaw, [rehypeSanitize, messageSanitizeSchema]]}
+          rehypePlugins={[
+            rehypeRaw,
+            [rehypeSanitize, messageSanitizeSchema],
+            rehypeEmojiImagesOnly(appleEmojiDatasourceBaseUrl()),
+          ]}
           components={{
             a: ({ ...props }) => (
               <a
