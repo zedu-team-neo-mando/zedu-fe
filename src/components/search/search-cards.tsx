@@ -4,9 +4,11 @@ import { useRouter } from "next/navigation";
 import { useContext } from "react";
 import { GetRequest } from "~/utils/new-request";
 import { openDmWithUser } from "~/lib/dm/open-dm-with-user";
-import { Clock, Hash } from "lucide-react";
+import { Clock } from "lucide-react";
 import { DataContext } from "~/store/GlobalState";
 import { openSearchMessageResult } from "~/lib/search/navigate";
+import { searchResultSource } from "~/lib/search/result-source";
+import { ResultSourceIcon } from "~/components/search/result-source-icon";
 import type { MessageSearchResult, UserSearchResult } from "~/lib/search/types";
 import { formatSearchTimestamp, stripHtmlAndDecode } from "~/lib/search/format";
 import { HighlightedText } from "~/app/(client)/[org]/_components/search/highlight";
@@ -68,6 +70,7 @@ export const SearchCards = ({ cardData, query = "" }: CardProps) => {
           ? item.user.avatar_url
           : item.profile_url || item.avatar_url;
         const name = isMessage ? item.user.user_name : item.name;
+        const source = isMessage ? searchResultSource(item, state.dms) : null;
 
         return (
           <div
@@ -118,13 +121,18 @@ export const SearchCards = ({ cardData, query = "" }: CardProps) => {
                         query={query}
                       />
                     </p>
-                    <span className="inline-flex items-center gap-1 bg-gray-100 dark:bg-zinc-800 rounded px-2 py-0.5 text-xs text-gray-600 dark:text-zinc-300">
-                      <Hash size={12} />
-                      <HighlightedText
-                        text={item.channel.channel_name}
-                        query={query}
-                      />
-                    </span>
+                    {source && (
+                      <span
+                        className="inline-flex items-center gap-1 bg-gray-100 dark:bg-zinc-800 rounded px-2 py-0.5 text-xs text-gray-600 dark:text-zinc-300"
+                        title={source.description}
+                      >
+                        <ResultSourceIcon kind={source.kind} />
+                        <span className="sr-only">{source.description}</span>
+                        <span aria-hidden="true">
+                          <HighlightedText text={source.label} query={query} />
+                        </span>
+                      </span>
+                    )}
                   </>
                 ) : (
                   <>

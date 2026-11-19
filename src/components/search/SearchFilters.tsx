@@ -32,6 +32,8 @@ interface SearchFiltersProps {
     avatar_url?: string;
     profile_url?: string;
   }[];
+  /** Channel name the In filter starts with (a search made inside a channel). */
+  initialChannel?: string;
 }
 
 type ChannelOption = {
@@ -50,13 +52,25 @@ export const SearchFilters = ({
   onFilterChange,
   channels = [],
   users = [],
+  initialChannel,
 }: SearchFiltersProps) => {
   const [selectedType, setSelectedType] = useState<
     "messages" | "people" | null
   >("messages");
   const [selectedFrom, setSelectedFrom] = useState<UserOption | null>(null);
+  // The filter sends the channel's name, so the name alone is enough; the id
+  // comes from the channel list when it has already loaded.
   const [selectedChannel, setSelectedChannel] = useState<ChannelOption | null>(
-    null
+    () => {
+      if (!initialChannel) return null;
+      const match = channels.find(
+        (channel) =>
+          (channel.name || channel.channel_name || "").toLowerCase() ===
+          initialChannel.toLowerCase()
+      );
+      const id = match?.channel_id || match?.id || initialChannel;
+      return { id, channel_id: id, name: initialChannel };
+    }
   );
   const [selectedDate, setSelectedDate] = useState<{
     type: string;

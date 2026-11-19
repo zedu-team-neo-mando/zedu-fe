@@ -5,6 +5,9 @@ import { useDebounce } from "use-debounce";
 import { DataContext } from "~/store/GlobalState";
 import { searchMessages, searchUsers } from "~/lib/search/api";
 import { openSearchMessageResult } from "~/lib/search/navigate";
+import { searchResultSource } from "~/lib/search/result-source";
+import { searchResultsHref } from "~/lib/search/results-href";
+import { ResultSourceIcon } from "~/components/search/result-source-icon";
 import type { MessageSearchResult, UserSearchResult } from "~/lib/search/types";
 import { formatSearchTimestamp, stripHtmlAndDecode } from "~/lib/search/format";
 import { GetRequest } from "~/utils/new-request";
@@ -191,12 +194,13 @@ export const SearchInput = ({ name, orgId }: SearchInputProps) => {
       if (!trimmed || !orgSlug) return;
 
       saveRecentSearch(trimmed);
-      router.push(`/${orgSlug}/search?query=${encodeURIComponent(trimmed)}`);
+      // Searching from inside a channel keeps that channel on the results page.
+      router.push(searchResultsHref(orgSlug, trimmed, channelName));
       setIsOpen(false);
       setActiveIndex(-1);
       setSearchQuery("");
     },
-    [orgSlug, router, saveRecentSearch]
+    [orgSlug, router, saveRecentSearch, channelName]
   );
 
   const openMessageResult = useCallback(
@@ -411,6 +415,7 @@ export const SearchInput = ({ name, orgId }: SearchInputProps) => {
                           result.messages[0]?.message || ""
                         );
                         const isActive = activeIndex === itemIndex;
+                        const source = searchResultSource(result, state.dms);
 
                         return (
                           <button
@@ -429,9 +434,18 @@ export const SearchInput = ({ name, orgId }: SearchInputProps) => {
                               <span className="text-sm font-semibold text-gray-900 truncate">
                                 {result.user.user_name}
                               </span>
-                              <span className="text-xs text-gray-400 inline-flex items-center gap-1 ml-auto shrink-0">
-                                <Hash className="h-3 w-3" />
-                                {result.channel.channel_name}
+                              <span
+                                className="text-xs text-gray-400 inline-flex items-center gap-1 ml-auto shrink-0"
+                                title={source.description}
+                              >
+                                <ResultSourceIcon
+                                  kind={source.kind}
+                                  className="h-3 w-3"
+                                />
+                                <span className="sr-only">
+                                  {source.description}
+                                </span>
+                                <span aria-hidden="true">{source.label}</span>
                               </span>
                             </div>
                             <p className="text-sm text-gray-600 line-clamp-1">
