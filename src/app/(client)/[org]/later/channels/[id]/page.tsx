@@ -32,23 +32,26 @@ const ChannelsPage = () => {
     id: string,
     uuid: string,
     content: string,
-    medias: any
+    medias: any,
+    mentions: any = state?.mentions
   ) => {
     const payload = {
       content: content,
       thread_id: uuid,
       media: medias,
-      mentions: state?.mentions,
+      mentions: mentions,
     };
 
-    await PostRequest(`/threads/${id}`, payload);
+    const res = await PostRequest(`/threads/${id}`, payload);
+    return res?.status === 200 || res?.status === 201;
   };
 
   const handleReplyMessage = async (
     id: string,
     uuid: string,
     content: string,
-    medias: any
+    medias: any,
+    mentions: any = state?.mentions
   ) => {
     const payload = {
       content: content,
@@ -56,10 +59,11 @@ const ChannelsPage = () => {
       user_id: state?.user?.id,
       thread_id: state?.thread?.thread_id,
       media: medias,
-      mentions: state?.mentions,
+      mentions: mentions,
     };
 
-    await PostRequest(`/channels/${id}/messages`, payload);
+    const res = await PostRequest(`/channels/${id}/messages`, payload);
+    return res?.status === 200 || res?.status === 201;
   };
 
   if (state?.channelloading) return null;

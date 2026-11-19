@@ -12,6 +12,10 @@ import CustomSelect from "~/components/ui/custom-select";
 import useFirstChannel from "../../home/channels/hooks/first-channel";
 import StepIndicator from "~/components/ui/step-indicator";
 import { RegisterWebhookRequest } from "~/utils/webhook-request";
+import {
+  HEARD_ABOUT_OPTIONS,
+  heardAboutLine,
+} from "~/utils/acquisition-source";
 import { provisionTemplateChannels } from "~/data/templates";
 // Direct sonner toast import because our toast wrapper does not support action buttons (e.g. "Skip template")
 import { toast } from "sonner";
@@ -39,10 +43,12 @@ const CreateOrganization: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [buttonloading, setButtonloding] = useState(false);
+  const submitInProgressRef = useRef(false);
   const [values, setValues] = useState(initialState);
   const [loading, setLoading] = useState(true);
   const [countries, setCountries] = useState<any>([]);
   const [country, setCountry] = useState<any>(null);
+  const [heardAbout, setHeardAbout] = useState<any>(null);
   const { firstChannel } = useFirstChannel();
   const { org } = useParams<{ org: string }>();
   const [createdOrg, setCreatedOrg] = useState<any>(() => {
@@ -228,7 +234,8 @@ const CreateOrganization: React.FC = () => {
     const webhookData = `
       Organisation Name: ${values.organisationName} \n
       Organisation Type: ${values.organisationType} \n
-      Country: ${country?.value || ""}
+      Country: ${country?.value || ""} \n
+      ${heardAboutLine(heardAbout?.value)}
       `;
     RegisterWebhookRequest(
       webhookData,
@@ -273,15 +280,11 @@ const CreateOrganization: React.FC = () => {
   };
 
   /**
-   * Handles form submission to create an organization and provision template channels.
-   * @param event Form submission event.
+   * Creates an organization and provisions its selected template channels.
    */
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-
+  const submitOrganization = async () => {
     const token = localStorage.getItem("token") || "";
 
-    setButtonloding(true);
     setTemplateProvisionFailed(false);
 
     const activeTemplate =
@@ -398,6 +401,21 @@ const CreateOrganization: React.FC = () => {
     }
   };
 
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (submitInProgressRef.current) return;
+
+    submitInProgressRef.current = true;
+    setButtonloding(true);
+
+    try {
+      await submitOrganization();
+    } finally {
+      submitInProgressRef.current = false;
+      setButtonloding(false);
+    }
+  };
+
   //
 
   return (
@@ -472,6 +490,19 @@ const CreateOrganization: React.FC = () => {
                   </div>
                 </div>
 
+                <div className="form-box mb-3">
+                  <label className="mb-2 block text-sm">
+                    How did you hear about Zedu? (optional)
+                  </label>
+                  <CustomSelect
+                    options={HEARD_ABOUT_OPTIONS}
+                    placeholder="Select an option..."
+                    onChange={setHeardAbout}
+                    defaultValue={heardAbout}
+                    isDisabled={false}
+                  />
+                </div>
+
                 {templateProvisionFailed && (
                   <div className="my-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-500 flex flex-col sm:flex-row items-center justify-between gap-3">
                     <span>
@@ -492,6 +523,7 @@ const CreateOrganization: React.FC = () => {
 
                 <Button
                   type="submit"
+                  disabled={buttonloading}
                   className="w-full bg-blue-400 font-semibold my-3 py-6 px-10 text-white"
                 >
                   {buttonloading ? (

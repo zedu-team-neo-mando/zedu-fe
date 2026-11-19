@@ -31,6 +31,7 @@ const DmPage = () => {
   const { state, dispatch } = useContext(DataContext);
   const { orgId, reply, participant: previewParticipant, user } = state;
   const [participant, setParticipant] = useState<any>(null);
+  const [isFavourite, setIsFavourite] = useState<boolean>();
   const params = useParams();
   const id = params.id as string;
   const id2 = params.id2 as string;
@@ -49,6 +50,7 @@ const DmPage = () => {
       );
       if (res?.status === 200 || res?.status === 201) {
         setParticipant(res?.data?.data?.participants[0]);
+        setIsFavourite(Boolean(res?.data?.data?.is_favourite));
       }
     };
 
@@ -61,7 +63,9 @@ const DmPage = () => {
     id: string,
     uuid: string,
     content: string,
-    medias: any
+    medias: any,
+    _mentions: unknown,
+    isRetry = false
   ) => {
     const optimisticMessage = {
       channels_id: id,
@@ -72,16 +76,18 @@ const DmPage = () => {
       created_at: new Date().toISOString(),
       status: "pending",
       type: "message",
-      media: state.media,
+      media: medias,
       user_id: user?.user_id,
       reactions: null,
       isOptimistic: true,
     };
 
-    dispatch({
-      type: ACTIONS.CHATS,
-      payload: { newMessage: optimisticMessage },
-    });
+    if (!isRetry) {
+      dispatch({
+        type: ACTIONS.CHATS,
+        payload: { newMessage: optimisticMessage },
+      });
+    }
     dispatch({
       type: ACTIONS.UPDATE_DM_PREVIEW,
       payload: { channelId: id, message: content },
@@ -93,14 +99,17 @@ const DmPage = () => {
       media: medias,
     };
 
-    await PostRequest(`/dms/channels/${id}/threads`, secondPayload);
+    const res = await PostRequest(`/dms/channels/${id}/threads`, secondPayload);
+    return res?.status === 200 || res?.status === 201;
   };
 
   const handleReplyMessage = async (
     id: string,
     uuid: string,
     content: string,
-    medias: any
+    medias: any,
+    _mentions: unknown,
+    isRetry = false
   ) => {
     const optimisticMessage = {
       id: uuid,
@@ -112,16 +121,18 @@ const DmPage = () => {
       created_at: new Date().toISOString(),
       status: "pending",
       type: "message",
-      media: state.media,
+      media: medias,
       user_id: user?.user_id,
       reactions: null,
       isOptimistic: true,
     };
 
-    dispatch({
-      type: ACTIONS.REPLIES,
-      payload: { newMessage: optimisticMessage },
-    });
+    if (!isRetry) {
+      dispatch({
+        type: ACTIONS.REPLIES,
+        payload: { newMessage: optimisticMessage },
+      });
+    }
 
     const payload = {
       content: content,
@@ -129,7 +140,8 @@ const DmPage = () => {
       media: medias,
     };
 
-    await PostRequest(`/dms/messages/${id}`, payload);
+    const res = await PostRequest(`/dms/messages/${id}`, payload);
+    return res?.status === 200 || res?.status === 201;
   };
 
   // Calculate combined width of open side panels
@@ -178,7 +190,11 @@ const DmPage = () => {
         {/* Profile Sidebar */}
         {state?.showProfile && isSmUp && (
           <div className="w-[408px] h-full bg-white border-l border-[#E6EAEF] shadow-[-3px_0px_27px_0px_#DFDFDF]">
-            <ProfileSidebar user={activeParticipant} />
+            <ProfileSidebar
+              user={activeParticipant}
+              channelId={id}
+              isFavourite={isFavourite}
+            />
           </div>
         )}
 

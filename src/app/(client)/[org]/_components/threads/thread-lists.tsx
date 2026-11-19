@@ -4,10 +4,8 @@ import { useContext, useEffect, useRef } from "react";
 import { MessageSquare } from "lucide-react";
 import { ThreadItem } from "./thread-item";
 import { DataContext } from "~/store/GlobalState";
-import { ACTIONS } from "~/store/Actions";
 import UseThreads from "../../home/channels/hooks/use-threads";
 import type { ThreadGroup } from "~/types/threads";
-import { GetRequest } from "~/utils/new-request";
 import Loading from "~/components/ui/loading";
 
 function scrollingElement(node: HTMLElement | null) {
@@ -26,36 +24,13 @@ function scrollingElement(node: HTMLElement | null) {
 }
 
 export const ThreadList = () => {
-  const { state, dispatch } = useContext(DataContext);
+  const { state } = useContext(DataContext);
   const { threadMentions } = state;
   const { fetchMoreData, hasMore, loading } = UseThreads();
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const threadGroups: ThreadGroup[] = threadMentions || [];
   const totalThreads = threadGroups.length;
-
-  useEffect(() => {
-    const orgId = localStorage.getItem("orgId") || "";
-
-    const loadSavedChats = async () => {
-      const res = await GetRequest(`/organisations/${orgId}/saved/message`);
-
-      if (res?.status === 200 || res?.status === 201) {
-        const result = res?.data?.data?.map(
-          (item: { type: string; id: string; thread_id?: string }) =>
-            item.type === "thread"
-              ? { id: item.id, thread_id: item.thread_id }
-              : { id: item.id }
-        );
-
-        dispatch({ type: ACTIONS.BOOKMARKS, payload: result });
-      }
-    };
-
-    if (orgId) {
-      void loadSavedChats();
-    }
-  }, [dispatch]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;

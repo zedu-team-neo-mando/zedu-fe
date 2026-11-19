@@ -1,0 +1,31 @@
+# Zedu
+
+> Zedu is an AI-powered education workspace for bootcamps, schools, universities, and learning cohorts. It combines structured channels, Buzz video calls, file management, and AI coworkers so educators can run a whole program in one place.
+
+Zedu gives each organization one workspace for communication and classes: channels and direct messages keep cohort conversations organized, Buzz runs live voice and video classes, file management stores and shares course files, and AI coworkers help with everyday teaching tasks. Pricing is per workspace in Nigerian naira, with a free Starter plan.
+
+## Core modules
+
+- [Buzz Video Calls](https://zedu.chat/products/buzz): Instant voice and video conversations and live classes for cohorts and teaching teams.
+- [Structured Channels](https://zedu.chat/products/channels): Channels, threads, and direct messages that keep every cohort and topic in order.
+- [File Management](https://zedu.chat/products/file-management): Upload, organize, share, and pin course files and cohort documents.
+- [AI Coworkers](https://zedu.chat/): AI assistants that work alongside teachers and cohort managers inside the workspace.
+
+## Solutions
+
+- [Bootcamps](https://zedu.chat/solutions/bootcamps): Run intensive cohorts with structured communication and live sessions.
+- [Schools](https://zedu.chat/solutions/schools): Manage classes, teachers, and administration in one workspace.
+- [Universities](https://zedu.chat/solutions/universities): Scale cohorts and departments with flexible workspace plans.
+
+## Key pages
+
+- [Pricing](https://zedu.chat/pricing): Free Starter plan, Pro per workspace, and custom Enterprise.
+- [Resources](https://zedu.chat/resources): Guides and reading for modern learning teams.
+- [About Zedu](https://zedu.chat/about): Who builds Zedu and why.
+- [Download the app](https://zedu.chat/download): iOS and Android apps for the Zedu workspace.
+- [Google Classroom alternative](https://zedu.chat/alternatives/google-classroom): How Zedu compares for schools and bootcamps.
+- [Contact sales](https://zedu.chat/contact-sales): Talk to the team about Enterprise or annual billing.
+
+## Optional
+
+- [llms-full.txt](https://zedu.chat/llms-full.txt): Extended context with full feature breakdowns, pricing comparisons, and integration details.

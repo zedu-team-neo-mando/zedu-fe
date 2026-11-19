@@ -17,10 +17,12 @@ import {
   AccordionTrigger,
 } from "~/components/ui/accordion";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { DataContext } from "~/store/GlobalState";
 import { WidgetIcon } from "../svgs";
 import { ArrowBtn, OutlineBtn } from "../ui/Button";
+import { useCelebration } from "../home/CelebrationThemeContext";
+import { cn } from "~/lib/utils";
 
 type NavLink = {
   label: string;
@@ -42,7 +44,9 @@ const dropdownSections: DropdownSection[] = [
     items: [
       { label: "Buzz", href: "/products/buzz" },
       { label: "Channels", href: "/products/channels" },
+      { label: "Direct Messages", href: "/products/direct-messages" },
       { label: "File Management", href: "/products/file-management" },
+      { label: "AI Assistant", href: "/products/ai" },
     ],
   },
   {
@@ -53,6 +57,8 @@ const dropdownSections: DropdownSection[] = [
       { label: "Bootcamps", href: "/solutions/bootcamps" },
       { label: "Schools", href: "/solutions/schools" },
       { label: "Universities", href: "/solutions/universities" },
+      { label: "Study Groups", href: "/solutions/study-groups" },
+      { label: "Tutors", href: "/solutions/tutors" },
     ],
   },
 ];
@@ -73,7 +79,9 @@ const Header: React.FC = () => {
   const [token, setToken] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
   const { state } = useContext(DataContext);
+  const { celebration } = useCelebration();
 
   const logoWhite = "/zedu_white.png";
   const logoBlack = "/Zedu.png";
@@ -93,6 +101,15 @@ const Header: React.FC = () => {
     setToken(userToken);
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const search = window.location.search;
+      if (search.includes("assessment=true") || search.includes("demo=true")) {
+        router.push("/demo?assessment=true");
+      }
+    }
+  }, [router]);
 
   useEffect(() => {
     if (!openDropdown) return;
@@ -142,8 +159,15 @@ const Header: React.FC = () => {
               : "border-[#F2F4F7] bg-white"
           }`}
         >
+          {/* Seasonal festive top accent border line */}
+          {celebration && (
+            <div
+              className={`absolute top-0 inset-x-0 h-1 z-50 ${celebration.topBarGradientClass}`}
+            />
+          )}
+
           <div className="group relative mx-auto flex w-full max-w-[1300px] items-center justify-between px-4 md:px-6 lg:px-4 xl:px-8">
-            <div className="z-50 flex items-center gap-8 px-0">
+            <div className="z-50 flex items-center gap-4 sm:gap-8 px-0">
               <div className="flex shrink-0 items-center">
                 <Link href="/">
                   <Image
@@ -240,13 +264,19 @@ const Header: React.FC = () => {
                     <OutlineBtn
                       text="Contact Sales"
                       href="/contact-sales"
-                      className="px-3 py-1.5"
+                      className={cn(
+                        "px-3 py-1.5",
+                        celebration && celebration.heroOutlineBtnClass
+                      )}
                     />
                     <ArrowBtn
                       text="Get Started"
                       linkToHome
                       hideArrow
-                      className="px-3 py-1.5"
+                      className={cn(
+                        "px-3 py-1.5",
+                        celebration && celebration.headerBtnClass
+                      )}
                     />
                   </div>
                 </>
@@ -255,14 +285,25 @@ const Header: React.FC = () => {
                   <OutlineBtn
                     text="Contact Sales"
                     href="/contact-sales"
-                    className="px-3 py-1.5"
+                    className={cn(
+                      "px-3 py-1.5",
+                      celebration && celebration.heroOutlineBtnClass
+                    )}
                   />
 
                   <ArrowBtn
                     text="Go to Dashboard"
                     linkToHome
+                    loggedInText={
+                      celebration
+                        ? `Go to Dashboard ${celebration.iconEmoji}`
+                        : "Go to Dashboard"
+                    }
                     hideArrow
-                    className="px-3 py-1.5"
+                    className={cn(
+                      "px-3 py-1.5",
+                      celebration && celebration.headerBtnClass
+                    )}
                   />
                 </>
               )}
@@ -272,29 +313,30 @@ const Header: React.FC = () => {
               ref={menuButtonRef}
               type="button"
               variant="ghost"
+              size="icon"
               aria-label={
                 isOpen ? "Close navigation menu" : "Open navigation menu"
               }
               aria-expanded={isOpen}
               aria-controls="mobile-navigation"
               onClick={toggleMenu}
-              className="relative z-50 flex h-6 w-6 cursor-pointer items-center justify-center p-0 hover:bg-transparent lg:hidden"
+              className="relative z-50 flex shrink-0 cursor-pointer items-center justify-center hover:bg-transparent lg:hidden"
             >
               <span
                 aria-hidden="true"
-                className={`absolute h-0.5 w-full bg-current transition-transform duration-300 ease-in-out ${
+                className={`absolute h-0.5 w-6 bg-current transition-transform duration-300 ease-in-out ${
                   isOpen ? "rotate-45 bg-gray-50" : "-translate-y-1.5"
                 }`}
               />
               <span
                 aria-hidden="true"
-                className={`absolute h-0.5 w-full bg-current transition-opacity duration-300 ease-in-out ${
+                className={`absolute h-0.5 w-6 bg-current transition-opacity duration-300 ease-in-out ${
                   isOpen ? "opacity-0" : "opacity-100"
                 }`}
               />
               <span
                 aria-hidden="true"
-                className={`absolute h-0.5 w-full bg-current transition-transform duration-300 ease-in-out ${
+                className={`absolute h-0.5 w-6 bg-current transition-transform duration-300 ease-in-out ${
                   isOpen ? "-rotate-45 bg-gray-50" : "translate-y-1.5"
                 }`}
               />
@@ -363,9 +405,13 @@ const Header: React.FC = () => {
               {!loading && token ? (
                 <Link
                   href="/client"
-                  className="mx-4 flex items-center justify-center rounded-lg bg-white/20 py-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-white/30"
+                  className={`mx-4 flex items-center justify-center rounded-lg py-3 text-sm font-medium text-white transition-colors duration-200 ${
+                    celebration
+                      ? celebration.headerBtnClass
+                      : "bg-white/20 hover:bg-white/30"
+                  }`}
                 >
-                  Go to dashboard
+                  Go to dashboard {celebration ? celebration.iconEmoji : ""}
                 </Link>
               ) : (
                 <div className="mt-4 flex flex-col gap-3 px-4">
@@ -378,15 +424,21 @@ const Header: React.FC = () => {
                   <Link
                     href="/contact-sales"
                     className="flex w-full items-center justify-center rounded-lg border border-white/40 py-3 text-sm font-medium text-white transition-colors duration-200 hover:bg-white/10"
-                    onClick={() => setIsOpen(false)}
+                    onClick={function () {
+                      setIsOpen(false);
+                    }}
                   >
                     Contact Sales
                   </Link>
                   <Link
                     href="/auth/sign-up"
-                    className="flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-[#8860F8] to-[#7141F8] py-3 text-sm font-medium text-white transition-colors duration-200 hover:from-[#7141F8] hover:to-[#8860F8]"
+                    className={`flex w-full items-center justify-center rounded-lg py-3 text-sm font-medium text-white transition-colors duration-200 ${
+                      celebration
+                        ? celebration.headerBtnClass
+                        : "bg-gradient-to-r from-[#8860F8] to-[#7141F8] hover:from-[#7141F8] hover:to-[#8860F8]"
+                    }`}
                   >
-                    Get Started
+                    Get Started {celebration ? celebration.iconEmoji : ""}
                   </Link>
                 </div>
               )}

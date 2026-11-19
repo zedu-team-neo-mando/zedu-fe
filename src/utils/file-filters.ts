@@ -9,9 +9,13 @@ export type FileListViewMode =
 export const FILE_CATEGORY_UI_TO_API: Record<string, string> = {
   document: "documents",
   spreadsheet: "spreadsheets",
+  presentation: "presentations",
   image: "images",
   videos: "videos",
   musics: "music",
+  audio: "audio",
+  archive: "archives",
+  code: "code",
 };
 
 export interface BuildFileQueryArgs {

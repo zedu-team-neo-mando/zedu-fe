@@ -70,6 +70,7 @@ export default function NotificationSettingsModal() {
         notificationLevel === "all" || notificationLevel === "mentions",
       at_channel:
         notificationLevel === "all" || notificationLevel === "channels",
+      thread_replies: threadReplies,
       device_type: "web",
     };
 

@@ -1,17 +1,32 @@
+import { SolutionResources } from "~/app/(homepage)/_components/ui/SolutionResources";
 import type { Metadata } from "next";
-import { ogImageUrl, siteUrl } from "~/lib/env-urls";
+import { siteUrl } from "~/lib/env-urls";
 import Image from "next/image";
-import { Star } from "lucide-react";
+import {
+  ArrowDownRight,
+  ArrowRight,
+  Bot,
+  Check,
+  CircleCheck,
+  Hash,
+  MessageCircle,
+  Star,
+  Users,
+} from "lucide-react";
 import { ArrowBtn, OutlineBtn } from "~/app/(homepage)/_components/ui/Button";
 import { WhyCard } from "~/app/(homepage)/_components/ui/WhyCard";
 import { FeaturedCard } from "~/app/(homepage)/_components/ui/FeaturedCard";
 import { ComparisonShowcase } from "~/app/(homepage)/_components/ui/ComparisonShowcase";
 import { DynamicFooter } from "../../_components/footer/dynamic-footer";
 
+const description =
+  "Improve classroom communication with Zedu. Give teachers and students structured channels for lessons, assignments, discussions, and school-wide updates in one platform.";
+
 export const metadata: Metadata = {
-  title: "Schools Solutions",
-  description:
-    "Improve classroom communication with Zedu. Give teachers and students structured channels for lessons, assignments, discussions, and school-wide updates in one platform.",
+  title: {
+    absolute: "Zedu for Schools - Structured Communication for Classrooms",
+  },
+  description,
   keywords: [
     "school communication platform",
     "classroom communication software",
@@ -24,27 +39,16 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Zedu for Schools - Structured Communication for Classrooms",
-    description:
-      "Bring teachers, students, and school staff into one organized workspace for announcements, assignments, and focused classroom discussions.",
+    description,
     url: siteUrl("/solutions/schools"),
     siteName: "Zedu",
-    images: [
-      {
-        url: ogImageUrl("og-image-5.png"),
-        width: 1200,
-        height: 630,
-        alt: "Zedu schools solution page preview",
-      },
-    ],
     type: "website",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
     title: "Zedu for Schools - Structured Classroom Communication",
-    description:
-      "Create organized school communication where class discussions, updates, and assignments stay easy to follow for everyone.",
-    images: [ogImageUrl("og-image-5.png")],
+    description,
   },
   alternates: {
     canonical: siteUrl("/solutions/schools"),
@@ -77,7 +81,7 @@ const higherEducationCards = [
 const structuredCommunicationCards = [
   {
     title: "Organised Classroom Communication",
-    desc: "Structure lessons, announcements, and discussions for easy access of information",
+    desc: "Structure lessons, announcements, and discussions for easy access to information",
     image:
       "/images/homepage/solutions/schools/organised-classroom-communication.png",
   },
@@ -107,21 +111,6 @@ const comparisonData = {
     "Students participate in discussions and collaborative learning activities throughout the class.",
   ],
 };
-
-const featureMetrics = [
-  {
-    title: "50%",
-    description: "Less communication clutter",
-  },
-  {
-    title: "2x",
-    description: "Faster homework coordination",
-  },
-  {
-    title: "65%",
-    description: "Higher student engagement",
-  },
-];
 
 const pageUrl = siteUrl("/solutions/schools");
 
@@ -177,7 +166,7 @@ const SchoolsSolutionsPage = () => {
         <div className="relative mx-auto grid w-full max-w-7xl items-center gap-10 rounded-[28px] px-5 py-8 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:gap-14 lg:px-12 lg:py-14 min-h-[85dvh]">
           <div className="flex flex-col items-center gap-5 text-center lg:max-w-[470px] lg:items-start lg:text-left">
             <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
-              <span className="text-primary-500">A Smarter </span> Communication
+              <span className="text-primary-500">Smarter </span> Communication
               for Schools
             </h1>
             <p className="max-w-[46ch] text-sm leading-relaxed text-[#5a6170] sm:text-base">
@@ -205,7 +194,7 @@ const SchoolsSolutionsPage = () => {
           <div className="relative w-full overflow-hidden rounded-3xl">
             <div className="relative aspect-[16/11] w-full sm:aspect-[4/3] lg:aspect-[16/10]">
               <Image
-                src="/images/homepage/solutions/schools-hero.png"
+                src="/images/homepage/solutions/schools-hero.jpg"
                 alt="A student wearing a backpack and holding a binder outside a school building"
                 fill
                 priority
@@ -218,9 +207,9 @@ const SchoolsSolutionsPage = () => {
       </section>
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16 mt-5">
         <div>
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
             Built for Modern School Communication
-          </h1>
+          </h2>
         </div>
 
         <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -232,15 +221,16 @@ const SchoolsSolutionsPage = () => {
               showBadge
               showArrow
               className="h-full"
+              headingLevel="h3"
             />
           ))}
         </div>
       </section>
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div className="flex flex-col items-center text-center gap-4">
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] text-center lg:leading-[1.12]">
             Better Communication for Every Classroom
-          </h1>
+          </h2>
           <p className="max-w-[95%] text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
             Keep lessons organized and create an environment where students can
             actively participate
@@ -263,9 +253,9 @@ const SchoolsSolutionsPage = () => {
       </section>
       <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
         <div className="flex flex-col items-center text-center gap-4">
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
+          <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
             How Zedu Transforms Schools
-          </h1>
+          </h2>
         </div>
 
         <ComparisonShowcase
@@ -278,42 +268,178 @@ const SchoolsSolutionsPage = () => {
         />
       </section>
 
-      <section className="relative isolate overflow-hidden space-y-10 px-4 py-10 sm:px-6 sm:py-14 lg:px-10 lg:py-16">
-        <div className="flex flex-col items-center text-center gap-4">
-          <h1 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
-            Run Leaner. Move Faster. Teach Better.
-          </h1>
-          <p className="max-w-[95%] text-xs text-neutral-600 sm:max-w-[90%] sm:text-base md:max-w-[65%] lg:max-w-[45%] lg:text-lg">
-            Schools often rely on multiple tools for communication and
-            collaboration. Zedu brings everything together into one organized
-            workspace so teachers and students can focus on learning.
+      <section className="relative isolate overflow-hidden bg-blue-50/30 px-4 py-12 sm:px-6 sm:py-16 lg:px-10 lg:py-20">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-9 sm:gap-12">
+          <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
+            <h2 className="text-3xl font-semibold leading-tight text-[#1f2530] sm:text-4xl lg:text-[44px] lg:leading-[1.12]">
+              Run Leaner. Move Faster. Teach Better.
+            </h2>
+            <p className="max-w-2xl text-sm leading-relaxed text-neutral-600 sm:text-base lg:text-lg">
+              Schools often juggle countless disconnected tools for
+              communication. Zedu unifies everything into one seamless
+              workspace, letting teachers and students focus entirely on
+              learning.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+            <article className="flex h-full flex-col rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6">
+              <div className="mb-6 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-4xl font-bold tracking-tight text-primary-500 sm:text-5xl">
+                    50%
+                  </p>
+                  <h3 className="mt-2 text-base font-semibold text-[#1f2530] sm:text-lg">
+                    Reduction in communication clutter
+                  </h3>
+                </div>
+                <span className="rounded-xl bg-purple-50 p-2.5 text-primary-500">
+                  <Hash aria-hidden="true" size={21} />
+                </span>
+              </div>
+              <div className="mt-auto flex min-h-28 items-center justify-center rounded-2xl bg-[#F9F7FD] p-4">
+                <div
+                  className="flex w-full items-center justify-center gap-3"
+                  aria-hidden="true"
+                >
+                  <div className="flex -space-x-2">
+                    <span className="flex size-9 items-center justify-center rounded-full border-2 border-white bg-rose-100 text-rose-600">
+                      <MessageCircle size={15} />
+                    </span>
+                    <span className="flex size-9 items-center justify-center rounded-full border-2 border-white bg-amber-100 text-amber-700">
+                      <MessageCircle size={15} />
+                    </span>
+                    <span className="flex size-9 items-center justify-center rounded-full border-2 border-white bg-sky-100 text-sky-700">
+                      <MessageCircle size={15} />
+                    </span>
+                  </div>
+                  <ArrowRight className="shrink-0 text-neutral-400" size={19} />
+                  <div className="flex items-center gap-2 rounded-xl bg-primary-500 px-3 py-2 text-white shadow-sm">
+                    <Hash size={16} />
+                    <span className="text-xs font-semibold">Class channel</span>
+                  </div>
+                </div>
+              </div>
+              <p className="mt-3 text-xs text-neutral-500">
+                Many conversations, organized in one place
+              </p>
+            </article>
+
+            <article className="flex h-full flex-col rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm sm:p-6">
+              <div className="mb-6 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-4xl font-bold tracking-tight text-primary-500 sm:text-5xl">
+                    2x
+                  </p>
+                  <h3 className="mt-2 text-base font-semibold text-[#1f2530] sm:text-lg">
+                    Faster homework &amp; task coordination
+                  </h3>
+                </div>
+                <span className="rounded-xl bg-purple-50 p-2.5 text-primary-500">
+                  <CircleCheck aria-hidden="true" size={21} />
+                </span>
+              </div>
+              <div
+                className="mt-auto min-h-28 rounded-2xl bg-[#F9F7FD] p-4"
+                aria-label="Example homework assignment progressing through a classroom task workflow"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+                    Assignment workflow
+                  </span>
+                  <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-semibold text-amber-800">
+                    In progress
+                  </span>
+                </div>
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-white text-primary-500 shadow-sm">
+                    <Check aria-hidden="true" size={15} />
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-xs font-medium text-[#1f2530]">
+                    Science worksheet
+                  </span>
+                  <span className="text-[10px] text-neutral-500">Due Fri</span>
+                </div>
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white">
+                  <div className="h-full w-2/3 rounded-full bg-primary-500" />
+                </div>
+              </div>
+              <p className="mt-3 text-xs text-neutral-500">
+                Assignment shared with a clear progress state
+              </p>
+            </article>
+
+            <article className="flex h-full flex-col rounded-3xl border border-neutral-200 bg-white p-5 shadow-sm sm:col-span-2 sm:p-6 lg:col-span-1">
+              <div className="mb-6 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-4xl font-bold tracking-tight text-primary-500 sm:text-5xl">
+                    65%
+                  </p>
+                  <h3 className="mt-2 text-base font-semibold text-[#1f2530] sm:text-lg">
+                    Higher overall student engagement
+                  </h3>
+                </div>
+                <span className="rounded-xl bg-purple-50 p-2.5 text-primary-500">
+                  <Users aria-hidden="true" size={21} />
+                </span>
+              </div>
+              <div className="mt-auto min-h-28 rounded-2xl bg-[#F9F7FD] p-4">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="flex size-8 items-center justify-center rounded-full bg-primary-100 text-primary-600">
+                      <Bot aria-hidden="true" size={17} />
+                    </span>
+                    <div>
+                      <p className="text-xs font-semibold text-[#1f2530]">
+                        Class helper
+                      </p>
+                      <p className="text-[10px] text-neutral-500">
+                        Discussion activity
+                      </p>
+                    </div>
+                  </div>
+                  <span className="flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-medium text-emerald-700">
+                    <span className="size-1.5 rounded-full bg-emerald-500" />
+                    Active
+                  </span>
+                </div>
+                <div className="mt-3 flex items-center justify-between rounded-xl bg-white px-3 py-2">
+                  <div className="flex -space-x-2">
+                    <span className="size-6 rounded-full border-2 border-white bg-sky-200" />
+                    <span className="size-6 rounded-full border-2 border-white bg-amber-200" />
+                    <span className="size-6 rounded-full border-2 border-white bg-rose-200" />
+                  </div>
+                  <span className="flex items-center gap-1 text-[10px] font-medium text-neutral-600">
+                    <MessageCircle aria-hidden="true" size={13} />
+                    Replies and reactions
+                  </span>
+                  <ArrowDownRight
+                    aria-hidden="true"
+                    className="text-primary-500"
+                    size={15}
+                  />
+                </div>
+              </div>
+              <p className="mt-3 text-xs text-neutral-500">
+                A helper and learners in an active class discussion
+              </p>
+            </article>
+          </div>
+
+          <p className="mx-auto max-w-2xl text-center text-xs leading-relaxed text-neutral-500">
+            The figures above are illustrative examples of the kind of change
+            Zedu is designed to deliver, not measured results. Actual outcomes
+            vary by school.
           </p>
         </div>
-
-        <div className="w-full mx-auto">
-          <div className="grid grid-cols-3 sm:items-center">
-            {featureMetrics.map((metric, index) => (
-              <div
-                key={metric.title}
-                className={`flex flex-col items-center justify-center gap-1 px-1.5 py-2 text-center sm:flex-col sm:gap-2 sm:px-4 sm:py-3 ${
-                  index > 0 ? "border-neutral-300 border-l" : ""
-                }`}
-              >
-                <h2 className="text-2xl font-bold text-neutral-900 sm:text-5xl">
-                  {metric.title}
-                </h2>
-                <p className="text-[12px] leading-tight text-neutral-600 sm:text-sm">
-                  {metric.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
+
+      <SolutionResources audience="schools" />
 
       <DynamicFooter
         text="Transform Communication in Your School"
         description="Give teachers and students a structured platform designed for modern classrooms."
+        backgroundClassName="bg-white"
       />
     </>
   );

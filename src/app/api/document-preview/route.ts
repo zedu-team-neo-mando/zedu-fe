@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
   }
 
   return new NextResponse(
-    `<html><body style="margin:0;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;color:#475467"><p>Document preview is not configured.</p></body></html>`,
+    `<html lang="en"><body style="margin:0;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;color:#475467"><p>Document preview is not configured.</p></body></html>`,
     {
       status: 503,
       headers: { "Content-Type": "text/html; charset=utf-8" },

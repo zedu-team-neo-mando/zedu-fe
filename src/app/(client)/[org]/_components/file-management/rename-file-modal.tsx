@@ -33,11 +33,18 @@ const RenameFileModal: React.FC<RenameFileModalProps> = ({
     formState: { errors },
     handleSubmit,
     watch,
+    reset,
   } = useForm<RenameFileFormData>({
     defaultValues: {
       rename: oldName,
     },
   });
+
+  React.useEffect(() => {
+    if (isOpen) {
+      reset({ rename: oldName });
+    }
+  }, [oldName, isOpen, reset]);
 
   const handleRename = (data: RenameFileFormData) => {
     const newName = data.rename.trim();
@@ -76,6 +83,7 @@ const RenameFileModal: React.FC<RenameFileModalProps> = ({
               )}
               <div className="place-self-end mt-5 ">
                 <button
+                  type="button"
                   className="px-4 py-2 text-sm bg-transparent border border-[#D0D5DD] text-[#344054] rounded-lg mr-2"
                   onClick={onClose}
                 >

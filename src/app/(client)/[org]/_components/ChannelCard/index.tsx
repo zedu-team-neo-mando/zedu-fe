@@ -19,6 +19,8 @@ interface ComponentProps {
   archived?: boolean;
   mention_count: number;
   is_private: boolean;
+  is_restricted?: boolean;
+  restricted?: boolean;
   is_starred?: boolean;
   preview_thread: any;
   active_buzz?: boolean;
@@ -47,6 +49,20 @@ export const ChannelCard = (props: ComponentProps) => {
     localStorage.setItem("channelId", props?.channels_id);
     localStorage.setItem("channelName", props?.name);
     dispatch({ type: ACTIONS.CHANNEL_NAME, payload: props?.name });
+    dispatch({
+      type: ACTIONS.CHANNEL_NAV_CONTEXT,
+      payload: {
+        channels_id: props.channels_id,
+        is_restricted: Boolean(props.is_restricted ?? props.restricted),
+      },
+    });
+
+    // Keep the unread count of the channel being opened. The count is cleared
+    // below, so capture it first for the unread divider.
+    dispatch({
+      type: ACTIONS.CHANNEL_UNREAD_COUNT,
+      payload: props.thread_count || 0,
+    });
 
     // Clear Nav unread highlight immediately on open
     dispatch({
@@ -64,10 +80,6 @@ export const ChannelCard = (props: ComponentProps) => {
 
   // Determine if this card is the currently selected one
   const isSelected = props.channels_id === (props.selectedChannelId || id);
-  const isActive = props?.mention_count > 0 || props?.thread_count > 0;
-  // text-blue-50 is too faint on the selected and hover background
-  // (bg-blue-200), so those rows switch to white text and icons.
-  const restingColor = "text-blue-50 group-hover:text-white";
 
   //
 
@@ -81,25 +93,14 @@ export const ChannelCard = (props: ComponentProps) => {
     >
       <div className="flex-1 flex items-center gap-1">
         {props?.is_private ? (
-          <LockClosedIcon
-            className={cn(
-              "size-4",
-              isActive || isSelected ? "text-white" : restingColor
-            )}
-          />
+          <LockClosedIcon className={cn("size-4 text-blue-50 ")} />
         ) : (
-          <HashIcon
-            className={cn(
-              "size-4",
-              isActive || isSelected ? "text-white" : restingColor
-            )}
-          />
+          <HashIcon className={cn("size-4 text-blue-50 ")} />
         )}
 
         <p
           className={cn(
-            "text-[15px] leading-4 lowercase truncate py-1 w-[180px]",
-            isActive || isSelected ? "font-semibold text-white" : restingColor
+            "text-[15px] leading-4 lowercase truncate py-1 w-[180px] text-blue-50 "
           )}
           title={props.name}
         >

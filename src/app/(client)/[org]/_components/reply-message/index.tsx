@@ -7,7 +7,7 @@ import Thread from "../ChannelMessage/thread";
 import UserAvatar from "~/components/layout/user-avatar";
 import { Pin } from "lucide-react";
 import MessageItem from "../ChannelMessage/message-item";
-import { GetRequest, PutRequest } from "~/utils/new-request";
+import { PutRequest } from "~/utils/new-request";
 import { ACTIONS } from "~/store/Actions";
 import { useParams, useSearchParams } from "next/navigation";
 import EditReplyMessageBox from "../message-box/edit-reply";
@@ -19,6 +19,7 @@ import {
   removeMessageHighlightClasses,
 } from "~/utils/message-highlight";
 import { shouldFetchSearchReply } from "~/lib/search/navigate";
+import { showError, showSuccess } from "~/components/toast/sonner";
 
 const ReplyMessage = ({ fetchMoreData, hasMore }: any) => {
   const { state, dispatch } = useContext(DataContext);
@@ -92,40 +93,43 @@ const ReplyMessage = ({ fetchMoreData, hasMore }: any) => {
 
   // edit message
   const handleEditMessage = async (content: any) => {
-    // payload
-    const payload = {
-      content: content,
-      message_id: threadReply?.id,
-      thread_id: threadReply?.thread_id,
-    };
+    try {
+      const payload = {
+        content: content,
+        message_id: threadReply?.id,
+        thread_id: threadReply?.thread_id,
+      };
 
-    await PutRequest(`/channels/${channelId}/messages`, payload);
-    dispatch({
-      type: ACTIONS.IS_EDIT_REPLY,
-      payload: false,
-    });
-  };
-
-  // saved for later messages
-  useEffect(() => {
-    const orgId = localStorage.getItem("orgId") || "";
-
-    const loadSavedChats = async () => {
-      const res = await GetRequest(`/organisations/${orgId}/saved/message`);
-
+      const res = await PutRequest(`/channels/${channelId}/messages`, payload);
       if (res?.status === 200 || res?.status === 201) {
-        const result = res?.data?.data?.map((item: any) => {
-          return item.type === "thread"
-            ? { id: item.id, thread_id: item.thread_id }
-            : { id: item.id };
+        const updatedReplies = (replies || []).map((msg: any) =>
+          msg.id === threadReply?.id || msg.thread_id === threadReply?.thread_id
+            ? { ...msg, content: content }
+            : msg
+        );
+        dispatch({
+          type: ACTIONS.REPLIES,
+          payload: {
+            newThreads: updatedReplies,
+            newPage: 1,
+          },
         });
-
-        dispatch({ type: ACTIONS.BOOKMARKS, payload: result });
+        dispatch({
+          type: ACTIONS.IS_EDIT_REPLY,
+          payload: false,
+        });
+        showSuccess("Message updated");
+      } else {
+        const errorMsg =
+          res?.response?.data?.message ||
+          res?.data?.message ||
+          "Failed to update message";
+        showError(errorMsg);
       }
-    };
-
-    loadSavedChats();
-  }, [dispatch]);
+    } catch (err: any) {
+      showError(err?.message || "Failed to update message");
+    }
+  };
 
   //
 
@@ -163,7 +167,9 @@ const ReplyMessage = ({ fetchMoreData, hasMore }: any) => {
               const shouldShowAvatar =
                 !nextMessage || nextMessage.user_id !== item.user_id;
 
-              const isSaved = bookmarks?.some((b: any) => b.id === item.id);
+              const isSaved = bookmarks?.some(
+                (b: any) => b.message_id === item.id
+              );
 
               return (
                 <React.Fragment key={item.id ?? index}>

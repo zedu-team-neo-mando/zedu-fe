@@ -109,36 +109,37 @@ const EditOrganisationDialog = ({ isOpen, onClose }: any) => {
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    if (!file) return;
 
-    if (file?.type !== "image/jpeg" && file?.type !== "image/png") {
-      return showError("Image type is not supported");
+    if (file.type !== "image/jpeg" && file.type !== "image/png") {
+      showError("Image type is not supported");
+      e.target.value = "";
+      return;
     }
 
-    if (file) {
-      stopReadingImage();
-      const url = URL.createObjectURL(file);
-      previewUrlRef.current = url;
-      setAvatar(url);
-      setImage("");
+    stopReadingImage();
+    const url = URL.createObjectURL(file);
+    previewUrlRef.current = url;
+    setAvatar(url);
+    setImage("");
 
-      const reader = new FileReader();
-      activeReaderRef.current = reader;
-      setIsReadingImage(true);
-      reader.onloadend = () => {
-        if (activeReaderRef.current !== reader) return;
-        activeReaderRef.current = null;
-        if (typeof reader.result === "string") {
-          setImage(reader.result);
-        } else {
-          setAvatar(user?.logo_url || "");
-          if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
-          previewUrlRef.current = null;
-          showError("Could not read the selected image");
-        }
-        setIsReadingImage(false);
-      };
-      reader.readAsDataURL(file);
-    }
+    const reader = new FileReader();
+    activeReaderRef.current = reader;
+    setIsReadingImage(true);
+    reader.onloadend = () => {
+      if (activeReaderRef.current !== reader) return;
+      activeReaderRef.current = null;
+      if (typeof reader.result === "string") {
+        setImage(reader.result);
+      } else {
+        setAvatar(user?.logo_url || "");
+        if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = null;
+        showError("Could not read the selected image");
+      }
+      setIsReadingImage(false);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleRemovePhoto = () => {

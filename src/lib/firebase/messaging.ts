@@ -13,6 +13,11 @@ import {
   firebaseWebConfig,
   missingFirebaseWebEnv,
 } from "~/lib/firebase/config";
+import {
+  applyPreviewPreference,
+  getShowMessagePreviews,
+  setShowMessagePreviews,
+} from "~/lib/notification-preview";
 import { PostRequest } from "~/utils/new-request";
 
 const SERVICE_WORKER_URL = "/firebase-messaging-sw.js";
@@ -92,6 +97,9 @@ export const setupWebPush = async (): Promise<WebPushSetup> => {
   );
   await navigator.serviceWorker.ready;
 
+  // Make sure the service worker sees the user's current preview choice.
+  await setShowMessagePreviews(getShowMessagePreviews());
+
   const app: FirebaseApp = getApps()[0] ?? initializeApp(firebaseWebConfig);
   const messaging = getMessaging(app);
   const token = await getToken(messaging, {
@@ -142,7 +150,8 @@ const showPushNotification = (
 export const listenForForegroundMessages = (messaging: Messaging) =>
   onMessage(messaging, (payload) => {
     const title = payload.notification?.title || payload.data?.title || "Zedu";
-    const body = payload.notification?.body || payload.data?.body || "";
+    const rawBody = payload.notification?.body || payload.data?.body || "";
+    const body = applyPreviewPreference(rawBody, getShowMessagePreviews());
 
     if (Notification.permission !== "granted") return;
 

@@ -18,5 +18,12 @@
   "codeBlock": "<pre class=\"slack-code-block\"><code class=\"language-ts\">const a = 1</code></pre>",
   "mention": "<span class=\"mention\" data-type=\"mention\" data-id=\"u-1\" data-label=\"dean\">@dean</span>",
   "docsHref": "https://zedu.chat/docs",
-  "emojiSrc": "https://cdn.example/1f600.png"
+  "emojiSrc": "https://cdn.example/1f600.png",
+  "emojiDatasourceBase": "https://cdn.example",
+  "foreignImages": [
+    "<img src=\"https://tracker.example/pixel.png\">",
+    "<img class=\"apple-emoji-img\" src=\"https://tracker.example/fake.png\">",
+    "<img class=\"apple-emoji-img\" src=\"https://cdn.example.evil/x.png\">"
+  ],
+  "markdownImage": "![md](https://tracker.example/md.png)"
 }

@@ -63,6 +63,7 @@ export default function PeopleNav({
     const res = await PostRequest(`/organisations/${orgId}/dms`, payload);
 
     if (res?.status === 200 || res?.status === 201) {
+      dispatch({ type: ACTIONS.HOME_DMS_CALLBACK });
       router.push(
         `/${orgSlug}/people/${res?.data?.data?.channel_id}/${res?.data?.data?.participant_id}`
       );

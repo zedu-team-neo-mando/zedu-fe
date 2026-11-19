@@ -67,7 +67,6 @@ const CreateOrganization: React.FC = () => {
     const payload = {
       name: values.organisationName,
       type: values.organisationType,
-      email: "email@email.com",
       country: country?.value,
     };
 
@@ -85,10 +84,19 @@ const CreateOrganization: React.FC = () => {
         token
       );
 
-      if (result?.status === 200 || result?.status === 201) {
-        localStorage.setItem("token", result?.data?.data?.access_token);
-        localStorage.setItem("orgId", result?.data?.data?.organisation?.id);
+      // PutRequest returns the error instead of throwing. The organisation
+      // already exists here, so stop loading rather than read a missing body,
+      // and point the user to the switcher so they don't create it twice.
+      if (result?.status !== 200 && result?.status !== 201) {
+        showError(
+          "Your organisation was created, but we couldn't switch to it. Select it from the workspace switcher."
+        );
+        setButtonloding(false);
+        return;
       }
+
+      localStorage.setItem("token", result?.data?.data?.access_token);
+      localStorage.setItem("orgId", result?.data?.data?.organisation?.id);
 
       const orgSlug = result.data.data.current_organisation_slug;
 

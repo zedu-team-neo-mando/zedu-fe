@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import Image from "next/image";
-import { Bug, Keyboard, Pencil, Rocket, Smile } from "lucide-react";
+import { Bug, Keyboard, Pencil, Rocket, Smile, UserPlus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +18,11 @@ import KeyboardShortcutsModal, {
 import { PostRequest } from "~/utils/new-request";
 import Link from "next/link";
 import { buildReportProblemHref } from "~/lib/report-problem";
+import { InviteCohortDialog } from "~/components/invite/invite-cohort-dialog";
+import {
+  buildReferralUrl,
+  getStoredOrGeneratedReferralCode,
+} from "~/lib/referrals";
 
 interface ProfileDropdownProps {
   user: any;
@@ -109,6 +114,15 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user }) => {
   };
 
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
+  const [inviteUrl, setInviteUrl] = useState("");
+
+  const handleInvite = () => {
+    const code = getStoredOrGeneratedReferralCode();
+    setInviteUrl(buildReferralUrl(code, window.location.origin));
+    setShowInvite(true);
+    setShowDropdown(false);
+  };
 
   // Ctrl/Cmd + / opens the shortcuts list from anywhere in the app. It only
   // opens (never toggles) so holding the keys down does not flicker it.
@@ -266,16 +280,33 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user }) => {
             onClick={showProfile}
             className="px-5 py-1.5 cursor-pointer hover:bg-blue-500 hover:text-white"
           >
-            <span className="w-full">Profile...</span>
+            <span className="w-full">Profile</span>
           </DropdownMenuItem>
 
           <Link href={`/${orgSlug}/settings/personal/appearance`}>
             <DropdownMenuItem className="px-5 py-1.5 cursor-pointer hover:bg-blue-500 hover:text-white">
-              <span className="w-full">Preferences...</span>
+              <span className="w-full">Preferences</span>
+            </DropdownMenuItem>
+          </Link>
+
+          <Link href={`/${orgSlug}/settings/personal/account`}>
+            <DropdownMenuItem className="px-5 py-1.5 cursor-pointer hover:bg-blue-500 hover:text-white">
+              <span className="w-full">Account settings</span>
             </DropdownMenuItem>
           </Link>
 
           <DropdownMenuSeparator className="my-1 bg-gray-200" />
+
+          {/* Invite */}
+          <DropdownMenuItem
+            onClick={handleInvite}
+            className="px-5 py-2 cursor-pointer hover:bg-blue-500 hover:text-white"
+          >
+            <div className="flex items-center gap-2">
+              <UserPlus size={18} />
+              <span>Invite your cohort</span>
+            </div>
+          </DropdownMenuItem>
 
           {/* Sign Out */}
           <Link href={`/${orgSlug}/settings/organisation/billing/all-plans`}>
@@ -319,6 +350,11 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user }) => {
       </DropdownMenu>
 
       <StatusModal />
+      <InviteCohortDialog
+        open={showInvite}
+        onOpenChange={setShowInvite}
+        inviteUrl={inviteUrl}
+      />
       <KeyboardShortcutsModal
         open={showShortcuts}
         onOpenChange={setShowShortcuts}

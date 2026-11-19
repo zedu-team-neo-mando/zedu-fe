@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ogImageUrl } from "~/lib/env-urls";
+import { ogImageUrl, siteUrl } from "~/lib/env-urls";
 
 export { default } from "../_components/templates/templates-page";
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Free Community & Channel Templates Directory",
     description: "Pre-configured cohort workspaces and channel presets.",
-    url: "/templates",
+    url: siteUrl("/templates"),
     siteName: "Zedu",
     images: [
       {
@@ -22,5 +22,8 @@ export const metadata: Metadata = {
         alt: "Zedu learning platform for educators and cohorts",
       },
     ],
+  },
+  alternates: {
+    canonical: siteUrl("/templates"),
   },
 };

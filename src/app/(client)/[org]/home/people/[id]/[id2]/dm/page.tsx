@@ -1,5 +1,11 @@
 "use client";
-import React, { useContext, useEffect, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import PeopleHeader from "../../../../../_components/people-nav";
 import ProfileSidebar from "../../../../../_components/profile-sidebar";
 import ChatConnection from "~/components/layout/centrifugo/chat-connection";
@@ -22,13 +28,7 @@ import ConversationSearchSidebar, {
   CONVERSATION_SEARCH_PANEL_TRANSITION,
   getConversationSearchSidebarWidth,
 } from "~/app/(client)/[org]/_components/conversation-search/conversation-search-sidebar";
-
-// Global `participant` is whoever was opened last, so only trust it when it is
-// the person this DM is with.
-const isParticipantOf = (person: any, participantId: string) =>
-  Boolean(person) &&
-  String(person?.user_id ?? person?.id ?? person?.participant_id) ===
-    String(participantId);
+import { loadOrganisationThreadsPage } from "~/utils/org-threads";
 
 const DmPage = () => {
   const { state, dispatch } = useContext(DataContext);
@@ -36,20 +36,44 @@ const DmPage = () => {
   const [participant, setParticipant] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showProfile, setShowProfile] = useState(false);
+  const [isFavourite, setIsFavourite] = useState<boolean>();
   const isSmUp = useIsSmUp();
   const params = useParams();
   const id = params.id as string;
   const id2 = params.id2 as string;
   const { fetchMoreData, hasMore } = UsePeopleReply();
-  const activeParticipant = isParticipantOf(previewParticipant, id2)
-    ? previewParticipant
-    : participant;
+  const activeParticipant = previewParticipant || participant;
+  const refreshRequestId = useRef(0);
+  const unseenThreadCountRevisionRef = useRef(
+    state?.unseenThreadCountRevision ?? 0
+  );
+  unseenThreadCountRevisionRef.current = state?.unseenThreadCountRevision ?? 0;
+
+  console.log(previewParticipant, participant);
+
+  const refreshUnseenThreadCount = useCallback(async () => {
+    const currentOrgId = state?.orgId || localStorage.getItem("orgId") || "";
+    if (!currentOrgId) return;
+
+    const requestId = ++refreshRequestId.current;
+    const expectedRevision = unseenThreadCountRevisionRef.current;
+    const { success, unseenThreadCount } = await loadOrganisationThreadsPage(
+      currentOrgId,
+      1
+    );
+
+    if (success && requestId === refreshRequestId.current) {
+      dispatch({
+        type: ACTIONS.SYNC_UNSEEN_THREAD_COUNT,
+        payload: { unseenThreadCount, expectedRevision },
+      });
+    }
+  }, [dispatch, state?.orgId]);
 
   // get the participant infor
   useEffect(() => {
-    setParticipant(
-      isParticipantOf(previewParticipant, id2) ? previewParticipant : null
-    );
+    setParticipant(previewParticipant);
+
     const getUser = async () => {
       const res = await GetRequest(
         `/organisations/${orgId}/dms/participants/${id}`
@@ -69,6 +93,7 @@ const DmPage = () => {
           ) ||
           people[0];
         setParticipant(match);
+        setIsFavourite(Boolean(res?.data?.data?.is_favourite));
       }
     };
 
@@ -81,7 +106,9 @@ const DmPage = () => {
     id: string,
     uuid: string,
     content: string,
-    medias: any
+    medias: any,
+    _mentions: unknown,
+    isRetry = false
   ) => {
     // send client side update
     const optimisticMessage = {
@@ -93,16 +120,18 @@ const DmPage = () => {
       created_at: new Date().toISOString(),
       status: "pending",
       type: "message",
-      media: state.media,
+      media: medias,
       user_id: user?.user_id,
       reactions: null,
       isOptimistic: true,
     };
 
-    dispatch({
-      type: ACTIONS.CHATS,
-      payload: { newMessage: optimisticMessage },
-    });
+    if (!isRetry) {
+      dispatch({
+        type: ACTIONS.CHATS,
+        payload: { newMessage: optimisticMessage },
+      });
+    }
     dispatch({
       type: ACTIONS.UPDATE_DM_PREVIEW,
       payload: { channelId: id, message: content },
@@ -123,7 +152,9 @@ const DmPage = () => {
     id: string,
     uuid: string,
     content: string,
-    medias: any
+    medias: any,
+    _mentions: unknown,
+    isRetry = false
   ) => {
     const optimisticMessage = {
       id: uuid,
@@ -135,16 +166,18 @@ const DmPage = () => {
       created_at: new Date().toISOString(),
       status: "pending",
       type: "message",
-      media: state.media,
+      media: medias,
       user_id: user?.user_id,
       reactions: null,
       isOptimistic: true,
     };
 
-    dispatch({
-      type: ACTIONS.REPLIES,
-      payload: { newMessage: optimisticMessage },
-    });
+    if (!isRetry) {
+      dispatch({
+        type: ACTIONS.REPLIES,
+        payload: { newMessage: optimisticMessage },
+      });
+    }
 
     const payload = {
       content: content,
@@ -152,7 +185,8 @@ const DmPage = () => {
       media: medias,
     };
 
-    await PostRequest(`/dms/messages/${id}`, payload);
+    const res = await PostRequest(`/dms/messages/${id}`, payload);
+    return res?.status === 200 || res?.status === 201;
   };
 
   // Calculate combined width of open side panels
@@ -187,6 +221,7 @@ const DmPage = () => {
 
         <PeopleMessage
           participant={activeParticipant}
+          onRead={refreshUnseenThreadCount}
           setShowProfile={setShowProfile}
           showProfile={showProfile}
         />
@@ -221,7 +256,11 @@ const DmPage = () => {
         {/* Profile Sidebar */}
         {state?.showProfile && isSmUp && (
           <div className="w-[408px] h-full bg-white border-l border-[#E6EAEF]">
-            <ProfileSidebar user={activeParticipant} />
+            <ProfileSidebar
+              user={activeParticipant}
+              channelId={id}
+              isFavourite={isFavourite}
+            />
           </div>
         )}
 

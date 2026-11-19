@@ -43,31 +43,35 @@ const ChatPage = () => {
     id: string,
     uuid: string,
     content: string,
-    medias: any
+    medias: any,
+    mentions: any = state?.mentions
   ) => {
     const payload = {
       content: content,
       media: medias,
-      mentions: state?.mentions,
+      mentions: mentions,
     };
-    await PostRequest(`/group-dms/channels/${id}/threads`, payload);
+    const res = await PostRequest(`/group-dms/channels/${id}/threads`, payload);
+    return res?.status === 200 || res?.status === 201;
   };
 
   const handleReplyMessage = async (
     id: string,
     uuid: string,
     content: string,
-    medias: any
+    medias: any,
+    mentions: any = state?.mentions
   ) => {
     const payload = {
       content: content,
       thread_id: state?.thread?.thread_id,
       media: medias,
-      mentions: state?.mentions,
+      mentions: mentions,
     };
 
     // save the data to the database
-    await PostRequest(`/group-dms/messages/${id}`, payload);
+    const res = await PostRequest(`/group-dms/messages/${id}`, payload);
+    return res?.status === 200 || res?.status === 201;
   };
 
   //

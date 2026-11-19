@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
 import { X, Eye, EyeOff, CircleCheck } from "lucide-react";
 import {
   Dialog,
@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import { DataContext } from "~/store/GlobalState";
-import { DeleteRequest, GetRequest, PutRequest } from "~/utils/new-request";
+import { DeleteRequests, GetRequest, PutRequest } from "~/utils/new-request";
 import Loading from "~/components/ui/loading";
 import { showSuccess } from "~/components/toast/sonner";
 import { redirectAfterOrgSwitch } from "~/utils/org-switch";
@@ -22,42 +22,63 @@ const DeleteAccount = () => {
   const [open, setOpen] = useState(false);
   const { state } = useContext(DataContext);
   const [buttonLoading, setButtonLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const isDeleting = useRef(false);
   const { orgSlug } = state;
 
   const isValid = password.length > 0 && agreed;
 
   const handleDelete = async () => {
+    if (isDeleting.current) return;
+    isDeleting.current = true;
     const orgId = localStorage.getItem("orgId") || "";
     setButtonLoading(true);
-    const res = await DeleteRequest(`/organisations/${orgId}`);
+    try {
+      const token = localStorage.getItem("token") || "";
+      const res = await DeleteRequests(
+        `/organisations/${orgId}`,
+        { password, include_profile_in_deletion_mail: agreed },
+        token
+      );
 
-    if (res?.status === 200 || res?.status === 201 || res?.status === 204) {
-      showSuccess(res?.data.message ?? "Organisation deleted successfully");
+      if (res?.status === 200 || res?.status === 201 || res?.status === 204) {
+        showSuccess(res?.data.message ?? "Organisation deleted successfully");
 
-      // get all organisations and set the first one to active
-      const orgRes = await GetRequest("/users/organisations");
-      const orgId = orgRes?.data?.data[0].id;
+        // get all organisations and set the first one to active
+        const orgRes = await GetRequest("/users/organisations");
+        const orgId = orgRes?.data?.data[0].id;
 
-      if (orgId) {
-        // after getting organisations switch ot it
-        const payload = {
-          current_org: orgId,
-        };
+        if (orgId) {
+          // after getting organisations switch ot it
+          const payload = {
+            current_org: orgId,
+          };
 
-        const res = await PutRequest("/users/switch-org", payload);
+          const switchRes = await PutRequest("/users/switch-org", payload);
 
-        if (res?.status === 200 || res?.status === 201) {
-          localStorage.setItem("token", res?.data?.data?.access_token);
-          localStorage.setItem("orgId", res?.data?.data?.organisation?.id);
-          const slug = res.data.data.current_organisation_slug;
-          localStorage.setItem("orgSlug", slug);
+          if (switchRes?.status === 200 || switchRes?.status === 201) {
+            localStorage.setItem("token", switchRes?.data?.data?.access_token);
+            localStorage.setItem(
+              "orgId",
+              switchRes?.data?.data?.organisation?.id
+            );
+            const slug = switchRes.data.data.current_organisation_slug;
+            localStorage.setItem("orgSlug", slug);
 
-          redirectAfterOrgSwitch(slug);
+            redirectAfterOrgSwitch(slug);
+          }
+        } else {
+          window.location.href = "/";
         }
       } else {
-        window.location.href = "/";
+        setDeleteError(
+          res?.response?.data?.message ||
+            res?.data?.message ||
+            "Password verification failed. Please try again."
+        );
       }
-    } else {
+    } finally {
+      isDeleting.current = false;
       setButtonLoading(false);
     }
   };
@@ -65,12 +86,27 @@ const DeleteAccount = () => {
   const handleClick = () => {
     setOpen(false);
     setIsContinue(false);
+    setPassword("");
+    setShowPassword(false);
+    setAgreed(false);
+    setDeleteError("");
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      setIsContinue(false);
+      setPassword("");
+      setShowPassword(false);
+      setAgreed(false);
+      setDeleteError("");
+    }
   };
 
   //
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <button className="inline-block py-2 px-4 mt-6 border rounded-[4px] border-[#F81404] text-[#F81404] text-sm font-semibold hover:bg-[#F81404] hover:text-white transition-colors duration-200">
           Delete this organisation
@@ -143,8 +179,11 @@ const DeleteAccount = () => {
                   type={showPassword ? "text" : "password"}
                   className="w-full border rounded px-3 py-2 pr-10 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="new-password"
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setDeleteError("");
+                  }}
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
@@ -155,6 +194,12 @@ const DeleteAccount = () => {
                 </button>
               </div>
             </div>
+
+            {deleteError && (
+              <p role="alert" className="text-sm text-red-600">
+                {deleteError}
+              </p>
+            )}
 
             <div className="flex items-start mb-6">
               <input
@@ -181,7 +226,7 @@ const DeleteAccount = () => {
 
               <button
                 onClick={handleDelete}
-                disabled={!isValid}
+                disabled={!isValid || buttonLoading}
                 className={`flex items-center justify-center px-4 py-2 rounded text-white font-medium ${
                   isValid
                     ? "bg-red-600 hover:bg-red-700"

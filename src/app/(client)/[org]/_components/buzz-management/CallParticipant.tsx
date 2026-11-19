@@ -1,6 +1,6 @@
 "use client";
 
-import { EllipsisVertical, MicOff, Pin, PinOff } from "lucide-react";
+import { MicOff, Pin, PinOff } from "lucide-react";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { AudioWaveBars, AudioWaveBorder } from "./audio-wave-border";
@@ -10,6 +10,7 @@ import { useAudioVisualizer } from "~/hooks/useAudioVisualizer";
 import { BuzzRaiseHandIcon } from "~/svgs";
 import { Participant } from "~/hooks/buzz";
 import { DataContext } from "~/store/GlobalState";
+import { ACTIONS } from "~/store/Actions";
 import {
   getParticipantVideoScale,
   observeParticipantVideoStyles,
@@ -34,7 +35,7 @@ export const BuzzParticipant = ({
   user_id,
   isFullHeight = false,
 }: Participant & { isFullHeight?: boolean }) => {
-  const { state } = useContext(DataContext);
+  const { state, dispatch } = useContext(DataContext);
   const isLocalVideo =
     String(user_id) === String(state.user?.user_id) ||
     String(uid) === String(state.user?.user_id);
@@ -60,15 +61,22 @@ export const BuzzParticipant = ({
   const darker = `color-mix(in srgb, ${bgColor} 80%, black)`;
 
   const handlePin = () => {
-    // setParticipantsData((prev: Participant[]) => {
-    //   const updated = prev.map((p) =>
-    //     p.uid === uid
-    //       ? { ...p, isPinned: !p.isPinned }
-    //       : { ...p, isPinned: false }
-    //   );
-    //   console.log("Pin toggled for uid:", uid, "New state:", updated);
-    //   return updated;
-    // });
+    const targetId = String(user_id || uid);
+
+    dispatch({
+      type: ACTIONS.BUZZ_PARTICIPANTS,
+      payload: ((state.buzzParticipants as Participant[]) ?? []).map(
+        (participant) => {
+          const participantId = String(participant.user_id || participant.uid);
+          const isTarget = participantId === targetId;
+
+          return {
+            ...participant,
+            isPinned: isTarget ? !participant.isPinned : false,
+          };
+        }
+      ),
+    });
   };
 
   useEffect(() => {
@@ -213,9 +221,6 @@ export const BuzzParticipant = ({
             ) : (
               <MicOff className="size-4" fontWeight={1} />
             )}
-          </Button>
-          <Button className="flex-1 size-full bg-black/40 hover:bg-black/60 rounded-[5px] max-w-[38px] text-white p-0 border-0">
-            <EllipsisVertical className="size-4" fontWeight={1} />
           </Button>
         </div>
       )}

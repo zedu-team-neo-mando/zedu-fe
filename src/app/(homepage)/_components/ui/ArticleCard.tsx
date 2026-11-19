@@ -1,13 +1,21 @@
 import Image from "next/image";
+import Link from "next/link";
 
 type ArticleCardProps = {
   title: string;
   desc: string;
   tag: string;
   image: string;
+  href: string;
 };
 
-export const ArticleCard = ({ title, desc, tag, image }: ArticleCardProps) => {
+export const ArticleCard = ({
+  title,
+  desc,
+  tag,
+  image,
+  href,
+}: ArticleCardProps) => {
   return (
     <article className="relative flex h-full w-full max-w-[380px] flex-col gap-6 overflow-hidden rounded-2xl bg-white drop-shadow-md">
       <div className="absolute left-3 top-3 z-10 flex items-center justify-center rounded-full bg-blue-900 px-4 py-2 text-xs uppercase text-white">
@@ -29,6 +37,14 @@ export const ArticleCard = ({ title, desc, tag, image }: ArticleCardProps) => {
         <p className="text-xs leading-relaxed text-neutral-600 sm:text-sm">
           {desc}
         </p>
+
+        <Link
+          href={href}
+          aria-label={`Learn more: ${title}`}
+          className="w-fit text-left text-sm text-blue-900 underline-offset-4 hover:underline focus-visible:underline"
+        >
+          Learn more
+        </Link>
       </div>
     </article>
   );

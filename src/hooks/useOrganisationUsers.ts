@@ -5,7 +5,7 @@ import { ACTIONS } from "~/store/Actions";
 import { GetRequest } from "~/utils/new-request";
 
 const PAGE_LIMIT = 50;
-const SEARCH_DEBOUNCE_MS = 2000;
+const SEARCH_DEBOUNCE_MS = 300;
 
 type OrgUsersPagination = {
   loadedPage: number;
@@ -123,6 +123,11 @@ export const useOrganisationUsers = (
   const [searchTotalItems, setSearchTotalItems] = useState(0);
   const searchPageRef = useRef(0);
   const searchInflightRef = useRef<Set<number>>(new Set());
+  // Bumped whenever the search query, org or enabled state changes.
+  // A response is only applied when it belongs to the current generation,
+  // so a slow reply for an earlier query, organisation or enabled state can't
+  // overwrite the newer results.
+  const searchGenerationRef = useRef(0);
 
   const orgMembersRef = useRef(state.orgMembers);
   const prevOrgIdRef = useRef(orgId);
@@ -205,8 +210,14 @@ export const useOrganisationUsers = (
   );
 
   const fetchSearchUsers = useCallback(
-    async (pageNumber: number, isInitial: boolean, query: string) => {
+    async (
+      pageNumber: number,
+      isInitial: boolean,
+      query: string,
+      generation: number
+    ) => {
       if (!orgId || !query.trim()) return;
+      if (generation !== searchGenerationRef.current) return;
       if (searchInflightRef.current.has(pageNumber)) return;
 
       searchInflightRef.current.add(pageNumber);
@@ -216,6 +227,10 @@ export const useOrganisationUsers = (
         const response = await GetRequest(
           buildUsersUrl(orgId, pageNumber, query)
         );
+
+        // The query, org or enabled state changed while this request was in
+        // flight: its results describe an obsolete search, so drop them.
+        if (generation !== searchGenerationRef.current) return;
 
         if (response?.status === 200 || response?.status === 201) {
           const newUsers = response?.data?.data || [];
@@ -240,8 +255,12 @@ export const useOrganisationUsers = (
           );
         }
       } finally {
-        searchInflightRef.current.delete(pageNumber);
-        setSearchLoading(false);
+        // An obsolete request must not touch the current generation's
+        // inflight set or loading flag; the newer request owns them.
+        if (generation === searchGenerationRef.current) {
+          searchInflightRef.current.delete(pageNumber);
+          setSearchLoading(searchInflightRef.current.size > 0);
+        }
       }
     },
     [orgId]
@@ -277,23 +296,24 @@ export const useOrganisationUsers = (
 
   // Search mode: refetch when debounced query changes
   useEffect(() => {
-    if (!enabled || !orgId) return;
-
-    if (!isSearching) {
-      setSearchUsers([]);
-      setSearchHasMore(false);
-      setSearchTotalItems(0);
-      searchPageRef.current = 0;
-      searchInflightRef.current.clear();
-      return;
-    }
+    // Every change invalidates whatever is still in flight for the old
+    // query, organisation or enabled state.
+    searchGenerationRef.current += 1;
+    const generation = searchGenerationRef.current;
 
     searchPageRef.current = 0;
     searchInflightRef.current.clear();
     setSearchUsers([]);
-    setSearchHasMore(true);
     setSearchTotalItems(0);
-    fetchSearchUsers(1, true, debouncedSearch.trim());
+
+    if (!enabled || !orgId || !isSearching) {
+      setSearchHasMore(false);
+      setSearchLoading(false);
+      return;
+    }
+
+    setSearchHasMore(true);
+    fetchSearchUsers(1, true, debouncedSearch.trim(), generation);
   }, [orgId, enabled, isSearching, debouncedSearch, fetchSearchUsers]);
 
   const loadMore = useCallback(() => {
@@ -302,7 +322,12 @@ export const useOrganisationUsers = (
     if (isSearching) {
       if (searchLoading || !searchHasMore || isDebouncing) return;
       const nextPage = searchPageRef.current + 1;
-      fetchSearchUsers(nextPage, false, debouncedSearch.trim());
+      fetchSearchUsers(
+        nextPage,
+        false,
+        debouncedSearch.trim(),
+        searchGenerationRef.current
+      );
       return;
     }
 

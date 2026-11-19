@@ -17,7 +17,7 @@ const SIZE_MAP = {
   intro: { px: 64, className: "size-16" },
   xl: { px: 80, className: "size-20" },
   "2xl": { px: 96, className: "size-24" },
-  profile: { px: 250, className: "size-[250px]" },
+  profile: { px: 250, className: "mx-auto size-[250px]" },
 } as const;
 
 export type UserAvatarSize = keyof typeof SIZE_MAP;

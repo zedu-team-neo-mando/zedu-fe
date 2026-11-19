@@ -131,9 +131,9 @@ function TermsOfService() {
         </div>
 
         <div className="mt-16 md:mt-10 w-full min-w-0 md:w-[700px] lg:w-[815px] py-3 px-5 text-black">
-          <p className="text-2xl md:text-4xl font-semibold leading-10 pb-2">
+          <h1 className="text-2xl md:text-4xl font-semibold leading-10 pb-2">
             Terms of Service
-          </p>
+          </h1>
           <p className="text-neutral-600 text-sm lg:text-base pb-5">
             Last updated: 10 October 2026
           </p>

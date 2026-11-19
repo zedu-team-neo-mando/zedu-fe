@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
@@ -51,6 +52,17 @@ const workspacesHref = () => {
   return orgSlug && orgSlug !== "undefined" ? `/${orgSlug}` : "/client";
 };
 
+// A broken link is often opened by someone who is not signed in (from search,
+// a shared link or an old post). "Go to my workspaces" only sends them to the
+// login page, so they get the homepage and sign-up instead.
+const hasSession = () => {
+  try {
+    return Boolean(localStorage.getItem("token"));
+  } catch {
+    return false;
+  }
+};
+
 interface ErrorStateProps {
   variant: ErrorStateVariant;
   /** Only used by the network variant; defaults to reloading the page. */
@@ -73,6 +85,13 @@ const ErrorState = ({
 }: ErrorStateProps) => {
   const router = useRouter();
   const copy = COPY[variant];
+  const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    setSignedIn(hasSession());
+  }, []);
+
+  const showVisitorLinks = variant === "not-found" && !action && !signedIn;
 
   const handleRetry = () => {
     if (onRetry) onRetry();
@@ -111,12 +130,26 @@ const ErrorState = ({
             Retry
           </Button>
         )}
-        <Button
-          onClick={action ? () => router.push(action.href) : goToWorkspaces}
-          className="bg-primary-500 text-white hover:bg-primary-500/90"
-        >
-          {action?.label ?? "Go to my workspaces"}
-        </Button>
+        {showVisitorLinks ? (
+          <>
+            <Button
+              asChild
+              className="bg-primary-500 text-white hover:bg-primary-500/90"
+            >
+              <Link href="/">Go to homepage</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/auth/sign-up">Sign up free</Link>
+            </Button>
+          </>
+        ) : (
+          <Button
+            onClick={action ? () => router.push(action.href) : goToWorkspaces}
+            className="bg-primary-500 text-white hover:bg-primary-500/90"
+          >
+            {action?.label ?? "Go to my workspaces"}
+          </Button>
+        )}
       </div>
       <p className="text-xs text-slate-500">
         Still stuck?{" "}

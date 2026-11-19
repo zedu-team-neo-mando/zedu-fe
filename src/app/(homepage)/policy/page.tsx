@@ -252,9 +252,9 @@ function Policy() {
         </div>
 
         <div className="mt-16 md:mt-10 w-full min-w-0 md:w-[700px] lg:w-[815px] py-3 px-5 text-black">
-          <p className="text-2xl md:text-4xl font-semibold leading-10 pb-5">
+          <h1 className="text-2xl md:text-4xl font-semibold leading-10 pb-5">
             Our Privacy Policy
-          </p>
+          </h1>
           <div
             ref={mobileMenuSentinelRef}
             aria-hidden="true"

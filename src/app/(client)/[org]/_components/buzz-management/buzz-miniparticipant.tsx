@@ -1,11 +1,12 @@
 import React, { useContext, useRef, useEffect } from "react";
 import Image from "next/image";
-import { EllipsisVertical, Mic, MicOff, Pin, PinOff } from "lucide-react";
+import { Mic, MicOff, Pin, PinOff } from "lucide-react";
 import { BuzzRaiseHandIcon } from "~/svgs";
 import { AudioWaveBorder } from "./audio-wave-border";
 import { useAudioVisualizer } from "~/hooks/useAudioVisualizer";
 import { Participant } from "~/hooks/buzz";
 import { DataContext } from "~/store/GlobalState";
+import { ACTIONS } from "~/store/Actions";
 import {
   getParticipantVideoScale,
   observeParticipantVideoStyles,
@@ -26,7 +27,7 @@ export const BuzzMiniParticipant = ({
   color,
   user_id,
 }: Participant) => {
-  const { state } = useContext(DataContext);
+  const { state, dispatch } = useContext(DataContext);
   const isLocalVideo =
     String(user_id) === String(state.user?.user_id) ||
     String(uid) === String(state.user?.user_id);
@@ -38,6 +39,25 @@ export const BuzzMiniParticipant = ({
   const bgColor = color || DEFAULT_PARTICIPANT_COLOR;
   const lighter = `color-mix(in srgb, ${bgColor} 80%, white)`;
   const darker = `color-mix(in srgb, ${bgColor} 80%, black)`;
+
+  const handlePin = () => {
+    const targetId = String(user_id || uid);
+
+    dispatch({
+      type: ACTIONS.BUZZ_PARTICIPANTS,
+      payload: ((state.buzzParticipants as Participant[]) ?? []).map(
+        (participant) => {
+          const participantId = String(participant.user_id || participant.uid);
+          const isTarget = participantId === targetId;
+
+          return {
+            ...participant,
+            isPinned: isTarget ? !participant.isPinned : false,
+          };
+        }
+      ),
+    });
+  };
 
   useEffect(() => {
     if (!videoTrack || !videoRef.current) return;
@@ -124,6 +144,7 @@ export const BuzzMiniParticipant = ({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            handlePin();
           }}
           type="button"
           className={`flex items-center justify-center w-6 h-6 rounded border-0 transition-colors cursor-pointer ${
@@ -152,14 +173,6 @@ export const BuzzMiniParticipant = ({
           ) : (
             <MicOff className="size-3.5 text-white" strokeWidth={2} />
           )}
-        </button>
-        <button
-          type="button"
-          className="flex items-center justify-center w-6 h-6 bg-black/50 hover:bg-black/60 rounded transition-colors border-0"
-          aria-label="More participant options"
-          title="More participant options"
-        >
-          <EllipsisVertical className="size-3.5 text-white" strokeWidth={2} />
         </button>
       </div>
     </div>

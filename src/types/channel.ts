@@ -1,3 +1,9 @@
+/** List/nav snapshot when opening a channel (not full CHANNEL_DETAILS). */
+export type ChannelNavContext = {
+  channels_id: string;
+  is_restricted: boolean;
+};
+
 export interface Media {
   id: string;
   file_name: string;

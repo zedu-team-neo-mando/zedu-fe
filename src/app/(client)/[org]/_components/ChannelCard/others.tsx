@@ -29,6 +29,11 @@ export const ChannelCardOthers = (props: ComponentProps) => {
   // select channel
   const selectChannel = () => {
     dispatch({ type: ACTIONS.MESSAGE_LOADING, payload: true });
+    // Keep the unread count of the channel being opened for the unread divider
+    dispatch({
+      type: ACTIONS.CHANNEL_UNREAD_COUNT,
+      payload: props.thread_count || 0,
+    });
     router.push(`/${orgSlug}/home/channels/${props.channels_id}`);
     localStorage.setItem("channelId", props?.channels_id);
     localStorage.setItem("channelName", props?.name);

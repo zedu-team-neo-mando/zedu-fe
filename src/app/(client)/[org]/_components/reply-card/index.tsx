@@ -93,7 +93,7 @@ export default function ReplyCard({
       {visibleUsers?.length > 0 && (
         <>
           <span className="text-blue-600 hover:underline cursor-pointer ml-2">
-            {totalReplies} replies
+            {totalReplies} {totalReplies === 1 ? "reply" : "replies"}
           </span>
           <span className="text-gray-500 ml-1">
             Last reply {timeformat(lastReplyTime)}

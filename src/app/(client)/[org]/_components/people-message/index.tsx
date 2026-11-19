@@ -26,6 +26,7 @@ import { isUserDeactivated } from "~/utils/user-deactivation";
 import { useMessageHighlight } from "~/hooks/use-message-highlight";
 import { useMessageDeepLink } from "~/hooks/use-message-deep-link";
 import { ScrollToLatestButton } from "~/components/ui/scroll-to-latest-button";
+import { showError, showSuccess } from "~/components/toast/sonner";
 
 const PeopleMessage = ({ participant }: any) => {
   const { fetchMoreData, hasMore, loading } = UsePeopleMessage();
@@ -34,6 +35,7 @@ const PeopleMessage = ({ participant }: any) => {
   const groupedMessages = groupMessagesByDate(chats);
   const params = useParams();
   const id = params.id as string;
+  const isPersonalDm = participant?.user_id === user?.user_id;
   const [showBadge, setShowBadge] = useState(false);
   const [popupId, setPopupId] = useState<any>(null);
 
@@ -102,19 +104,43 @@ const PeopleMessage = ({ participant }: any) => {
 
   // edit message
   const handleEditMessage = async (content: any) => {
-    // payload
-    const payload = {
-      content: content,
-    };
+    try {
+      const payload = {
+        content: content,
+      };
 
-    await PutRequest(
-      `/dms/thread/${thread?.thread_id}/channels/${id}`,
-      payload
-    );
-    dispatch({
-      type: ACTIONS.IS_EDIT,
-      payload: false,
-    });
+      const res = await PutRequest(
+        `/dms/thread/${thread?.thread_id}/channels/${id}`,
+        payload
+      );
+      if (res?.status === 200 || res?.status === 201) {
+        const updatedChats = (chats || []).map((msg: any) =>
+          msg.thread_id === thread?.thread_id
+            ? { ...msg, content: content }
+            : msg
+        );
+        dispatch({
+          type: ACTIONS.CHATS,
+          payload: {
+            newThreads: updatedChats,
+            newPage: 1,
+          },
+        });
+        dispatch({
+          type: ACTIONS.IS_EDIT,
+          payload: false,
+        });
+        showSuccess("Message updated");
+      } else {
+        const errorMsg =
+          res?.response?.data?.message ||
+          res?.data?.message ||
+          "Failed to update message";
+        showError(errorMsg);
+      }
+    } catch (err: any) {
+      showError(err?.message || "Failed to update message");
+    }
   };
 
   useMessageDeepLink({
@@ -131,7 +157,6 @@ const PeopleMessage = ({ participant }: any) => {
   });
 
   //
-
   return (
     <div className="relative w-full flex-1 min-h-0 flex flex-col">
       {showBadge && state?.dmCount > 0 && (
@@ -264,11 +289,11 @@ const PeopleMessage = ({ participant }: any) => {
 
         {!hasMore && (
           <div className="mt-auto px-5">
-            <div className="flex gap-2 items-center my-4">
-              <div className="relative">
+            <div className="flex items-center gap-3 py-2">
+              <div className="relative shrink-0">
                 <UserAvatar
                   item={participant}
-                  size="2xl"
+                  size="md"
                   alt="dm"
                   imageClassName="rounded-lg"
                   className="rounded-lg"
@@ -276,30 +301,45 @@ const PeopleMessage = ({ participant }: any) => {
 
                 {!isUserDeactivated(participant) && (
                   <div
-                    className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border border-white ${
+                    className={`absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border border-white ${
                       participant?.online ? "bg-[#00AD51]" : "bg-[#F97316]"
                     }`}
                   />
                 )}
               </div>
-              <h3 className="text-lg font-bold text-[#1D2939]">
-                {participant?.username}
-              </h3>
+
+              <div className="min-w-0 flex-1">
+                <h3
+                  className="truncate text-[15px] font-bold text-[#1D2939]"
+                  title={participant?.username}
+                >
+                  {participant?.username}
+                  {isPersonalDm ? " (you)" : ""}
+                </h3>
+                <p className="text-[13px] leading-snug text-[#344054]">
+                  {isPersonalDm ? (
+                    "Your personal space. Save messages, notes, links, and anything you want to come back to later."
+                  ) : (
+                    <>
+                      This conversation is just between you and{" "}
+                      <UsernameHover item={participant} />. Check out their
+                      profile to learn about them.
+                    </>
+                  )}
+                </p>
+              </div>
+
+              <Button
+                variant={"outline"}
+                size="sm"
+                className="shrink-0"
+                onClick={() => {
+                  dispatch({ type: ACTIONS.SHOW_PROFILE, payload: true });
+                }}
+              >
+                View Profile
+              </Button>
             </div>
-            <p className="text-[17px] text-[#344054] mb-2">
-              This conversation is just between you and
-              <UsernameHover item={participant} />. Check out their profile to
-              learn about them.
-            </p>
-            <Button
-              variant={"outline"}
-              className="h-10"
-              onClick={() => {
-                dispatch({ type: ACTIONS.SHOW_PROFILE, payload: true });
-              }}
-            >
-              View Profile
-            </Button>
           </div>
         )}
       </div>
