@@ -27,6 +27,7 @@ import { BookmarkFilledIcon } from "@radix-ui/react-icons";
 import { useMessageHighlight } from "~/hooks/use-message-highlight";
 import { useMessageDeepLink } from "~/hooks/use-message-deep-link";
 import { ScrollToLatestButton } from "~/components/ui/scroll-to-latest-button";
+import { MessageJumpStatus } from "~/components/message-jump-status";
 import { showError, showSuccess } from "~/components/toast/sonner";
 
 const ChannelsMessage = () => {
@@ -224,7 +225,7 @@ const ChannelsMessage = () => {
     loading,
   });
 
-  useMessageHighlight({
+  const { status: jumpStatus } = useMessageHighlight({
     dataId,
     loading,
     chats: messages || [],
@@ -234,6 +235,7 @@ const ChannelsMessage = () => {
 
   return (
     <div className="relative w-full flex-1 min-h-0 flex flex-col">
+      <MessageJumpStatus status={jumpStatus} />
       {showBadge && state?.threadCount > 0 && (
         <Badge
           onClick={() => {

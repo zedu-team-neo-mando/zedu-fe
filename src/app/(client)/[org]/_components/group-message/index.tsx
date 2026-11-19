@@ -24,6 +24,7 @@ import { useMessageDeepLink } from "~/hooks/use-message-deep-link";
 import { ACTIONS } from "~/store/Actions";
 import EditMessageBox from "../message-box/edit";
 import { ScrollToLatestButton } from "~/components/ui/scroll-to-latest-button";
+import { MessageJumpStatus } from "~/components/message-jump-status";
 import { showError, showSuccess } from "~/components/toast/sonner";
 
 const GroupMessage = ({ participants }: any) => {
@@ -144,7 +145,7 @@ const GroupMessage = ({ participants }: any) => {
     loading,
   });
 
-  useMessageHighlight({
+  const { status: jumpStatus } = useMessageHighlight({
     dataId,
     loading,
     chats,
@@ -158,6 +159,7 @@ const GroupMessage = ({ participants }: any) => {
 
   return (
     <div className="relative w-full flex-1 min-h-0 flex flex-col">
+      <MessageJumpStatus status={jumpStatus} />
       {showBadge && state?.dmCount > 0 && (
         <Badge
           onClick={() => {
