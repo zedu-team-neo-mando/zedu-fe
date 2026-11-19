@@ -184,6 +184,9 @@ export default function GeneralNotificationConnection() {
             thread_count: channelUpdate.thread_count,
           },
         });
+
+        // Lets the sidebar's recent threads reload (sidebar-threads.tsx).
+        dispatch({ type: ACTIONS.THREAD_ACTIVITY });
       }
 
       // DM notifications
@@ -195,6 +198,7 @@ export default function GeneralNotificationConnection() {
           type: ACTIONS.DM_COUNT,
           payload: ctx.data.data.thread_count,
         });
+        dispatch({ type: ACTIONS.THREAD_ACTIVITY });
 
         dispatch({
           type: ACTIONS.UPDATE_DM_COUNT,

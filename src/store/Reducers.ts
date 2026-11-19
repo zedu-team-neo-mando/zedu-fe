@@ -1264,6 +1264,11 @@ const reducers = (state: any, action: any) => {
         ...state,
         threadCount: payload,
       };
+    case ACTIONS.THREAD_ACTIVITY:
+      return {
+        ...state,
+        threadActivity: (state.threadActivity || 0) + 1,
+      };
     case ACTIONS.DM_COUNT:
       return {
         ...state,

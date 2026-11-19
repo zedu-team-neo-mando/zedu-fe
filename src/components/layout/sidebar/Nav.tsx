@@ -21,6 +21,7 @@ import OrganisationMenu from "~/app/(client)/[org]/_components/org-dropdown";
 import Tooltips from "~/app/(client)/[org]/_components/tooltip";
 import { formatCount } from "~/utils/utils";
 import { parseStoredAccordions } from "~/utils/stored-accordions";
+import { SidebarThreads } from "./sidebar-threads";
 // import AddColleagueDialog from "~/app/(client)/[org]/_components/colleagues/add-colleagues-modal";
 // import { ColleaguesCard } from "~/app/(client)/[org]/_components/colleagues/card";
 
@@ -173,6 +174,8 @@ export default function ChannelNav({
               )}
             </Link>
           )}
+
+          {threadsReady && <SidebarThreads />}
 
           {channelsReady && (
             <Link

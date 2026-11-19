@@ -143,6 +143,9 @@ export const DataProvider = ({ children }: DataProviderProps) => {
     unseenThreadCount: 0,
     channelUnreadCount: 0,
     unseenThreadCountRevision: 0,
+    // Goes up on every thread notification, so the sidebar's recent threads
+    // reload even when the counts in the notification stay the same.
+    threadActivity: 0,
     muteParticipant: false,
     buzzView: "side",
     buzzSidebar: false,
