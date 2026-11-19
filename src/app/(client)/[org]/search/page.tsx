@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useEffect, useState, useCallback } from "react";
+import { useContext, useEffect, useRef, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { SearchCards } from "~/components/search/search-cards";
 import { SearchCardsSkeleton } from "~/components/search/search-cards-skeleton";
@@ -15,7 +15,7 @@ import {
   PaginationLink,
 } from "~/components/ui/pagination";
 import { cn } from "~/lib/utils";
-import { searchMessages, searchUsers } from "~/lib/search/api";
+import { searchMessagePage, searchUsers } from "~/lib/search/api";
 import { buildMessageSearchQuery } from "~/lib/search/query";
 import type { MessageSearchResult, UserSearchResult } from "~/lib/search/types";
 
@@ -80,10 +80,16 @@ const SearchPaginationLink = ({
   />
 );
 
+const CARDS_PER_PAGE = 8;
+
 export default function Search() {
   const searchParams = useSearchParams();
   const baseQuery = searchParams.get("query");
   const [results, setResults] = useState<CombinedResult[]>([]);
+  const [messageResults, setMessageResults] = useState<MessageSearchResult[]>(
+    []
+  );
+  const [messageTotalPages, setMessageTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
     type: "messages" as "messages" | "people" | undefined,
@@ -96,11 +102,19 @@ export default function Search() {
   const { state } = useContext(DataContext);
   const { orgData, channels, orgMembers } = state;
   const [currentPage, setCurrentPage] = useState(1);
-  const cardsPerPage = 8;
-  const lastCardIndex = currentPage * cardsPerPage;
-  const firstCardIndex = lastCardIndex - cardsPerPage;
-  const currentCards = results.slice(firstCardIndex, lastCardIndex);
-  const totalPages = Math.ceil(results.length / cardsPerPage);
+  const searchType = filters.type || "messages";
+  const isMessageSearch = searchType === "messages";
+  const lastCardIndex = currentPage * CARDS_PER_PAGE;
+  const firstCardIndex = lastCardIndex - CARDS_PER_PAGE;
+  // Message pages come from the API already page-sized; people are paged here.
+  const currentCards: CombinedResult[] = isMessageSearch
+    ? messageResults
+    : results.slice(firstCardIndex, lastCardIndex);
+  const totalPages = isMessageSearch
+    ? messageTotalPages
+    : Math.ceil(results.length / CARDS_PER_PAGE);
+  const resultCount = isMessageSearch ? messageResults.length : results.length;
+  const requestIdRef = useRef(0);
 
   const filterUsers = (orgMembers || []).map((member: any) => ({
     id: member.id || member.user_id || member.email || member.username || "",
@@ -108,52 +122,88 @@ export default function Search() {
     avatar_url: member.avatar_url || member.profile_url,
   }));
 
-  const fetchAllResults = useCallback(async () => {
-    if (!baseQuery?.trim() || !orgData?.id) {
-      setResults([]);
-      return;
-    }
+  const clearResults = useCallback(() => {
+    setResults([]);
+    setMessageResults([]);
+    setMessageTotalPages(0);
+  }, []);
 
-    setLoading(true);
+  const fetchResults = useCallback(
+    async (page: number) => {
+      const requestId = ++requestIdRef.current;
 
-    try {
-      const searchType = filters.type || "messages";
-
-      if (searchType === "messages") {
-        const messages = await searchMessages(orgData.id, baseQuery, {
-          from: filters.from,
-          channel: filters.channel,
-          date: filters.date,
-          sortBy: filters.sortBy,
-        });
-        setResults(messages);
-      } else {
-        const userResults = await searchUsers(orgData.id, baseQuery);
-        setResults(userResults);
+      if (!baseQuery?.trim() || !orgData?.id) {
+        clearResults();
+        return;
       }
-    } catch (error) {
-      console.error("Search failed:", error);
-      showError("An error occurred while searching");
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [
-    baseQuery,
-    orgData?.id,
-    filters.type,
-    filters.from,
-    filters.channel,
-    filters.date,
-    filters.sortBy,
-  ]);
+
+      setLoading(true);
+
+      try {
+        if (searchType === "messages") {
+          const messagePage = await searchMessagePage(
+            orgData.id,
+            baseQuery,
+            {
+              from: filters.from,
+              channel: filters.channel,
+              date: filters.date,
+              sortBy: filters.sortBy,
+            },
+            page,
+            CARDS_PER_PAGE
+          );
+
+          if (requestId !== requestIdRef.current) return;
+
+          setMessageResults(messagePage.results);
+          setMessageTotalPages(messagePage.totalPages);
+        } else {
+          const userResults = await searchUsers(orgData.id, baseQuery);
+
+          if (requestId !== requestIdRef.current) return;
+
+          setResults(userResults);
+        }
+      } catch (error) {
+        if (requestId !== requestIdRef.current) return;
+
+        console.error("Search failed:", error);
+        showError("An error occurred while searching");
+        clearResults();
+      } finally {
+        if (requestId === requestIdRef.current) setLoading(false);
+      }
+    },
+    [
+      baseQuery,
+      orgData?.id,
+      searchType,
+      filters.from,
+      filters.channel,
+      filters.date,
+      filters.sortBy,
+      clearResults,
+    ]
+  );
 
   useEffect(() => {
     if (baseQuery && orgData?.id) {
       setCurrentPage(1);
-      void fetchAllResults();
+      void fetchResults(1);
     }
-  }, [baseQuery, orgData?.id, fetchAllResults]);
+  }, [baseQuery, orgData?.id, fetchResults]);
+
+  const goToPage = (page: number) => {
+    if (page === currentPage) return;
+    if (page < 1 || (totalPages > 0 && page > totalPages)) return;
+
+    setCurrentPage(page);
+
+    if (isMessageSearch) {
+      void fetchResults(page);
+    }
+  };
 
   const handleFilterChange = (newFilters: {
     type?: "messages" | "people";
@@ -236,7 +286,7 @@ export default function Search() {
           </div>
         )}
 
-        {!loading && results.length === 0 ? (
+        {!loading && resultCount === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
             <p className="text-[28px] text-neutral-900 font-semibold dark:text-zinc-100">
               Couldn&apos;t find anything
@@ -248,11 +298,11 @@ export default function Search() {
           </div>
         ) : null}
 
-        {!loading && results.length > 0 && (
+        {!loading && resultCount > 0 && (
           <>
             <div className="mb-4">
               <p className="text-sm text-gray-600 dark:text-zinc-400">
-                {results.length} result{results.length !== 1 ? "s" : ""}
+                {resultCount} result{resultCount !== 1 ? "s" : ""}
               </p>
             </div>
             <SearchCards cardData={currentCards} query={baseQuery} />
@@ -263,9 +313,7 @@ export default function Search() {
                   <PaginationContent>
                     <PaginationItem>
                       <SearchPaginationPrevious
-                        onClick={() =>
-                          setCurrentPage((prev) => Math.max(prev - 1, 1))
-                        }
+                        onClick={() => goToPage(currentPage - 1)}
                         disabled={currentPage === 1}
                       />
                     </PaginationItem>
@@ -276,7 +324,7 @@ export default function Search() {
                           <PaginationEllipsis />
                         ) : (
                           <SearchPaginationLink
-                            onClick={() => setCurrentPage(page as number)}
+                            onClick={() => goToPage(page as number)}
                             isActive={currentPage === page}
                           >
                             {page}
@@ -287,11 +335,7 @@ export default function Search() {
 
                     <PaginationItem>
                       <SearchPaginationNext
-                        onClick={() =>
-                          setCurrentPage((prev) =>
-                            Math.min(prev + 1, totalPages)
-                          )
-                        }
+                        onClick={() => goToPage(currentPage + 1)}
                         disabled={currentPage === totalPages}
                       />
                     </PaginationItem>
