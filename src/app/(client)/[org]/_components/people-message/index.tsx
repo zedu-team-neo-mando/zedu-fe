@@ -27,6 +27,11 @@ import { useMessageHighlight } from "~/hooks/use-message-highlight";
 import { useMessageDeepLink } from "~/hooks/use-message-deep-link";
 import { ScrollToLatestButton } from "~/components/ui/scroll-to-latest-button";
 import { MessageJumpStatus } from "~/components/message-jump-status";
+import { useJumpToDate } from "~/hooks/use-jump-to-date";
+import {
+  JumpToDateLabel,
+  JumpToDateStatusNote,
+} from "~/components/jump-to-date";
 import { showError, showSuccess } from "~/components/toast/sonner";
 
 const PeopleMessage = ({ participant }: any) => {
@@ -157,10 +162,18 @@ const PeopleMessage = ({ participant }: any) => {
     fetchMoreData,
   });
 
+  const { jumpToDate, status: dateJumpStatus } = useJumpToDate({
+    chats: chats || [],
+    hasMore,
+    loading,
+    fetchMoreData,
+  });
+
   //
   return (
     <div className="relative w-full flex-1 min-h-0 flex flex-col">
       <MessageJumpStatus status={jumpStatus} />
+      <JumpToDateStatusNote status={dateJumpStatus} />
       {showBadge && state?.dmCount > 0 && (
         <Badge
           onClick={() => {
@@ -280,9 +293,7 @@ const PeopleMessage = ({ participant }: any) => {
                   <div className="w-full border-t border-dotted border-[#E6EAEF]"></div>
                 </div>
                 <div className="relative flex justify-center">
-                  <span className="bg-white px-4 py-1 text-[13px] text-[#101828] border border-[#E6EAEF] rounded-[30px]">
-                    {dateLabel}
-                  </span>
+                  <JumpToDateLabel label={dateLabel} onJump={jumpToDate} />
                 </div>
               </div>
             </div>
